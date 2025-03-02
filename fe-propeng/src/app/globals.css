@@ -5,8 +5,32 @@
 
 
 @layer base {
-  :root {
+  :root  {
+    /*  Custom Primary Colors */
+    --custom-primary-light: hsl(228, 36%, 93%);
+    --custom-primary: 229 92% 26%;
+    --custom-primary-darker: hsl(229, 94%, 21%);
 
+    /* Custom Secondary Colors */
+    --custom-secondary-light: hsl(44, 100%, 95%);
+    --custom-secondary: hsl(42, 95%, 34%);
+    --custom-secondary-darker: hsl(42, 97%, 36%);
+
+    /* Custom Neutral Colors */
+    --custom-neutral-light: hsl(0, 0%, 96%);
+    --custom-neutral: hsl(225, 1%, 59%);
+    --custom-neutral-darker: hsl(225, 2%, 44%);
+
+    /* Custom Accent Colors */
+    --custom-accent-green-light: hsl(150, 64%, 94%);
+    --custom-accent-green: hsl(152, 85%, 36%);
+    --custom-accent-green-darker: hsl(152, 85%, 29%);
+
+    --custom-accent-red-light: hsl(350, 82%, 95%);
+    --custom-accent-red: hsl(348, 84%, 47%);
+    --custom-accent-red-darker: hsl(348, 84%, 43%);
+
+    /* */
     --background: 0 0% 100%;
 
     --foreground: 0 0% 3.9%;
@@ -19,7 +43,7 @@
 
     --popover-foreground: 0 0% 3.9%;
 
-    --primary: 0 0% 9%;
+    --primary: var(--custom-primary);
 
     --primary-foreground: 0 0% 98%;
 
