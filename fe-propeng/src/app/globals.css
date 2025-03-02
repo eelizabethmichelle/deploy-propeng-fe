@@ -6,6 +6,7 @@
 
 @layer base {
   :root  {
+    font-family: "Trebuchet MS", sans-serif;
     /*  Custom Primary Colors */
     --custom-primary-light: hsl(228, 36%, 93%);
     --custom-primary: 229 92% 26%;
