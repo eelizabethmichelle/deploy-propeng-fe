@@ -9,9 +9,16 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Switch } from "@/components/ui/switch"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import React from "react"
+import { cn } from "@/lib/utils"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
 
 /* Sidebar */
 export default function SidebarTrue() {
@@ -32,7 +39,8 @@ export default function SidebarTrue() {
   }
 
 
-/* Switcher */
+/* Calendar */
+  const [date, setDate] = React.useState<Date>()
   
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -129,6 +137,71 @@ export default function SidebarTrue() {
                 )}
               />
 
+              
+             <FormItem className="space-y-2">
+              <FormLabel>Birthdate</FormLabel>
+              
+              <FormControl>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </FormControl>
+              
+              <FormMessage />
+            </FormItem>
+
+              
+             <FormItem className="space-y-2">
+              <FormLabel>Birthdate</FormLabel>
+              
+              <FormControl>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </FormControl>
+              
+              <FormMessage />
+            </FormItem>
+            
+            
               <FormField
                 control={form.control}
                 name="role"
