@@ -8,7 +8,7 @@
   :root  {
     font-family: "Trebuchet MS", sans-serif;
     /*  Custom Primary Colors */
-    --custom-primary-light: hsl(228, 36%, 93%);
+    --custom-primary-light: 240 100% 99.8%;
     --custom-primary: 229 92% 26%;
     --custom-primary-darker: hsl(229, 94%, 21%);
 
@@ -18,8 +18,8 @@
     --custom-secondary-darker: hsl(42, 97%, 36%);
 
     /* Custom Neutral Colors */
-    --custom-neutral-light: hsl(0, 0%, 96%);
-    --custom-neutral: hsl(225, 1%, 59%);
+    --custom-neutral-light: 0 0% 89.8%;
+    --custom-neutral: 225 1% 59%;
     --custom-neutral-darker: hsl(225, 2%, 44%);
 
     /* Custom Accent Colors */
@@ -31,9 +31,11 @@
     --custom-accent-red: hsl(348, 84%, 47%);
     --custom-accent-red-darker: hsl(348, 84%, 43%);
 
-    /* */
-    --background: 0 0% 100%;
+    /* BG */
+    --background: var(--custom-primary-light);
 
+
+    /* Text, table row */
     --foreground: 0 0% 3.9%;
 
     --card: 0 0% 100%;
@@ -64,11 +66,11 @@
 
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 89.8%;
+    --border: var(--custom-neutral-light);
 
-    --input: 0 0% 89.8%;
+    --input: var(--custom-neutral-light);
 
-    --ring: 0 0% 3.9%;
+    --ring: var(--custom-neutral-light);
 
     --chart-1: 12 76% 61%;
 
