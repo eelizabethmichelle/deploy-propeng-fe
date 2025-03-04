@@ -22,6 +22,7 @@ import { format } from "date-fns"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
+import { SelectPills } from "@/components/ui/multiple-select"
 
 /* Sidebar */
 export default function SidebarTrue() {
@@ -42,10 +43,23 @@ export default function SidebarTrue() {
   }
 
 /* Password */
-
 const [currentPassword, setCurrentPassword] = useState("")
 const [password, setPassword] = useState("")
 const [passwordConfirmation, setPasswordConfirmation] = useState("")
+
+/* Multi Select Pills */
+const data = [
+  { id: "1", name: "Mia" },
+  { id: "2", name: "Arshad" },
+  { id: "3", name: "Dien" },
+  { id: "4", name: "Abil" },
+  { id: "5", name: "Ica" },
+];
+const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+const handleValueChange = (newValues: string[]) => {
+  setSelectedValues(newValues);
+};
 
 /* Calendar */
   const [date, setDate] = React.useState<Date>()
@@ -428,6 +442,25 @@ const [passwordConfirmation, setPasswordConfirmation] = useState("")
                       </div>
                       </RadioGroup>
                       </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+                />
+                 <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pilih Murid</FormLabel>
+                    <FormControl>
+                        <SelectPills
+                          data={data}
+                          value={selectedValues}
+                          defaultValue={["Mia"]}
+                          onValueChange={handleValueChange}
+                          placeholder="Cari nama murid, cth: Mia Khalifa"
+                        />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
