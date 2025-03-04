@@ -1,0 +1,43 @@
+image: docker:latest
+
+variables:
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE"
+  TAG: "latest"
+
+stages:
+  - build
+  - deploy
+
+before_script:
+  - apk add --no-cache openssh-client git
+  - mkdir -p ~/.ssh
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+build-and-push:
+  stage: build
+  script:
+    - set -e
+    - echo "Logging in to GitLab Container Registry..."
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE_NAME:$TAG -f Dockerfile .
+    - echo "Pushing Docker image..."
+    - docker push $IMAGE_NAME:$TAG
+
+deploy:
+  stage: deploy
+  only:
+    - main
+  script:
+    - ssh $SSH_USER@$SSH_HOST << 'EOF'
+        set -e
+        echo "Pulling latest Docker image..."
+        docker pull $IMAGE_NAME:$TAG
+        echo "Stopping and removing old container..."
+        docker stop nextjs-container || true
+        docker rm nextjs-container || true
+        echo "Starting new container..."
+        docker run -d --name nextjs-container -p 3000:3000 --restart always $IMAGE_NAME:$TAG
+      EOF
