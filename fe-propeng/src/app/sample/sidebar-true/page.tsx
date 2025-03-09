@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
@@ -10,6 +11,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Calendar } from "@/components/ui/calendar"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Popover,
   PopoverContent,
@@ -17,30 +19,37 @@ import {
 } from "@/components/ui/popover"
 import React from "react"
 import { cn } from "@/lib/utils"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Check, CheckCircle, Copy, Lock, LockIcon } from "lucide-react"
 import { format } from "date-fns"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
 import { SelectPills } from "@/components/ui/multiple-select"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+
 
 /* Sidebar */
 export default function SidebarTrue() {
-  const form = useForm({
-    defaultValues: {
-      username: "",
-      email: "",
-      role: "", // Menyimpan pilihan "Siswa" atau "Guru"
-      angkatan: "", // Akan muncul jika memilih "Siswa"
-  
-    },
-  })
 
-  const role = form.watch("role") // Untuk mengamati perubahan role
+/* Router */
+const router = useRouter();
 
-  const onSubmit = (data: any) => {
-    console.log("Form Data:", data)
-  }
+/* Form */
+const form = useForm({
+  defaultValues: {
+    username: "",
+    email: "",
+    role: "", // Menyimpan pilihan "Siswa" atau "Guru"
+    angkatan: "", // Akan muncul jika memilih "Siswa"
+
+  },
+})
+
+const role = form.watch("role") // Untuk mengamati perubahan role
+
+const onSubmit = (data: any) => {
+  console.log("Form Data:", data)
+}
 
 /* Password */
 const [currentPassword, setCurrentPassword] = useState("")
@@ -61,14 +70,91 @@ const handleValueChange = (newValues: string[]) => {
   setSelectedValues(newValues);
 };
 
+/* Copy */
+  const [copied, setCopied] = React.useState(false) // State untuk cek apakah teks sudah disalin
+  const code = "234567" // Kode Absen
+
+  // Fungsi untuk menyalin teks ke clipboard
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true) // Set state copied menjadi true
+      toast("",{
+        description: (
+          <div className="flex items-start gap-3">
+            {/* Icon di kiri */}
+            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
+              <Check className="text-background w-4 h-4" />
+            </div>
+            <div>
+              {/* Judul dibuat lebih besar */}
+              <p className="text-lg font-semibold text-foreground font-sans">Kode Disalin!</p>
+              {/* Deskripsi dengan warna lebih muted */}
+              <p className="text-sm text-muted-foreground font-sans">
+                Lorem Ipsum Sir Dolot
+              </p>
+            </div>
+          </div>
+        ),
+        action: {
+          label: (
+            <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
+              Tutup
+            </span>
+          ),
+          onClick: () => console.log("Tutup"),
+        },
+      })
+      setTimeout(() => setCopied(false), 2000) // Reset state setelah 2 detik
+    })
+  }
+
+/* Toast success */
+const handleSuccess = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      toast("",{
+        description: (
+          <div className="flex items-start gap-3">
+            {/* Icon di kiri */}
+            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
+              <Check className="text-background w-4 h-4" />
+            </div>
+            <div>
+              {/* Judul dibuat lebih besar */}
+              <p className="text-lg font-semibold text-foreground font-sans">Berhasil Logout</p>
+              {/* Deskripsi dengan warna lebih muted */}
+              <p className="text-sm text-muted-foreground font-sans">
+                Lorem Ipsum Sir Dolot
+              </p>
+            </div>
+          </div>
+        ),
+        action: {
+          label: (
+            <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
+              Tutup
+            </span>
+          ),
+          onClick: () => console.log("Tutup"),
+        },
+      })
+      setTimeout(() => setCopied(false), 2000) // Reset state setelah 2 detik
+    })
+}
+  
+    
 /* Calendar */
   const [date, setDate] = React.useState<Date>()
   
   return (
     <div className="flex flex-col gap-4 p-6">
-
-       <div>
-      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+      <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+        Datatables
+      </h2>
+      <Button variant="outline" onClick={() => router.push("./sidebar-true/datatables")}>
+            Lihat Datatables
+      </Button>
+      <div>
+      <h1 className="scroll-m-20 [&:not(:first-child)]:mt-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
         The Joke Tax Chronicles
       </h1>
       <p className="leading-7 [&:not(:first-child)]:mt-6">
@@ -500,21 +586,6 @@ const handleValueChange = (newValues: string[]) => {
       <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
         Contoh Sooner
       </h2>
-      <Toaster />
-      <Button
-        variant="outline"
-        onClick={() =>
-          toast("Event has been created", {
-            description: "Sunday, December 03, 2023 at 9:00 AM",
-            action: {
-              label: "Undo",
-              onClick: () => console.log("Undo"),
-            },
-          })
-        }
-      >
-        Show Toast
-      </Button>
 
       <h2 className="mt-4 text-lg font-semibold">Sooner in Card</h2>
       <Card className="w-full max-w-sm">
@@ -555,23 +626,181 @@ const handleValueChange = (newValues: string[]) => {
               />
               <Toaster />
               <Button
-                type="submit"
-                onClick={() =>
-                  toast("Event has been created", {
-                    description: "Sunday, December 03, 2023 at 9:00 AM",
-                    action: {
-                      label: "Undo",
-                      onClick: () => console.log("Undo"),
-                    },
-                  })
-                }
-              >
-                Show Toast
-              </Button>
+              variant="outline"
+              onClick={() =>
+                toast("",{
+                  description: (
+                    <div className="flex items-start gap-3">
+                      {/* Icon di kiri */}
+                      <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
+                        <Check className="text-background w-4 h-4" />
+                      </div>
+                      <div>
+                        {/* Judul dibuat lebih besar */}
+                        <p className="text-lg font-semibold text-foreground font-sans">Event Created!</p>
+                        {/* Deskripsi dengan warna lebih muted */}
+                        <p className="text-sm text-muted-foreground font-sans">
+                          Lorem Ipsum Sir Dolot
+                        </p>
+                      </div>
+                    </div>
+                  ),
+                  action: {
+                    label: (
+                      <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
+                        Tutup
+                      </span>
+                    ),
+                    onClick: () => console.log("Tutup"),
+                  },
+                })
+              }
+            >
+              Show Toast
+            </Button>
             </form>
           </Form>
         </CardContent>
       </Card>
+
+      
+      <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+        Contoh Popup Modal
+      </h2>
+      <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline">Lihat Kode Absensi</Button>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Kode Absen</DialogTitle>
+          <DialogDescription>
+            Anyone who has this link will be able to view this.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center space-x-2">
+          <div className="grid flex-1 gap-2">
+            <Label htmlFor="link" className="sr-only">
+              Kode Absen
+            </Label>
+              <Input
+                className="text-xl md:text-3xl font-bold py-4 h-12"
+                id="link"
+              defaultValue="234567"
+              readOnly
+            />
+          </div>
+          <Button type="button" size="lg" className="px-3" onClick={handleCopy}>
+            {copied ? (
+              <>
+                <Check className="w-5 h-5 mr-1 text-green-500" />
+                Disalin!
+              </>
+            ) : (
+              <>
+                <Copy className="w-5 h-5 mr-1" />
+                Salin
+              </>
+            )}
+          </Button>
+        </div>
+        <DialogFooter className="sm:justify-start">
+            <DialogClose asChild>
+              <div className="flex gap-2">
+                <Button type="button" variant="secondary">
+                  Close
+                </Button>
+              </div>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+      </Dialog>
+      
+      <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline">Keluar (Contoh 2 Button)</Button>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Yakin mau keluar?</DialogTitle>
+            <DialogDescription>
+              Anda bisa mengakses ini lagi nanti.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-end">
+            <DialogClose asChild>
+              <div className="flex gap-4">
+                <Button type="button" onClick={handleSuccess} variant="secondary">
+                  Ya
+                </Button>
+                <Button type="button" >
+                  Tidak
+                </Button>
+              </div>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+      </Dialog>
+
+      <Dialog>
+      <DialogTrigger asChild>
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline">Ubah Password</Button>
+        </div>
+      </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          
+          <DialogHeader>
+            <div className="fitems-center text-center">
+              <div className="flex flex-col justify-center items-center text-center">
+                <Lock className="flex items-center text-primary mb-2"></Lock>
+                <DialogTitle className="flex text-center items-center mb-2">Ubah Password</DialogTitle>
+              </div>
+              <DialogDescription className="mb-4">
+                Kamu bisa mengubah password yang beda dari sebelumnya.
+                </DialogDescription>
+            </div>
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="current_password">Current Password</Label>
+                <PasswordInput
+                  id="current_password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">New Password</Label>
+                <PasswordInput
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </div>
+            </form>
+        </Form>    
+          </DialogHeader>
+        <DialogFooter className="sm:justify-end">
+            <DialogClose asChild>
+              <div className="flex gap-4 w-full">
+                <Button type="button" variant="secondary">
+                  Kembali
+                </Button>
+                <Button className="max-w-xs w-full" type="button" onClick={handleSuccess} >
+                  Ubah
+                </Button>
+              </div>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+      </Dialog>
     </div>
     
   )
