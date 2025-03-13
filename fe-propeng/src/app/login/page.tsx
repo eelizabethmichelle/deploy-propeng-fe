@@ -7,6 +7,71 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+const formSchema = z
+  .object({
+    username: z
+      .string()
+      .min(2, { message: "Username minimal 2 karakter." })
+      .max(20, { message: "Username maksimal 20 karakter." })
+      .regex(/^[a-zA-Z0-9_]+$/, { message: "Username hanya boleh berisi huruf, angka, dan underscore." }),
+
+    password: z
+      .string()
+      .min(8, { message: "Password minimal 8 karakter." })
+      .max(32, { message: "Password maksimal 32 karakter." })
+      .regex(/[A-Z]/, { message: "Password harus memiliki minimal satu huruf kapital." })
+      .regex(/[a-z]/, { message: "Password harus memiliki minimal satu huruf kecil." })
+      .regex(/[0-9]/, { message: "Password harus memiliki minimal satu angka." })
+      .regex(/[@$!%*?&]/, { message: "Password harus memiliki minimal satu simbol (@, $, !, %, *, ?, &)." }),
+
+    // email: z
+    //   .string()
+    //   .email({ message: "Format email tidak valid." })
+    //   .nonempty({ message: "Email wajib diisi." }),
+
+    // phone: z
+    //   .string()
+    //   .nonempty({ message: "Nomor telepon wajib diisi." })
+    //   .regex(/^\+62\d+$/, { message: "Nomor telepon harus diawali dengan +62 dan hanya berisi angka." }),
+
+    // age: z
+    //   .number({ invalid_type_error: "Usia harus berupa angka." })
+    //   .min(6, { message: "Usia minimal 6 tahun." })
+    //   .max(99, { message: "Usia maksimal 99 tahun." }),
+
+    // level: z
+    //   .number({ invalid_type_error: "Tingkatan harus berupa angka." })
+    //   .min(1, { message: "Tingkatan minimal 1." })
+    //   .max(3, { message: "Tingkatan maksimal 3." }),
+
+    // class: z
+    //   .number({ invalid_type_error: "Kelas harus berupa angka." })
+    //   .min(1, { message: "Kelas minimal 1." })
+    //   .max(12, { message: "Kelas maksimal 12." }),
+
+//     confirmPassword: z.string(),
+
+//     oldPassword: z.string().optional(),
+
+//     choices: z
+//       .array(z.string().min(1, { message: "Setiap pilihan harus diisi." }))
+//       .min(1, { message: "Minimal pilih 1." })
+//       .max(3, { message: "Maksimal hanya bisa memilih 3." }),
+//   })
+//   .refine((data) => data.password === data.confirmPassword, {
+//     message: "Konfirmasi password tidak sesuai dengan password baru.",
+//     path: ["confirmPassword"],
+//   })
+//   .refine((data) => data.password !== data.oldPassword, {
+//     message: "Password baru tidak boleh sama dengan password lama.",
+//     path: ["password"],
+  });
+
+
 
 export default function LoginPage() {
     const router = useRouter()
@@ -14,8 +79,12 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: { username: "", password: "" },
+    });
+
+    const handleLogin = async (values: z.infer<typeof formSchema>) => {
         setLoading(true);
     
         try {
@@ -57,17 +126,21 @@ export default function LoginPage() {
                 </CardHeader>
 
                 <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
                         {/* Username Input */}
                         <div>
                             <label className="text-sm font-medium">Username</label>
                             <Input 
                                 type="text" 
+                                {...form.register("username")}
                                 value={username} 
                                 onChange={(e) => setUsername(e.target.value)} 
                                 placeholder="Masukkan username akun" 
                                 required 
                             />
+                            {form.formState.errors.username && (
+                                <p className="text-red-500 text-sm">{form.formState.errors.username.message}</p>
+                            )}
                         </div>
 
                         {/* Password Input */}
@@ -75,11 +148,15 @@ export default function LoginPage() {
                             <label className="text-sm font-medium">Password</label>
                             <PasswordInput 
                                 type="text" 
+                                {...form.register("password")}
                                 value={password} 
                                 onChange={(e) => setPassword(e.target.value)} 
                                 placeholder="Masukkan password akun" 
                                 required 
                             />
+                            {form.formState.errors.password && (
+                                <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
+                            )}
                         </div>
 
                         {/* Submit Button */}

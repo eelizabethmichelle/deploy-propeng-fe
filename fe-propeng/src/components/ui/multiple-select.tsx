@@ -177,7 +177,7 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
         {(value || selectedPills).map((pill) => (
           <Badge
             key={pill}
-            variant="secondary"
+            variant="outline"
             onClick={() => handlePillRemove(pill)}
             className="hover:cursor-pointer gap-1 group"
           >
