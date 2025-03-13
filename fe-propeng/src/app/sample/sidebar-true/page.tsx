@@ -58,7 +58,7 @@ const [passwordConfirmation, setPasswordConfirmation] = useState("")
 
 /* Multi Select Pills */
 const data = [
-  { id: "1", name: "Mia" },
+  { id: "1", name: "Mickey" },
   { id: "2", name: "Arshad" },
   { id: "3", name: "Dien" },
   { id: "4", name: "Abil" },
@@ -543,9 +543,9 @@ const handleSuccess = () => {
                         <SelectPills
                           data={data}
                           value={selectedValues}
-                          defaultValue={["Mia"]}
+                          defaultValue={["Mickey"]}
                           onValueChange={handleValueChange}
-                          placeholder="Cari nama murid, cth: Mia Khalifa"
+                          placeholder="Cari nama murid, cth: Mickey Madison"
                         />
                     </FormControl>
                     <FormMessage />
