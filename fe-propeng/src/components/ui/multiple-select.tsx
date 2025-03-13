@@ -1,19 +1,9 @@
-"use client";
 import React, { useState, useRef } from "react";
-
 import { cn } from "@/lib/utils";
-
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverAnchor,
-} from "@/components/ui/popover";
-
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { ChevronDown, X } from "lucide-react";
-import { useEffect } from "react";
-
 
 interface DataItem {
   id?: string;
@@ -37,9 +27,7 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
   placeholder = "Type to search...",
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
-  const [selectedPills, setSelectedPills] = useState<string[]>(
-    value || defaultValue
-  );
+  const [selectedPills, setSelectedPills] = useState<string[]>(value || defaultValue);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -52,92 +40,8 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    setHighlightedIndex(-1);
-
-    // Only open the popover if we have matching items that aren't already selected
-    const hasUnselectedMatches = data.some(
-      (item) =>
-        item.name.toLowerCase().includes(newValue.toLowerCase()) &&
-        !(value || selectedPills).includes(item.name)
-    );
-
-    setIsOpen(hasUnselectedMatches);
-
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        if (isOpen && filteredItems.length > 0) {
-          // Move focus to first radio button
-          const firstRadio = radioGroupRef.current?.querySelector(
-            'input[type="radio"]'
-          ) as HTMLElement;
-          firstRadio?.focus();
-          setHighlightedIndex(0);
-        }
-        break;
-      case "Escape":
-        setIsOpen(false);
-        break;
-    }
-  };
-
-  const handleRadioKeyDown = (
-    e: React.KeyboardEvent<HTMLDivElement>,
-    index: number
-  ) => {
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        if (index < filteredItems.length - 1) {
-          setHighlightedIndex(index + 1);
-          const nextItem = radioGroupRef.current?.querySelector(
-            `div:nth-child(${index + 2})`
-          ) as HTMLElement;
-          if (nextItem) {
-            nextItem.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-            });
-          }
-        }
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        if (index > 0) {
-          setHighlightedIndex(index - 1);
-          const prevItem = radioGroupRef.current?.querySelector(
-            `div:nth-child(${index})`
-          ) as HTMLElement;
-          if (prevItem) {
-            prevItem.scrollIntoView({
-              behavior: "smooth",
-              block: "nearest",
-            });
-          }
-        } else {
-          inputRef.current?.focus();
-          setHighlightedIndex(-1);
-        }
-        break;
-      case "Enter":
-        e.preventDefault();
-        handleItemSelect(filteredItems[index]);
-        inputRef.current?.focus();
-        break;
-      case "Escape":
-        e.preventDefault();
-        setIsOpen(false);
-        inputRef.current?.focus();
-        break;
-    }
+    setInputValue(e.target.value);
+    setIsOpen(true);
   };
 
   const handleItemSelect = (item: DataItem) => {
@@ -145,114 +49,58 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
     setSelectedPills(newSelectedPills);
     setInputValue("");
     setIsOpen(false);
-    setHighlightedIndex(-1);
-    if (onValueChange) {
-      onValueChange(newSelectedPills);
-    }
+    if (onValueChange) onValueChange(newSelectedPills);
   };
 
-  const handlePillRemove = (pillToRemove: string) => {
-    const newSelectedPills = selectedPills.filter(
-      (pill) => pill !== pillToRemove
-    );
+  const handlePillRemove = (pill: string) => {
+    const newSelectedPills = selectedPills.filter((p) => p !== pill);
     setSelectedPills(newSelectedPills);
-    if (onValueChange) {
-      onValueChange(newSelectedPills);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    // Only allow external close events (like clicking outside)
-    if (!open) {
-      setIsOpen(false);
-    }
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
+    if (onValueChange) onValueChange(newSelectedPills);
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex flex-wrap gap-2 min-h-12">
-        {(value || selectedPills).map((pill) => (
-          <Badge
-            key={pill}
-            variant="secondary"
-            onClick={() => handlePillRemove(pill)}
-            className="hover:cursor-pointer gap-1 group"
-          >
+        {selectedPills.map((pill) => (
+          <Badge key={pill} variant="outline" className="gap-1">
             {pill}
-            <button
-              onClick={() => handlePillRemove(pill)}
-              className="appearance-none text-muted-foreground group-hover:text-foreground transition-colors"
-            >
+            <button onClick={() => handlePillRemove(pill)}>
               <X size={12} />
             </button>
           </Badge>
         ))}
-         <div className="relative w-full">
-      <PopoverAnchor asChild>
-        <Input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          
-          className="pr-10" // Tambah padding kanan supaya icon ga ketumpuk teks
-        />
-      </PopoverAnchor>
-      
-      {/* Icon dropdown di sebelah kanan input */}
-      <ChevronDown
-        className="absolute right-3 -translate-y-1/2 top-1/3 w-4 h-4 text-gray-400 cursor-pointer"
-        onClick={() => setIsOpen((prev) => !prev)} // Toggle dropdown
-      />
-    </div>
+        <PopoverAnchor asChild>
+          <div className="relative w-full">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center justify-between w-full border p-2 rounded-md"
+            >
+              <span>{placeholder}</span>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </PopoverAnchor>
       </div>
 
-      <PopoverContent className="p-1"
-         onFocusOutside={(e) => {
-            if (e.target === inputRef.current) e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-            if (!radioGroupRef.current?.contains(e.target as Node)) {
-            setIsOpen(false);
-            }
-        }}
-      >
-        <div
-          ref={radioGroupRef}
-          role="radiogroup"
-          aria-label="Pill options"
-          onKeyDown={(e) => handleRadioKeyDown(e, highlightedIndex)}
-          className="max-h-[200px] overflow-y-auto"
-        >
+      <PopoverContent className="p-2 w-72 text-md">
+        <Input
+          ref={inputRef}
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          className="mb-2"
+        />
+        <div ref={radioGroupRef} className="max-h-40 overflow-y-auto">
           {filteredItems.map((item, index) => (
             <div
               key={item.id || item.value || item.name}
               className={cn(
-                "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent/70 focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
-                highlightedIndex === index && "bg-accent"
+                "cursor-pointer p-2 hover:bg-gray-100 rounded",
+                highlightedIndex === index && "bg-gray-200"
               )}
+              onClick={() => handleItemSelect(item)}
             >
-              <input
-                type="radio"
-                id={`pill-${item.name}`}
-                name="pill-selection"
-                value={item.name}
-                className="sr-only"
-                checked={highlightedIndex === index}
-                onChange={() => handleItemSelect(item)}
-              />
-              <label
-                htmlFor={`pill-${item.name}`}
-                className="flex items-center w-full cursor-pointer"
-              >
-                {item.name}
-              </label>
+              {item.name}
             </div>
           ))}
         </div>
