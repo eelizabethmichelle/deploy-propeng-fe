@@ -34,7 +34,7 @@ export default function LoginPage() {
             const data = await response.json();
             localStorage.setItem("accessToken", data.access);
             sessionStorage.setItem("accessToken", data.access)
-            router.push("/dashboard"); // Redirect after login
+            router.push("/"); // Redirect after login
         } catch (error) {
             console.error("Login error:", error);
             alert("Login gagal! Periksa kembali kredensial Anda.");
