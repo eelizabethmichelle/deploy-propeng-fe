@@ -46,9 +46,9 @@ export default function Page() {
     <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
       <div className="flex flex-col items-start justify-between">
         <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-          Datatables
+          List Murid
         </h2>
-        <p className="text-muted-foreground">Lorem&apos;s ipsum sir dolot amit!</p>
+        <p className="text-muted-foreground">SMAK Anglo</p>
       </div>
       <DataTable data={data || []} columns={columns} />
     </div>

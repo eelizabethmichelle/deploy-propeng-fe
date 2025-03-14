@@ -13,20 +13,20 @@ import { z } from "zod"
 
 const formSchema = z
   .object({
-    username: z
-      .string()
-      .min(2, { message: "Username minimal 2 karakter." })
-      .max(20, { message: "Username maksimal 20 karakter." })
-      .regex(/^[a-zA-Z0-9_]+$/, { message: "Username hanya boleh berisi huruf, angka, dan underscore." }),
+    // username: z
+    //   .string()
+    //   .min(2, { message: "Username minimal 2 karakter." })
+    //   .max(20, { message: "Username maksimal 20 karakter." })
+    //   .regex(/^[a-zA-Z0-9_]+$/, { message: "Username hanya boleh berisi huruf, angka, dan underscore." }),
 
-    password: z
-      .string()
-      .min(8, { message: "Password minimal 8 karakter." })
-      .max(32, { message: "Password maksimal 32 karakter." })
-      .regex(/[A-Z]/, { message: "Password harus memiliki minimal satu huruf kapital." })
-      .regex(/[a-z]/, { message: "Password harus memiliki minimal satu huruf kecil." })
-      .regex(/[0-9]/, { message: "Password harus memiliki minimal satu angka." })
-      .regex(/[@$!%*?&]/, { message: "Password harus memiliki minimal satu simbol (@, $, !, %, *, ?, &)." }),
+    // password: z
+    //   .string()
+    //   .min(8, { message: "Password minimal 8 karakter." })
+    //   .max(32, { message: "Password maksimal 32 karakter." })
+    //   .regex(/[A-Z]/, { message: "Password harus memiliki minimal satu huruf kapital." })
+    //   .regex(/[a-z]/, { message: "Password harus memiliki minimal satu huruf kecil." })
+    //   .regex(/[0-9]/, { message: "Password harus memiliki minimal satu angka." })
+    //   .regex(/[@$!%*?&]/, { message: "Password harus memiliki minimal satu simbol (@, $, !, %, *, ?, &)." }),
 
     // email: z
     //   .string()
@@ -132,15 +132,15 @@ export default function LoginPage() {
                             <label className="text-sm font-medium">Username</label>
                             <Input 
                                 type="text" 
-                                {...form.register("username")}
+                                // {...form.register("username")}
                                 value={username} 
                                 onChange={(e) => setUsername(e.target.value)} 
                                 placeholder="Masukkan username akun" 
                                 required 
                             />
-                            {form.formState.errors.username && (
+                            {/* {form.formState.errors.username && (
                                 <p className="text-red-500 text-sm">{form.formState.errors.username.message}</p>
-                            )}
+                            )} */}
                         </div>
 
                         {/* Password Input */}
@@ -148,15 +148,15 @@ export default function LoginPage() {
                             <label className="text-sm font-medium">Password</label>
                             <PasswordInput 
                                 type="text" 
-                                {...form.register("password")}
+                                // {...form.register("password")}
                                 value={password} 
                                 onChange={(e) => setPassword(e.target.value)} 
                                 placeholder="Masukkan password akun" 
                                 required 
                             />
-                            {form.formState.errors.password && (
+                            {/* {form.formState.errors.password && (
                                 <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
-                            )}
+                            )} */}
                         </div>
 
                         {/* Submit Button */}
