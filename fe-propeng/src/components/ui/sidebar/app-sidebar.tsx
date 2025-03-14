@@ -71,7 +71,7 @@ const data = {
           {
             title: "Tambah",
             icon: PlusCircle,
-            url: "#",
+            url: "/admin/tambah-user",
           }
         ],
       },
