@@ -43,6 +43,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
     const role = localStorage.getItem("role") || sessionStorage.getItem("role");
 
     // **1. Jika sudah login dan akses home, langsung redirect ke page sesuai role**
