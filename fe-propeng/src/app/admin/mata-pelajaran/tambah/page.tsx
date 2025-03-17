@@ -5,16 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SelectPills } from "@/components/ui/multiple-select";
 
 interface Guru {
   id: number;
   name: string;
 }
 
+interface Angkatan {
+  angkatan: number;
+  // name: string;
+}
+
 interface Siswa {
   id: number;
   name: string;
   tahunAjaran: number;
+  angkatan: number;
 }
 
 export default function TambahMataPelajaran() {
@@ -29,8 +36,10 @@ export default function TambahMataPelajaran() {
 
   const [daftarGuru, setDaftarGuru] = useState<Guru[]>([]);
   const [daftarSiswa, setDaftarSiswa] = useState<Siswa[]>([]);
+  const [daftarAngkatan, setDaftarAngkatan] = useState<Angkatan[]>([]);
+
   const [filteredSiswa, setFilteredSiswa] = useState<Siswa[]>([]); // Filtered students
-  const daftarAngkatan = ["2022", "2023", "2024"];
+  // const daftarAngkatan = ["2022", "2023", "2024"];
 
   const [errors, setErrors] = useState({
     namaPelajaran: false,
@@ -40,6 +49,33 @@ export default function TambahMataPelajaran() {
     siswa: false,
     tahunAjaran: false
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  
+    if (!token) {
+      console.error("Token tidak tersedia.");
+      return;
+    }
+  
+    fetch("http://localhost:8000/api/tahunajaran/list_angkatan/", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === 200) {
+          setDaftarAngkatan(data.data.map((angkatan: any) => angkatan.angkatan.toString())); // ✅ Ambil value angkatan
+        } else {
+          console.error("Error fetching angkatan:", data.message);
+        }
+      })
+      .catch((error) => console.error("Error fetching angkatan:", error));
+  }, []);
+  
 
   // Fetch Guru dari API
   useEffect(() => {
@@ -93,22 +129,28 @@ export default function TambahMataPelajaran() {
     .catch((error) => console.error("Error fetching siswa:", error));
   }, []);
 
+  
   console.log(daftarSiswa)
   // Filter daftarSiswa berdasarkan angkatan yang dipilih
   useEffect(() => {
-    console.log(angkatan)
+    console.log("Angkatan Terpilih:", angkatan);
+  
     if (angkatan) {
-      const normalizedAngkatan = parseInt(angkatan, 10);
+      const normalizedAngkatan = Number(angkatan); // Pastikan `angkatan` berupa angka
+      
       const filtered = daftarSiswa.filter((s) => {
-        // Normalize tahunAjaran format
-        const siswaTahun = s.tahunAjaran < 100 ? 2000 + s.tahunAjaran : s.tahunAjaran;
-        return siswaTahun === normalizedAngkatan;
+        return s.angkatan === normalizedAngkatan; // Cocokkan dengan `angkatan` di siswa
       });
-      setFilteredSiswa(daftarSiswa);
+  
+      setFilteredSiswa(filtered); // ✅ Set hasil filter ke state
     } else {
-      setFilteredSiswa([]); // Kosongkan jika tidak ada angkatan yang dipilih
+      setFilteredSiswa([]); // ✅ Kosongkan jika tidak ada angkatan yang dipilih
     }
   }, [angkatan, daftarSiswa]);
+  
+  
+
+console.log(filteredSiswa)
 
   const handleSubmit = async () => {
     const newErrors = {
@@ -214,30 +256,33 @@ export default function TambahMataPelajaran() {
         </SelectContent>
       </Select>
       {errors.guru && <p className="text-red-500 text-sm">Guru wajib dipilih!</p>}
-      <label className="block text-sm font-medium">Tahun Ajaran (Format: TA 20xx/xx)*</label>
-  <div className="flex items-center mb-2">
-    <span className="mr-2">TA 20</span>
-    <Input
-      type="text"
-      placeholder="23"
-      maxLength={2}
-      value={tahunAjaran}
-      onChange={(e) => setTahunAjaran(e.target.value.replace(/[^\d]/g, ""))}
-      className={`w-20 ${errors.tahunAjaran ? "border-red-500" : ""}`}
-    />
-    <span className="mx-2">/</span>
-    <Input
-      type="text"
-      placeholder="24"
-      maxLength={2}
-      value={tahunAjaranEnd}
-      onChange={(e) => setTahunAjaranEnd(e.target.value.replace(/[^\d]/g, ""))}
-      className={`w-20 ${errors.tahunAjaran ? "border-red-500" : ""}`}
-    />
-  </div>
-  {errors.tahunAjaran && (
-    <p className="text-red-500 text-sm">Tahun ajaran wajib diisi dengan format dua angka, contoh: "23/24"!</p>
-  )}
+      <label className="block text-sm font-medium">Tahun Ajaran (Format: TA xxxx/xxxx)*</label>
+<div className="flex items-center mb-2">
+  <span className="mr-2">TA </span>
+  <Input
+    type="text"
+    placeholder="2023"
+    maxLength={4}
+    value={tahunAjaran}
+    onChange={(e) => {
+      const input = e.target.value.replace(/[^\d]/g, ""); // Hanya angka
+      setTahunAjaran(input);
+    }}
+    className={`w-20 ${errors.tahunAjaran ? "border-red-500" : ""}`}
+  />
+  <span className="mx-2">/</span>
+  <Input
+    type="text"
+    maxLength={2}
+    value={tahunAjaran ? (Number(tahunAjaran) + 1).toString() : ""}
+    disabled // ✅ Auto-calculated, tidak bisa diubah manual
+    className="w-20 bg-gray-100 cursor-not-allowed"
+  />
+</div>
+{errors.tahunAjaran && (
+  <p className="text-red-500 text-sm">Tahun ajaran wajib diisi dengan format dua angka, contoh: "23/24"!</p>
+)}
+
 
       {/* Select Angkatan */}
       <label className="block text-sm font-medium">Angkatan*</label>
@@ -255,27 +300,22 @@ export default function TambahMataPelajaran() {
       </Select>
       {errors.angkatan && <p className="text-red-500 text-sm">Angkatan wajib dipilih!</p>}
 
-      {/* Select Siswa */}
+      {/* Select Siswa (Multiple Select) */}
       <label className="block text-sm font-medium">Siswa*</label>
-      <Select onValueChange={(value: string) => setSiswa([Number(value)])}>
-        <SelectTrigger className={`mb-2 ${errors.siswa ? "border-red-500" : ""}`}>
-          <SelectValue placeholder="Pilih Siswa" />
-        </SelectTrigger>
-        <SelectContent>
-        {filteredSiswa.length > 0 ? (
-  filteredSiswa.map((siswa) => (
-    <SelectItem key={siswa.id} value={siswa.id.toString()}>
-      {siswa.name}
-    </SelectItem>
-  ))
-) : (
-  <div className="p-2 text-gray-500 text-center">Tidak ada siswa untuk angkatan ini</div>
-)}
-
-
-        </SelectContent>
-      </Select>
-      {errors.siswa && <p className="text-red-500 text-sm">Minimal satu siswa harus dipilih!</p>}
+<SelectPills
+  data={
+    filteredSiswa.length > 0
+      ? filteredSiswa.map((siswa) => ({ id: siswa.id.toString(), name: siswa.name }))
+      : [{ id: "no-data", name: "Tidak ada siswa yang terdaftar pada angkatan yang dipilih" }]
+  }
+  value={siswa.map((id) => (id ? id.toString() : ""))}
+  onValueChange={(selectedValues) => {
+    const validIds = selectedValues.map((val) => (val ? Number(val) : null)).filter((id) => id !== null);
+    setSiswa(validIds);
+  }}
+  placeholder="Pilih Siswa..."
+/>
+{errors.siswa && <p className="text-red-500 text-sm">Minimal satu siswa harus dipilih!</p>}
 
 
       {/* Status Dropdown */}
