@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { DataTable } from "@/components/ui/dt-lihat-matpel/data-table";
 import { mataPelajaranColumns } from "@/components/ui/dt-lihat-matpel/columns";
+import router from "next/router";
 
 interface MataPelajaran {
+  tahunAjaran: number;
   id: number;
   kode: string;
-  namaMatpel: string;
+  nama: string;
   is_archived: boolean;
-  teacher: number; // ID Guru dari API
+  teacher: { id: number; name: string } | null; // ID Guru dari API
   siswa_terdaftar: number[]; // Array ID siswa
 }
 
@@ -34,10 +36,11 @@ export default function MataPelajaranPage() {
         setError(null);
 
         // ✅ Ambil token dari localStorage
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
         if (!token) {
           setError("Unauthorized: Token tidak ditemukan.");
           setLoading(false);
+          router.push("/login");
           return;
         }
 
@@ -52,7 +55,22 @@ export default function MataPelajaranPage() {
 
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        const mataPelajaran: MataPelajaran[] = await response.json();
+        const mataPelajaranResponse = await response.json();
+
+        console.log ("dududuud")
+        // console.log("API Response:", mataPelajaran); // 👉 Debug di sini
+
+        // Cek apakah `mataPelajaranResponse.data` adalah array sebelum memanggil `.map()`
+if (!mataPelajaranResponse.data || !Array.isArray(mataPelajaranResponse.data)) {
+  console.error("Error: Response bukan array!", mataPelajaranResponse);
+  setError("Data tidak valid dari server.");
+  setLoading(false);
+  return;
+}
+
+// Pastikan array yang diambil adalah `data`, bukan response utama
+const mataPelajaran: MataPelajaran[] = mataPelajaranResponse.data;
+console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
 
         // ✅ Fetch Data Guru untuk Mendapatkan Nama
         const teacherResponse = await fetch("http://localhost:8000/api/auth/list_teacher/", {
@@ -73,15 +91,14 @@ export default function MataPelajaranPage() {
 
         // ✅ Format Data untuk Table
         const formattedData: FormattedMataPelajaran[] = mataPelajaran.map((matpel) => ({
-        
-            id: matpel.id,  // ✅ Keep ID as number
-            name: matpel.namaMatpel || "", // ✅ Rename namaMatpel to name
-            kode: matpel.kode || "", // ✅ Keep kode
-            status: matpel.is_archived ? "Inactive" : "Active", // ✅ Convert is_archived
-            teacher: teacherMap[matpel.teacher] , // ✅ Konversi ID guru ke nama
-            students: matpel.siswa_terdaftar.length, // ✅ Count siswa_terdaftar
- 
-        }));
+          id: matpel.id,
+          name: matpel.nama || "", 
+          kode: matpel.kode || "",
+          status: matpel.is_archived ? "Inactive" : "Active",
+          teacher: matpel.teacher?.name || "Unknown",
+          tahunAjaran: matpel.tahunAjaran || "-", // ✅ Tambahkan ini
+          students: matpel.siswa_terdaftar ? matpel.siswa_terdaftar.length : 0, // ✅ Hindari error jika siswa_terdaftar undefined
+      }));
 
         setData(formattedData);
       } catch (error) {

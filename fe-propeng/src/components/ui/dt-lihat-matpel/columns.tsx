@@ -33,13 +33,13 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "tahunAjaran",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID Mata Pelajaran" />
+      <DataTableColumnHeader column={column} title="Tahun Ajaran" />
     ),
     cell: ({ row }) => (
       <div className="flex w-[80px] items-center">
-        <span>{row.getValue("id")}</span>
+        <span>{row.getValue("tahunAjaran")}</span>
       </div>
     ),
   },

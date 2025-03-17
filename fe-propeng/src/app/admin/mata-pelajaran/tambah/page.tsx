@@ -19,7 +19,7 @@ interface Siswa {
 
 export default function TambahMataPelajaran() {
   const [namaPelajaran, setNamaPelajaran] = useState("");
-  const [sifat, setSifat] = useState<"wajib" | "minat">("wajib");
+  const [kategoriMatpel, setKategoriMatpel] = useState<"Wajib" | "Peminatan">("Wajib");
   const [tahunAjaran, setTahunAjaran] = useState("");
   const [tahunAjaranEnd, setTahunAjaranEnd] = useState("");
   const [angkatan, setAngkatan] = useState<string>("");
@@ -34,6 +34,7 @@ export default function TambahMataPelajaran() {
 
   const [errors, setErrors] = useState({
     namaPelajaran: false,
+    kategoriMatpel: false,
     angkatan: false,
     guru: false,
     siswa: false,
@@ -92,8 +93,10 @@ export default function TambahMataPelajaran() {
     .catch((error) => console.error("Error fetching siswa:", error));
   }, []);
 
+  console.log(daftarSiswa)
   // Filter daftarSiswa berdasarkan angkatan yang dipilih
   useEffect(() => {
+    console.log(angkatan)
     if (angkatan) {
       const normalizedAngkatan = parseInt(angkatan, 10);
       const filtered = daftarSiswa.filter((s) => {
@@ -101,7 +104,7 @@ export default function TambahMataPelajaran() {
         const siswaTahun = s.tahunAjaran < 100 ? 2000 + s.tahunAjaran : s.tahunAjaran;
         return siswaTahun === normalizedAngkatan;
       });
-      setFilteredSiswa(filtered);
+      setFilteredSiswa(daftarSiswa);
     } else {
       setFilteredSiswa([]); // Kosongkan jika tidak ada angkatan yang dipilih
     }
@@ -111,6 +114,7 @@ export default function TambahMataPelajaran() {
     const newErrors = {
       namaPelajaran: !namaPelajaran,
       angkatan: !angkatan,
+      kategoriMatpel: !kategoriMatpel,
       guru: !guru,
       siswa: siswa.length === 0,
       tahunAjaran: !angkatan
@@ -134,7 +138,8 @@ export default function TambahMataPelajaran() {
     const formattedTahunAjaran = `20${tahunAjaran}/${tahunAjaranEnd}`;
 
     const requestBody = {
-      namaMatpel: namaPelajaran,
+      nama: namaPelajaran,
+      kategoriMatpel: kategoriMatpel,
       kelas: Number(angkatan),
       tahunAjaran: Number(angkatan),
       // tahunAjaran: formattedTahunAjaran,
@@ -184,13 +189,13 @@ export default function TambahMataPelajaran() {
 
       {/* Radio Group Sifat Mata Pelajaran */}
       <label className="block text-sm font-medium">Sifat Mata Pelajaran*</label>
-      <RadioGroup className="mb-4" value={sifat} onValueChange={(value: "wajib" | "minat") => setSifat(value)}>
+      <RadioGroup className="mb-4" value={kategoriMatpel} onValueChange={(value: "Wajib" | "Peminatan") => setKategoriMatpel(value)}>
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
-            <RadioGroupItem value="wajib" /> Wajib
+            <RadioGroupItem value="Wajib" /> Wajib
           </label>
           <label className="flex items-center gap-2">
-            <RadioGroupItem value="minat" /> Minat
+            <RadioGroupItem value="Peminatan" /> Peminatan
           </label>
         </div>
       </RadioGroup>
@@ -214,7 +219,7 @@ export default function TambahMataPelajaran() {
     <span className="mr-2">TA 20</span>
     <Input
       type="text"
-      placeholder="contoh: 23"
+      placeholder="23"
       maxLength={2}
       value={tahunAjaran}
       onChange={(e) => setTahunAjaran(e.target.value.replace(/[^\d]/g, ""))}
