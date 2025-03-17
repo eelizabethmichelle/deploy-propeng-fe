@@ -860,144 +860,144 @@ export default function ClassDetailPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Dialog open={isAddStudentsOpen} onOpenChange={setIsAddStudentsOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="bg-blue-800 hover:bg-blue-900">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Tambah Siswa
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>Tambah Siswa</DialogTitle>
-                            <DialogDescription>
-                                Pilih siswa yang akan ditambahkan ke kelas
-                            </DialogDescription>
-                        </DialogHeader>
-                        <Form {...addStudentsForm}>
-                            <form onSubmit={addStudentsForm.handleSubmit(onAddStudents)} className="space-y-4">
-                                <FormField
-                                    control={addStudentsForm.control}
-                                    name="angkatan"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Angkatan</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Pilih angkatan" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {angkatanOptions.map((option) => (
-                                                        <SelectItem
-                                                            key={option.value}
-                                                            value={option.value}
-                                                        >
-                                                            {option.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={addStudentsForm.control}
-                                    name="siswa"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Siswa</FormLabel>
-                                            <FormControl>
-                                                {selectedAngkatan ? (
-                                                    <div>
-                                                        <SelectPills
-                                                            data={availableStudents
-                                                                .filter(siswa => siswa.id !== null && siswa.id !== undefined)
-                                                                .map((siswa) => ({
-                                                                    id: siswa.id.toString(),
-                                                                    name: siswa.name,
-                                                                }))}
-                                                            value={field.value
-                                                                .map(id => {
-                                                                    const student = availableStudents.find(s => s.id.toString() === id);
-                                                                    return student ? student.name : '';
-                                                                })
-                                                                .filter(Boolean)}
-                                                            onValueChange={(selectedStudentNames) => {
-                                                                const selectedStudentIds = selectedStudentNames
-                                                                    .map(name => {
-                                                                        const student = availableStudents.find(s => s.name.trim() === name.trim());
-                                                                        return student ? student.id.toString() : null;
-                                                                    })
-                                                                    .filter(id => id !== null) as string[];
-                                                                field.onChange(selectedStudentIds);
-                                                            }}
-                                                            placeholder={loadingStudents ? "Memuat..." : "Cari nama siswa"}
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="border rounded p-2 text-gray-500 text-sm">
-                                                        Pilih angkatan terlebih dahulu
-                                                    </div>
-                                                )}
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                <div className="flex item-center gap-2">
+                    {/* Delete Students Button (shown when rows are selected) */}
+                    {selectedStudents.length > 0 && (
+                        <Dialog open={isRemoveStudentsOpen} onOpenChange={setIsRemoveStudentsOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className="flex items-center gap-2">
+                                    <Trash2 className="h-4 w-4" />
+                                    Hapus Siswa ({selectedStudents.length})
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Hapus Siswa</DialogTitle>
+                                    <DialogDescription>
+                                        Apakah Anda yakin ingin menghapus {selectedStudents.length} siswa yang terpilih?
+                                    </DialogDescription>
+                                </DialogHeader>
                                 <DialogFooter className="sm:justify-end">
                                     <div className="flex gap-4">
+                                        <Button type="button" onClick={onRemoveStudents} variant="secondary">
+                                            Ya, Hapus
+                                        </Button>
                                         <DialogClose asChild>
-                                            <Button type="button" variant="secondary">
-                                                Batal
-                                            </Button>
+                                            <Button type="button">Batal</Button>
                                         </DialogClose>
-                                        <Button type="submit">Tambah</Button>
                                     </div>
                                 </DialogFooter>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {/* Delete Students Button (shown when rows are selected) */}
-            {selectedStudents.length > 0 && (
-                <div className="flex justify-end">
-                    <Dialog open={isRemoveStudentsOpen} onOpenChange={setIsRemoveStudentsOpen}>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                    <Dialog open={isAddStudentsOpen} onOpenChange={setIsAddStudentsOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="flex items-center gap-2">
-                                <Trash2 className="h-4 w-4" />
-                                Hapus Siswa ({selectedStudents.length})
+                            <Button className="bg-blue-800 hover:bg-blue-900">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Tambah Siswa
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
                             <DialogHeader>
-                                <DialogTitle>Hapus Siswa</DialogTitle>
+                                <DialogTitle>Tambah Siswa</DialogTitle>
                                 <DialogDescription>
-                                    Apakah Anda yakin ingin menghapus {selectedStudents.length} siswa yang terpilih?
+                                    Pilih siswa yang akan ditambahkan ke kelas
                                 </DialogDescription>
                             </DialogHeader>
-                            <DialogFooter className="sm:justify-end">
-                                <div className="flex gap-4">
-                                    <Button type="button" onClick={onRemoveStudents} variant="secondary">
-                                        Ya, Hapus
-                                    </Button>
-                                    <DialogClose asChild>
-                                        <Button type="button">Batal</Button>
-                                    </DialogClose>
-                                </div>
-                            </DialogFooter>
+                            <Form {...addStudentsForm}>
+                                <form onSubmit={addStudentsForm.handleSubmit(onAddStudents)} className="space-y-4">
+                                    <FormField
+                                        control={addStudentsForm.control}
+                                        name="angkatan"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Angkatan</FormLabel>
+                                                <Select
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                >
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Pilih angkatan" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {angkatanOptions.map((option) => (
+                                                            <SelectItem
+                                                                key={option.value}
+                                                                value={option.value}
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={addStudentsForm.control}
+                                        name="siswa"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Siswa</FormLabel>
+                                                <FormControl>
+                                                    {selectedAngkatan ? (
+                                                        <div>
+                                                            <SelectPills
+                                                                data={availableStudents
+                                                                    .filter(siswa => siswa.id !== null && siswa.id !== undefined)
+                                                                    .map((siswa) => ({
+                                                                        id: siswa.id.toString(),
+                                                                        name: siswa.name,
+                                                                    }))}
+                                                                value={field.value
+                                                                    .map(id => {
+                                                                        const student = availableStudents.find(s => s.id.toString() === id);
+                                                                        return student ? student.name : '';
+                                                                    })
+                                                                    .filter(Boolean)}
+                                                                onValueChange={(selectedStudentNames) => {
+                                                                    const selectedStudentIds = selectedStudentNames
+                                                                        .map(name => {
+                                                                            const student = availableStudents.find(s => s.name.trim() === name.trim());
+                                                                            return student ? student.id.toString() : null;
+                                                                        })
+                                                                        .filter(id => id !== null) as string[];
+                                                                    field.onChange(selectedStudentIds);
+                                                                }}
+                                                                placeholder={loadingStudents ? "Memuat..." : "Cari nama siswa"}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="border rounded p-2 text-gray-500 text-sm">
+                                                            Pilih angkatan terlebih dahulu
+                                                        </div>
+                                                    )}
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <DialogFooter className="sm:justify-end">
+                                        <div className="flex gap-4">
+                                            <DialogClose asChild>
+                                                <Button type="button" variant="secondary">
+                                                    Batal
+                                                </Button>
+                                            </DialogClose>
+                                            <Button type="submit">Tambah</Button>
+                                        </div>
+                                    </DialogFooter>
+                                </form>
+                            </Form>
                         </DialogContent>
                     </Dialog>
                 </div>
-            )}
-            
+            </div>
+
+
             <DataTable
                 columns={columns}
                 data={filteredStudents}
