@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter()
@@ -28,14 +29,14 @@ export default function LoginPage() {
             });
     
             if (!loginResponse.ok) {
-                throw new Error("Gagal masuk ke dalam sistem");
+                throw new Error("Periksa kembali kredensial Anda.");
             }
     
             const loginData = await loginResponse.json();
             localStorage.setItem("accessToken", loginData.access);
             sessionStorage.setItem("accessToken", loginData.access)
 
-            const detailResponse = await fetch("/api/user", {
+            const detailResponse = await fetch("/api/auth/detail", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${loginData.access}`,
@@ -43,30 +44,31 @@ export default function LoginPage() {
             });
     
             if (!detailResponse.ok) {
-                throw new Error("Token tidak valid");
+                throw new Error("Token tidak valid.");
             }
     
             const detailData = await detailResponse.json();
             const role = detailData.data_user.role
-            if (role == "admin") {
-                router.push("/admin")
-            } else if (role == "student") {
-                router.push("/siswa")
-            } else if (role == "teacher") {
-                router.push("/guru")
-            } else {
-                router.push("/unauthorized")
-            }
 
+            toast.success("Berhasil masuk ke dalam sistem");
+
+            if (role === "admin") router.push("/admin");
+            else if (role === "student") router.push("/siswa");
+            else if (role === "teacher") router.push("/guru");
+            else router.push("/unauthorized");
+            
         } catch (error) {
             console.error("Login error:", error);
-            alert("Login gagal! Periksa kembali kredensial Anda.");
+            toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Gagal masuk ke dalam sistem"
+              );
         } finally {
             setLoading(false);
         }
     };
 
-    // Disable button if username or password is empty, or if loading
     const isDisabled = !username || !password || loading;
 
     return (
@@ -126,7 +128,7 @@ export default function LoginPage() {
 
                                 {/* Submit Button */}
                                 <Button type="submit" className="w-full" disabled={isDisabled}>
-                                    {loading ? "Memproses..." : "Masuk"}
+                                    {loading ? "Memproses..." : "Login"}
                                 </Button>
                             </form>
                         </CardContent>
