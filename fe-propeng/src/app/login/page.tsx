@@ -29,7 +29,7 @@ export default function LoginPage() {
             });
     
             if (!loginResponse.ok) {
-                throw new Error("Periksa kembali kredensial Anda.");
+                throw new Error("Periksa kembali kredensial Anda");
             }
     
             const loginData = await loginResponse.json();
@@ -44,7 +44,7 @@ export default function LoginPage() {
             });
     
             if (!detailResponse.ok) {
-                throw new Error("Token tidak valid.");
+                throw new Error("Token tidak valid");
             }
     
             const detailData = await detailResponse.json();
@@ -118,7 +118,6 @@ export default function LoginPage() {
                                 <div>
                                     <label className="text-sm font-medium">Password</label>
                                     <PasswordInput 
-                                        type="password" 
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
                                         placeholder="Masukkan password akun" 

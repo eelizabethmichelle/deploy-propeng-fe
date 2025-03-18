@@ -64,7 +64,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const handleDeleteConfirm = async () => {
     if (!accessToken) {
-      toast.error("Gagal menghapus akun. Token tidak ditemukan.");
+      toast.error("Gagal menghapus akun. Token tidak ditemukan");
       router.push("/login")
       return;
     }
@@ -92,12 +92,12 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
         setProgress(((i + 1) / selectedRows.length) * 100);
       }
 
-      toast.success("Semua akun berhasil dihapus.");
+      toast.success("Semua akun berhasil dihapus");
       table.resetRowSelection();
       setDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting accounts:", error);
-      toast.error("Terjadi kesalahan saat menghapus akun.");
+      toast.error("Terjadi kesalahan saat menghapus akun");
     } finally {
       setLoading(false);
       setProgress(0);
