@@ -1,17 +1,25 @@
-"use client"
+"use client";
+
+import { useEffect, useState } from "react";
+
 
 import type * as React from "react"
 import {
   AudioWaveform,
+  BookCheck,
   BookOpen,
   Bot,
+  Circle,
   Command,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
+  PlusCircle,
+  School,
   Settings2,
   SquareTerminal,
+  User,
 } from "lucide-react"
 
 import { NavMain } from "@/components/ui/sidebar/nav-main"
@@ -44,127 +52,136 @@ const data = {
       plan: "Free",
     },
   ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
+  navMain: {
+    admin: [
+      {
+        title: "Manajemen Akun",
+        url: "#",
+        icon: User,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Murid",
+            url: "/admin/lihat-murid",
+          },
+          {
+            title: "Lihat Guru",
+            url: "/admin/lihat-guru",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "/admin/tambah-user",
+          }
+        ],
+      },
+      {
+        title: "Manajemen Kelas",
+        url: "#",
+        icon: School,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "#",
+          }
+        ],
+      },
+      {
+        title: "Manajemen Mata Pelajaran",
+        url: "#",
+        icon: BookCheck,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "#",
+          }
+        ],
+      },
+    ],
+    teacher: [
+      {
+        title: "Manajemen Kelas",
+        url: "#",
+        icon: School,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "#",
+          }
+        ],
+      },
+      {
+        title: "Manajemen Mata Pelajaran",
+        url: "#",
+        icon: BookCheck,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "#",
+          }
+        ],
+      },
+    ],
+    other: [
+    ],
+  },
+
+  // projects: [
+  //   {
+  //     name: "Design Engineering",
+  //     url: "#",
+  //     icon: Frame,
+  //   },
+  // ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRole(localStorage.getItem("role") || sessionStorage.getItem("role"));
+  }, []);
+
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {role === "admin" && <NavMain items={data.navMain.admin} />}
+        {role === "teacher" && <NavMain items={data.navMain.teacher} />}
+        {role === "other" && <NavMain items={data.navMain.other} />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
 

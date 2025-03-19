@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter()
@@ -19,7 +20,7 @@ export default function LoginPage() {
         setLoading(true);
     
         try {
-            const response = await fetch("/api/auth/login", {
+            const loginResponse = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -27,68 +28,112 @@ export default function LoginPage() {
                 body: JSON.stringify({ username, password }),
             });
     
-            if (!response.ok) {
-                throw new Error("Login failed");
+            if (!loginResponse.ok) {
+                throw new Error("Periksa kembali kredensial Anda");
             }
     
-            const data = await response.json();
-            localStorage.setItem("accessToken", data.access);
-            sessionStorage.setItem("accessToken", data.access)
-            router.push("/dashboard"); // Redirect after login
+            const loginData = await loginResponse.json();
+            localStorage.setItem("accessToken", loginData.access);
+            sessionStorage.setItem("accessToken", loginData.access)
+
+            const detailResponse = await fetch("/api/auth/detail", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${loginData.access}`,
+                },
+            });
+    
+            if (!detailResponse.ok) {
+                throw new Error("Token tidak valid");
+            }
+    
+            const detailData = await detailResponse.json();
+            const role = detailData.data_user.role
+
+            toast.success("Berhasil masuk ke dalam sistem");
+
+            if (role === "admin") router.push("/admin");
+            else if (role === "student") router.push("/siswa");
+            else if (role === "teacher") router.push("/guru");
+            else router.push("/unauthorized");
+            
         } catch (error) {
             console.error("Login error:", error);
-            alert("Login gagal! Periksa kembali kredensial Anda.");
+            toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Gagal masuk ke dalam sistem"
+              );
         } finally {
             setLoading(false);
         }
     };
-    
+
+    const isDisabled = !username || !password || loading;
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-            {/* Logo */}
-            <Image src="/Logo-Full.png" alt="SIMAK SMA Kristen Anglo" width={300} height={150} className="mb-4" />
+        <div className="flex min-h-screen w-full">
+            {/* Left Side - Illustration (hanya muncul di layar besar) */}
+            <div className="hidden lg:block w-1/2 max-w-[50vw] h-screen bg-gray-100 relative">
+                <Image 
+                    src="/Login.png" 
+                    alt="Illustration" 
+                    layout="fill"
+                    objectFit="cover"
+                    objectPosition="center"
+                    className="w-full h-full"
+                />
+            </div>
 
-            {/* Login Card */}
-            <Card className="w-full max-w-md shadow-lg">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-xl font-bold">Portal Masuk</CardTitle>
-                    <CardDescription>Masuk menggunakan akun yang telah disediakan admin sekolah</CardDescription>
-                </CardHeader>
+            {/* Right Side - Login Form */}
+            <div className="flex w-full lg:w-1/2 items-center justify-center bg-white h-screen">
+                <div className="max-w-md w-full px-8">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-6">
+                        <Image src="/Logo-Full.png" alt="SIMAK SMA Kristen Anglo" width={250} height={100} />
+                    </div>
 
-                <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        {/* Username Input */}
-                        <div>
-                            <label className="text-sm font-medium">Username</label>
-                            <Input 
-                                type="text" 
-                                value={username} 
-                                onChange={(e) => setUsername(e.target.value)} 
-                                placeholder="Masukkan username akun" 
-                                required 
-                            />
-                        </div>
+                    {/* Login Card */}
+                    <Card className="w-full shadow-lg">
+                        <CardHeader className="text-center">
+                            <CardTitle className="text-xl font-bold">Portal Masuk</CardTitle>
+                            <CardDescription>Masuk menggunakan akun yang telah disediakan admin sekolah</CardDescription>
+                        </CardHeader>
 
-                        {/* Password Input */}
-                        <div>
-                            <label className="text-sm font-medium">Password</label>
-                            <PasswordInput 
-                                type="text" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                placeholder="Masukkan password akun" 
-                                required 
-                            />
-                        </div>
+                        <CardContent>
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                {/* Username Input */}
+                                <div>
+                                    <label className="text-sm font-medium">Username</label>
+                                    <Input 
+                                        type="text" 
+                                        value={username} 
+                                        onChange={(e) => setUsername(e.target.value)} 
+                                        placeholder="Masukkan username akun" 
+                                        required 
+                                    />
+                                </div>
 
-                        {/* Submit Button */}
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? "Memproses..." : "Masuk"}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                                {/* Password Input */}
+                                <div>
+                                    <label className="text-sm font-medium">Password</label>
+                                    <PasswordInput 
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)} 
+                                        placeholder="Masukkan password akun" 
+                                        required 
+                                    />
+                                </div>
+
+                                {/* Submit Button */}
+                                <Button type="submit" className="w-full" disabled={isDisabled}>
+                                    {loading ? "Memproses..." : "Login"}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     )
 }

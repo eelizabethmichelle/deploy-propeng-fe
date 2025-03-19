@@ -4,7 +4,7 @@ export async function POST(req: Request) {
     const { username, password } = await req.json();
 
     // Send login request to your Django backend
-    const res = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+    const res = await fetch("http://203.194.113.127/api/auth/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -17,4 +17,3 @@ export async function POST(req: Request) {
     const data = await res.json();
     return NextResponse.json(data); // Return JWT token
 }
-
