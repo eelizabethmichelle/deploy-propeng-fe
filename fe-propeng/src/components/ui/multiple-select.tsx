@@ -79,6 +79,7 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
         <PopoverAnchor asChild>
           <div className="relative w-full">
             <button
+              type="button"
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center justify-between w-full border p-2 rounded-md"
             >

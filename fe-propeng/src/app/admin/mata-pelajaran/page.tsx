@@ -133,7 +133,7 @@ export default function MataPelajaranPage() {
           {data.length > 0 ? (
             <DataTable columns={mataPelajaranColumns} data={data} />
           ) : (
-            <p className="text-gray-500">Tidak ada data mata pelajaran.</p>
+            <p className="text-gray-500">Belum ada mata pelajaran yang terdaftar! Silahkan menambahkan mata pelajaran baru.</p>
           )}
         </div>
       )}

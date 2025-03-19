@@ -27,6 +27,7 @@ import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 interface RowData {
   id?: number;
   kode?: string;
+  nama?: string;
 }
 
 interface Student {
@@ -66,7 +67,7 @@ export function DataTableRowActions<TData extends RowData>({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { id, kode } = row.original;
+  const { id, kode, nama } = row.original;
 
   const handleEdit = () => {
     if (!id) {
@@ -110,7 +111,7 @@ export function DataTableRowActions<TData extends RowData>({
         throw new Error(`Gagal menghapus mata pelajaran: ${res.statusText}`);
       }
 
-      toast.success(`Mata pelajaran ${kode || "tanpa kode"} berhasil dihapus!`);
+      toast.success(`Mata pelajaran ${nama || "tanpa nama"} berhasil dihapus!`);
 
       setTimeout(() => {
         window.location.reload();
@@ -155,6 +156,10 @@ export function DataTableRowActions<TData extends RowData>({
   
       const response = await res.json();
       const data = response.data;
+
+      const tahunAjaranFormatted = data.tahunAjaran
+      ? `TA ${data.tahunAjaran}/${parseInt(data.tahunAjaran) + 1}`
+      : "Tidak Ada";
       
       // 🛠 Pastikan semua data ada sebelum diset ke state
       const mataPelajaranData: MataPelajaranDetail = {
@@ -163,7 +168,7 @@ export function DataTableRowActions<TData extends RowData>({
         kode: data.kode || "Tidak Ada",
         kategoriMatpel: data.kategoriMatpel,
         angkatan: data.angkatan || "Tidak Ada",
-        tahunAjaran: data.tahunAjaran || "Tidak Ada",
+        tahunAjaran: tahunAjaranFormatted || "Tidak Ada",
         teacher: data.teacher || { id: 0, name: "Tidak Ada" },
         jumlah_siswa: data.jumlah_siswa || 0,
         students: Array.isArray(data.siswa_terdaftar) ? data.siswa_terdaftar : [],
@@ -197,11 +202,11 @@ export function DataTableRowActions<TData extends RowData>({
           <DropdownMenuItem onClick={() => { setDetailDialogOpen(true); handleFetchDetail(); }}>
             Lihat Detail
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleEdit}>Ubah</DropdownMenuItem>
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
-            Delete
+            Hapus
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -212,7 +217,7 @@ export function DataTableRowActions<TData extends RowData>({
           <DialogHeader>
             <DialogTitle>Hapus Mata Pelajaran?</DialogTitle>
             <DialogDescription>
-              Apakah Anda yakin ingin menghapus mata pelajaran <strong>{kode || "tanpa kode"}</strong> ini?
+              Apakah Anda yakin ingin menghapus mata pelajaran <strong>{mataPelajaran?.nama || "tanpa nama"}</strong> ini?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-end">

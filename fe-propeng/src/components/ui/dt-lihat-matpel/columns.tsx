@@ -37,12 +37,17 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Tahun Ajaran" />
     ),
-    cell: ({ row }) => (
-      <div className="flex w-[80px] items-center">
-        <span>{row.getValue("tahunAjaran")}</span>
-      </div>
-    ),
-  },
+    cell: ({ row }) => {
+      const tahunAjaran = row.getValue("tahunAjaran");
+      const formattedTahunAjaran = tahunAjaran ? `TA ${tahunAjaran}/${parseInt(tahunAjaran) + 1}` : "-";
+      
+      return (
+        <div className="flex w-[120px] items-center">
+          <span>{formattedTahunAjaran}</span>
+        </div>
+      );
+    },
+  },  
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -55,37 +60,6 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
         </span>
       </div>
     ),
-  },
-  {
-    accessorKey: "kode",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Kode Mata Pelajaran" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex w-[120px] items-center">
-        <span>{row.getValue("kode")}</span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => {
-      const type = row.getValue("status");
-      return (
-        <div className="flex w-[100px] items-center">
-          {type === "Active" ? (
-            <CheckCircle size={20} className="mr-2 text-green-500" />
-          ) : (
-            <X size={20} className="mr-2 text-red-500" />
-          )}
-          <span className="capitalize"> {row.getValue("status")}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "teacher",
@@ -112,7 +86,30 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
     ),
   },
   {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const type = row.getValue("status");
+      return (
+        <div className="flex w-[100px] items-center">
+          {type === "Active" ? (
+            <CheckCircle size={20} className="mr-2 text-green-500" />
+          ) : (
+            <X size={20} className="mr-2 text-red-500" />
+          )}
+          <span className="capitalize"> {row.getValue("status")}</span>
+        </div>
+      );
+    },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
+  },
+  {
     id: "actions",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Aksi" />
+    ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];

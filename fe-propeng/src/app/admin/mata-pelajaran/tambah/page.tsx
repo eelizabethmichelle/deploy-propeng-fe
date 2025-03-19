@@ -554,29 +554,6 @@ export default function TambahMataPelajaran() {
                   )}
                 />
 
-              {/* Status Mata Pelajaran */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status*</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih Status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Container untuk Tombol */}
               <div className="flex justify-between items-center gap-2 pt-2">
                 {/* Tombol Kembali - Lebih Kecil */}
