@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { jwtDecode } from "jwt-decode";
 
-export async function GET(request: Request) {
-    // Extract the JWT token from the Authorization header
+export async function GET(request: Request, context: { params: { id: string } }) {
+    // Ambil token dari Authorization header
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
 
@@ -10,22 +11,15 @@ export async function GET(request: Request) {
     }
 
     try {
-        // Fetch authenticated user data
-        const authRes = await fetch("http://203.194.113.127/api/auth/protected", {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        });
+        // Decode JWT langsung dari token
+        const decodedToken: { id: string } = jwtDecode(token);
+        const userId = decodedToken.id;
 
-        if (!authRes.ok) {
-            return NextResponse.json({ message: "Failed to fetch user data" }, { status: authRes.status });
+        if (!userId) {
+            return NextResponse.json({ message: "Invalid token" }, { status: 401 });
         }
 
-        const authData = await authRes.json();
-        const userId = authData.data_user.id;
-
-        // Fetch user profile data
+        // Fetch user profile data langsung pakai userId dari JWT
         const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
             method: "GET",
             headers: {
@@ -41,7 +35,7 @@ export async function GET(request: Request) {
         return NextResponse.json(profileData);
 
     } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error decoding token or fetching data:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }
