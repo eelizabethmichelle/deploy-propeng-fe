@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
 
-export async function GET(request: Request, context: { params: { id: string } }) {
+export async function GET(request: Request) { 
     // Ambil token dari Authorization header
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
