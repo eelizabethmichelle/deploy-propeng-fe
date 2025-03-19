@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { DataTable } from "@/components/ui/dt-lihat-matpel/data-table";
 import { mataPelajaranColumns } from "@/components/ui/dt-lihat-matpel/columns";
-import router from "next/router";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface MataPelajaran {
   tahunAjaran: number;
@@ -11,16 +12,17 @@ interface MataPelajaran {
   kode: string;
   nama: string;
   is_archived: boolean;
-  teacher: { id: number; name: string } | null; // ID Guru dari API
-  siswa_terdaftar: number[]; // Array ID siswa
+  teacher: { id: number; name: string } | null; 
+  jumlah_siswa: number;
 }
 
-// 🔹 Tambahkan Interface Baru untuk Data yang Sudah Diformat
 interface FormattedMataPelajaran {
-  kode: string;
+  id: number;
   name: string;
+  kode: string;
   status: string;
   teacher: string;
+  tahunAjaran: number | string;
   students: number;
 }
 
@@ -28,6 +30,7 @@ export default function MataPelajaranPage() {
   const [data, setData] = useState<FormattedMataPelajaran[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); 
 
   useEffect(() => {
     async function fetchData() {
@@ -35,7 +38,6 @@ export default function MataPelajaranPage() {
         setLoading(true);
         setError(null);
 
-        // ✅ Ambil token dari localStorage
         const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
         if (!token) {
           setError("Unauthorized: Token tidak ditemukan.");
@@ -44,7 +46,6 @@ export default function MataPelajaranPage() {
           return;
         }
 
-        // ✅ Fetch Data Mata Pelajaran
         const response = await fetch("http://localhost:8000/api/matpel/", {
           method: "GET",
           headers: {
@@ -58,19 +59,17 @@ export default function MataPelajaranPage() {
         const mataPelajaranResponse = await response.json();
 
         console.log ("dududuud")
-        // console.log("API Response:", mataPelajaran); // 👉 Debug di sini
+      
+        if (!mataPelajaranResponse.data || !Array.isArray(mataPelajaranResponse.data)) {
+          console.error("Error: Response bukan array!", mataPelajaranResponse);
+          setError("Data tidak valid dari server.");
+          setLoading(false);
+          return;
+        }
 
-        // Cek apakah `mataPelajaranResponse.data` adalah array sebelum memanggil `.map()`
-if (!mataPelajaranResponse.data || !Array.isArray(mataPelajaranResponse.data)) {
-  console.error("Error: Response bukan array!", mataPelajaranResponse);
-  setError("Data tidak valid dari server.");
-  setLoading(false);
-  return;
-}
-
-// Pastikan array yang diambil adalah `data`, bukan response utama
-const mataPelajaran: MataPelajaran[] = mataPelajaranResponse.data;
-console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
+        // Pastikan array yang diambil adalah `data`, bukan response utama
+        const mataPelajaran: MataPelajaran[] = mataPelajaranResponse.data;
+        console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
 
         // ✅ Fetch Data Guru untuk Mendapatkan Nama
         const teacherResponse = await fetch("http://localhost:8000/api/auth/list_teacher/", {
@@ -97,7 +96,7 @@ console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memasti
           status: matpel.is_archived ? "Inactive" : "Active",
           teacher: matpel.teacher?.name || "Unknown",
           tahunAjaran: matpel.tahunAjaran || "-", // ✅ Tambahkan ini
-          students: matpel.siswa_terdaftar ? matpel.siswa_terdaftar.length : 0, // ✅ Hindari error jika siswa_terdaftar undefined
+          students: matpel.jumlah_siswa || 0, // ✅ Tambahkan ini
       }));
 
         setData(formattedData);
@@ -114,8 +113,16 @@ console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memasti
 
   return (
     <div className="p-6 relative">
-      <h1 className="text-2xl font-bold mb-4">Manajemen Mata Pelajaran</h1>
-
+       <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Manajemen Mata Pelajaran</h1>
+        {/* ✅ Tambahkan Button "+ Tambah" */}
+        <Button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+          onClick={() => router.push("/admin/mata-pelajaran/tambah")}
+        >
+          + Tambah
+        </Button>
+      </div>
       {/* 📊 Status Loading atau Error */}
       {loading && <p>Loading data...</p>}
       {error && <p className="text-red-500">{error}</p>}

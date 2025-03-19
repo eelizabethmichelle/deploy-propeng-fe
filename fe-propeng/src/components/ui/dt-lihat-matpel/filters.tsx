@@ -17,7 +17,6 @@ interface RowData {
   id?: number; // Bisa undefined jika API tidak mengembalikan
   kode: string; // Pastikan kode ada jika id tidak tersedia
   status: string;
-  angkatan: string;
 }
 
 interface DataTableToolbarProps {
@@ -36,12 +35,6 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     icon: status === "Active" ? ArrowUpIcon : ArrowDownIcon
   }));
 
-  const uniqueAngkatan = [
-    ...new Set(allRows.map((row) => row.original.angkatan))
-  ].map((angkatan) => ({
-    value: angkatan,
-    label: String(angkatan),
-  }));
 
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
@@ -49,72 +42,74 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const handleDeleteConfirm = async () => {
     setDeleteDialogOpen(false);
-    
   
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => row.original);
-    console.log("Selected Rows Data:", selectedRows);
-  
     const selectedRowIds = selectedRows
       .map((row) => row.id || row.kode)
       .filter((id) => id !== undefined);
-  
-    console.log("Selected Row IDs:", selectedRowIds);
   
     if (selectedRowIds.length === 0) {
       toast.error("Gagal menghapus! Tidak ada ID yang valid.");
       return;
     }
   
-    // Ambil token autentikasi dari localStorage atau sessionStorage
-    // const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
-  
-    // if (!token) {
-    //   toast.error("Gagal menghapus! Token autentikasi tidak ditemukan.");
-    //   console.error("Token authentication is missing.");
-    //   return;
-    // }
     let token: string | null = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-if (!token) {
-  // Wait for a short delay to allow token to be set
-  await new Promise(resolve => setTimeout(resolve, 500));
-  token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken"); // ✅ Just update the existing variable
-}
-
+  
+    if (!token) {
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Delay to allow token retrieval
+      token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+    }
+  
+    if (!token) {
+      toast.error("Gagal menghapus! Token autentikasi tidak ditemukan.");
+      return;
+    }
   
     try {
-      const deleteResponses = await Promise.all(
-        selectedRowIds.map(async (id) => {
+      const deleteRequests = selectedRowIds.map(async (id) => {
+        try {
           const res = await fetch(`http://localhost:8000/api/matpel/delete/${id}/`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}` // Tambahkan token di header
-            }
+              Authorization: `Bearer ${token}`,
+            },
           });
   
           if (!res.ok) {
             throw new Error(`Gagal menghapus ID ${id}: ${res.statusText}`);
           }
-
-          if (res.status !== 204) {
-            return res.json(); // Only parse JSON if response is not 204
-          }
   
-        })
-      );
+          return res.status === 204 || res.status === 200 ? "Deleted" : await res.json();
+        } catch (error) {
+          console.error(`Delete error for ID ${id}:`, error);
+          return `Error deleting ID ${id}`;
+        }
+      });
   
-      console.log("Delete responses:", deleteResponses);
-      toast.success(`Berhasil menghapus ${selectedRowIds.length} mata pelajaran!`);
-      setTimeout(() => {
-        window.location.reload(); // 🔄 Hard reload the page
-      }, 1000);
-      router.refresh();
+      const deleteResponses = await Promise.all(deleteRequests);
+  
+      // Count successfully deleted items
+      const successCount = deleteResponses.filter((res) => res === "Deleted").length;
+  
+      if (successCount > 0) {
+        toast.success(`Berhasil menghapus ${successCount} mata pelajaran!`);
+  
+        // ✅ Full page reload after 1 second
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast.error("Gagal menghapus mata pelajaran. Coba lagi nanti.");
+      }
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Gagal menghapus mata pelajaran. Coba lagi nanti.");
+      console.error("Batch delete error:", error);
+      toast.error("Gagal menghapus beberapa mata pelajaran.");
     }
   };
+      
+  
+  
   
 
   return (
@@ -122,18 +117,11 @@ if (!token) {
       <Toaster />
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Input
-          placeholder="Cari nama, username, nisn..."
+          placeholder="Cari nama mata pelajaran, nama guru, atau kode mata pelajaran"
           value={table.getState().globalFilter ?? ""}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-[150px] lg:w-[500px]"
         />
-        {table.getColumn("angkatan") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("angkatan")}
-            title="Angkatan"
-            options={uniqueAngkatan}
-          />
-        )}
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}

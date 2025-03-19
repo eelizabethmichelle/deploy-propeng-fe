@@ -2,339 +2,608 @@
 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { SelectPills } from "@/components/ui/multiple-select";
 
-interface Guru {
-  id: number;
+interface DataGuru {
+  id: string;
   name: string;
+  username?: string;
+  nisp?: string;
+  status?: boolean ;
 }
 
 interface Angkatan {
   angkatan: number;
-  // name: string;
 }
 
-interface Siswa {
-  id: number;
+interface DataSiswa {
+  id: string;
   name: string;
-  tahunAjaran: number;
+  nisn?: string;
+  username?: string;
   angkatan: number;
 }
 
+const formSchema = z.object({
+  namaPelajaran: z.string().min(1, { message: "Nama pelajaran wajib diisi" }),
+  kategoriMatpel: z.enum(["Wajib", "Peminatan"]),
+  angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
+  siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
+  tahunAjaran: z.string().min(1, { message: "Tahun ajaran wajib diisi" }),
+  guru: z.string().min(1, { message: "Guru wajib dipilih" }),
+  status: z.enum(["active", "inactive"]),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 export default function TambahMataPelajaran() {
-  const [namaPelajaran, setNamaPelajaran] = useState("");
-  const [kategoriMatpel, setKategoriMatpel] = useState<"Wajib" | "Peminatan">("Wajib");
-  const [tahunAjaran, setTahunAjaran] = useState("");
-  const [tahunAjaranEnd, setTahunAjaranEnd] = useState("");
-  const [angkatan, setAngkatan] = useState<string>("");
-  const [guru, setGuru] = useState<number | "">("");
-  const [siswa, setSiswa] = useState<number[]>([]);
-  const [status, setStatus] = useState<"active" | "inactive">("active");
-
-  const [daftarGuru, setDaftarGuru] = useState<Guru[]>([]);
-  const [daftarSiswa, setDaftarSiswa] = useState<Siswa[]>([]);
+  const router = useRouter();
+  const [siswa, setSiswa] = useState<DataSiswa[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState<boolean>(true);
+  const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isExplicitSubmit, setIsExplicitSubmit] = useState<boolean>(false);
+  const [daftarGuru, setDaftarGuru] = useState<DataGuru[]>([]);
   const [daftarAngkatan, setDaftarAngkatan] = useState<Angkatan[]>([]);
+  const preventEnterKeySubmission = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
 
-  const [filteredSiswa, setFilteredSiswa] = useState<Siswa[]>([]); // Filtered students
-  // const daftarAngkatan = ["2022", "2023", "2024"];
-
-  const [errors, setErrors] = useState({
-    namaPelajaran: false,
-    kategoriMatpel: false,
-    angkatan: false,
-    guru: false,
-    siswa: false,
-    tahunAjaran: false
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      namaPelajaran: "", // String kosong
+      kategoriMatpel: "Wajib", // Default ke "Wajib"
+      tahunAjaran: "", // String kosong
+      angkatan: "", // String kosong
+      guru: "", // String kosong untuk ID guru
+      siswa: [], // Array kosong untuk siswa yang dipilih
+      status: "active", // ✅ Menambahkan status dengan default "active"
+    },
   });
 
+  const selectedAngkatan = form.watch("angkatan");
+  const currentYear = new Date().getFullYear();
+  const [error, setError] = useState<string | null>(null);
+
+
+  const tahunAjaran = parseInt(form.watch("tahunAjaran") || currentYear.toString());
+
   useEffect(() => {
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-  
-    if (!token) {
-      console.error("Token tidak tersedia.");
-      return;
-    }
-  
-    fetch("http://localhost:8000/api/tahunajaran/list_angkatan/", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchAvailableTeachers = async () => {
+      setLoadingTeachers(true);
+      try {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (!token) {
+          console.error("Token tidak tersedia.");
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch("http://localhost:8000/api/auth/list_teacher/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Jika token tidak valid, logout user
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          sessionStorage.removeItem("accessToken");
+          router.push("/login");
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.status === 200) {
+          setDaftarGuru(data.data);
+
+          // Jika ada guru yang tersedia, atur default wali kelas
+          if (data.data.length > 0) {
+            form.setValue("guru", data.data[0].id.toString());
+          }
+
+          setError(null);
+        } else if (data.status === 404) {
+          setDaftarGuru([]);
+          toast.error("Tidak ada guru yang tersedia", {
+            description: "Tambahkan guru terlebih dahulu.",
+          });
+        } else {
+          throw new Error(data.errorMessage || "Gagal mendapatkan daftar guru");
+        }
+      } catch (err: any) {
+        console.error("Error fetching available teachers:", err);
+        toast.error("Gagal mengambil data guru", { description: err.message });
+        setError("Gagal mengambil data guru: " + err.message);
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    fetchAvailableTeachers();
+  }, [router]);
+
+  // Fetch Data Angkatan
+  useEffect(() => {
+    const fetchAngkatan = async () => {
+      try {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (!token) {
+          console.error("Token tidak tersedia.");
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch("http://localhost:8000/api/tahunajaran/list_angkatan/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          sessionStorage.removeItem("accessToken");
+          router.push("/login");
+          return;
+        }
+
+        const data = await response.json();
+
         if (data.status === 200) {
           setDaftarAngkatan(data.data.map((angkatan: any) => angkatan.angkatan.toString())); // ✅ Ambil value angkatan
+        } else if (data.status === 404) {
+          setDaftarAngkatan([]);
+          toast.warning("Tidak ada angkatan", { description: "Data angkatan tidak tersedia" });
         } else {
-          console.error("Error fetching angkatan:", data.message);
+          throw new Error(data.message || "Gagal mendapatkan daftar angkatan");
         }
-      })
-      .catch((error) => console.error("Error fetching angkatan:", error));
-  }, []);
-  
-
-  // Fetch Guru dari API
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-  
-    if (!token) {
-      console.error("Token tidak tersedia.");
-      return;
-    }
-  
-    fetch("http://localhost:8000/api/auth/list_teacher/", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setDaftarGuru(data.data);
-      })
-      .catch((error) => console.error("Error fetching guru:", error));
-  }, []);
-  
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-  
-    if (!token) {
-      console.error("Token tidak tersedia.");
-      return;
-    }
-  
-    fetch("http://localhost:8000/api/auth/list_student/", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.status === 200) {
-        setDaftarSiswa(data.data);
-      } else {
-        console.error("Error fetching siswa:", data.message);
+      } catch (err: any) {
+        console.error("Error fetching angkatan:", err);
+        toast.error("Gagal mengambil data angkatan", { description: err.message });
       }
-    })
-    .catch((error) => console.error("Error fetching siswa:", error));
-  }, []);
+    };
 
-  
-  console.log(daftarSiswa)
-  // Filter daftarSiswa berdasarkan angkatan yang dipilih
+    fetchAngkatan();
+  }, [router]);
+
   useEffect(() => {
-    console.log("Angkatan Terpilih:", angkatan);
-  
-    if (angkatan) {
-      const normalizedAngkatan = Number(angkatan); // Pastikan `angkatan` berupa angka
-      
-      const filtered = daftarSiswa.filter((s) => {
-        return s.angkatan === normalizedAngkatan; // Cocokkan dengan `angkatan` di siswa
-      });
-  
-      setFilteredSiswa(filtered); // ✅ Set hasil filter ke state
-    } else {
-      setFilteredSiswa([]); // ✅ Kosongkan jika tidak ada angkatan yang dipilih
+    const fetchStudents = async () => {
+      setLoadingStudents(true);
+      setSiswa([]); // Reset daftar siswa sebelum fetch
+
+      try {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (!token) {
+          console.error("Token tidak tersedia.");
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch("http://127.0.0.1:8000/api/auth/list_student/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          sessionStorage.removeItem("accessToken");
+          router.push("/login");
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.status === 200) {
+          console.log("All students data:", data.data);
+
+          // ✅ Pastikan selectedAngkatan dikonversi ke number
+          const angkatanTerpilih = parseInt(selectedAngkatan);
+          console.log(angkatanTerpilih);
+
+
+          // ✅ Filter siswa berdasarkan angkatan dan status isAssignedToClass
+          const filteredStudents = data.data.filter(
+            (siswa: any) => siswa.angkatan === angkatanTerpilih
+          );
+
+          console.log(filteredStudents)
+
+          if (filteredStudents.length > 0) {
+            setSiswa(filteredStudents);
+            form.setValue("siswa", []);
+          } else {
+            setSiswa([]);
+            toast.warning("Tidak ada siswa", {
+              description: `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`,
+            });
+          }
+        } else {
+          throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
+        }
+      } catch (err: any) {
+        console.error("Error fetching students:", err);
+        toast.error("Gagal mengambil data siswa", { description: err.message });
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+
+    if (selectedAngkatan) {
+      fetchStudents();
     }
-  }, [angkatan, daftarSiswa]);
-  
-  
+  }, [selectedAngkatan, form, router]);
 
-console.log(filteredSiswa)
+  useEffect(() => {
+    console.log("Siswa terbaru:", siswa);
+  }, [siswa]);
 
-  const handleSubmit = async () => {
+
+  const angkatanOptions = [
+    tahunAjaran - 2,
+    tahunAjaran - 1,
+    tahunAjaran,
+    tahunAjaran + 1,
+    tahunAjaran + 2,
+  ].map((year) => ({
+    value: year.toString(),
+    label: year.toString(),
+  }));
+
+  const onSubmit = async (data: FormData) => {
+    if (!isExplicitSubmit) {
+      console.log("Preventing automatic form submission");
+      return;
+    }
+
+    console.log("Form submission triggered with data:", data);
+    setIsSubmitting(true);
+
+    // Validasi sebelum mengirim data
     const newErrors = {
-      namaPelajaran: !namaPelajaran,
-      angkatan: !angkatan,
-      kategoriMatpel: !kategoriMatpel,
-      guru: !guru,
-      siswa: siswa.length === 0,
-      tahunAjaran: !angkatan
-      // tahunAjaran: !tahunAjaran || !/^\d{2}$/.test(tahunAjaran) || !tahunAjaranEnd || !/^\d{2}$/.test(tahunAjaranEnd),
+      namaPelajaran: !data.namaPelajaran,
+      angkatan: !data.angkatan,
+      kategoriMatpel: !data.kategoriMatpel,
+      guru: !data.guru,
+      siswa: data.siswa.length === 0,
+      tahunAjaran: !data.tahunAjaran
     };
 
-    setErrors(newErrors);
-
-    // Stop submission if any field is empty
+    // Jika ada error, hentikan pengiriman
     if (Object.values(newErrors).some((error) => error)) {
-      alert("Mohon isi semua field yang wajib!");
+      toast.error("Mohon isi semua field yang wajib!");
+      setIsSubmitting(false);
       return;
     }
-
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("Anda harus login terlebih dahulu!");
-      return;
-    }
-
-    const formattedTahunAjaran = `20${tahunAjaran}/${tahunAjaranEnd}`;
-
-    const requestBody = {
-      nama: namaPelajaran,
-      kategoriMatpel: kategoriMatpel,
-      kelas: Number(angkatan),
-      tahunAjaran: Number(angkatan),
-      // tahunAjaran: formattedTahunAjaran,
-      teacher: guru || null,
-      siswa_terdaftar: siswa,
-      is_archived: status === "inactive",
-    };
 
     try {
-      const response = await fetch("http://localhost:8000/api/matpel/create/", {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+      if (!token) {
+        console.error("Token tidak tersedia.");
+        router.push("/login");
+        return;
+      }
+
+      const studentIds = data.siswa.map((selectedName) => {
+        const matchedStudent = siswa.find((student) => student.name === selectedName);
+        return matchedStudent ? matchedStudent.id : null;
+      }).filter((id) => id !== null); 
+
+      const requestBody = {
+        nama: data.namaPelajaran,
+        kategoriMatpel: data.kategoriMatpel,
+        angkatan: Number(data.angkatan), // Pastikan angkatan dikonversi ke angka
+        tahunAjaran: Number(data.tahunAjaran),
+        teacher: data.guru || null,
+        siswa_terdaftar: studentIds,
+        status: data.status === "inactive" ? false : true,
+      };
+
+      console.log("Payload yang dikirim:", requestBody); // Debugging sebelum dikirim
+
+      const response = await fetch("http://127.0.0.1:8000/api/matpel/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
+      console.log("Response data:", responseData);
+
       if (response.ok) {
-        alert("Mata Pelajaran berhasil ditambahkan!");
+        toast.success("Mata Pelajaran Berhasil Ditambahkan!", {
+          description: responseData.message || "Mata pelajaran baru telah berhasil dibuat.",
+        });
+        setTimeout(() => {
+          router.push("/admin/mata-pelajaran");
+        }, 1500);
       } else {
-        console.error("Error:", data);
-        alert(`Gagal menambahkan mata pelajaran: ${data.message}`);
+        throw new Error(responseData.message || "Gagal menambahkan mata pelajaran");
       }
-    } catch (error) {
-      console.error("Network error:", error);
-      alert("Terjadi kesalahan jaringan, coba lagi.");
+    } catch (err: any) {
+      console.error("Error creating mata pelajaran:", err);
+      toast.error("Gagal Menambahkan Mata Pelajaran", {
+        description: err.message || "Terjadi kesalahan saat menambahkan mata pelajaran",
+      });
+    } finally {
+      setIsSubmitting(false);
+      setIsExplicitSubmit(false);
     }
   };
 
+
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-md">
-      <h1 className="text-xl font-bold mb-4">Tambah Mata Pelajaran</h1>
+    <div className="flex justify-center items-start min-h-screen p-6 mt-10">
+      <Toaster />
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>Tambah Mata Pelajaran</CardTitle>
+          <CardDescription>Masukkan data mata pelajaran baru</CardDescription>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
+          )}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
+              {/* Nama Mata Pelajaran */}
+              <FormField
+                control={form.control}
+                name="namaPelajaran"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Mata Pelajaran*</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Contoh: Matematika" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      {/* Input Nama Pelajaran */}
-      <label className="block text-sm font-medium">Nama Mata Pelajaran*</label>
-      <Input
-        type="text"
-        placeholder="contoh: Matematika"
-        value={namaPelajaran}
-        onChange={(e) => setNamaPelajaran(e.target.value)}
-        className={`mb-2 ${errors.namaPelajaran ? "border-red-500" : ""}`}
-      />
-      {errors.namaPelajaran && <p className="text-red-500 text-sm">Nama mata pelajaran wajib diisi!</p>}
+              {/* Kategori Mata Pelajaran */}
+              <FormField
+                control={form.control}
+                name="kategoriMatpel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategori Mata Pelajaran*</FormLabel>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="flex gap-4"
+                    >
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2">
+                            <RadioGroupItem value="Wajib" /> Wajib
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <RadioGroupItem value="Peminatan" /> Peminatan
+                          </label>
+                        </div>
+                      </FormControl>
+                    </RadioGroup>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Tahun Ajaran */}
+              <FormField
+                control={form.control}
+                name="tahunAjaran"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tahun Ajaran (TA 2023/2024)*</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">TA</span>
+                        <Input
+                          type="number"
+                          placeholder="Contoh: 2024"
+                          className="flex-1"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value)}
+                        />
+                        <span className="text-sm font-medium">/</span>
+                        <Input
+                          type="number"
+                          value={field.value ? (parseInt(field.value) + 1).toString() : ""}
+                          className="flex-1 bg-gray-100 cursor-not-allowed"
+                          disabled
+                          readOnly
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Angkatan */}
+              <FormField
+                control={form.control}
+                name="angkatan"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Angkatan*</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih angkatan" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {angkatanOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Guru Pengajar */}
+              <FormField
+                control={form.control}
+                name="guru"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Guru Pengajar*</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih guru" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {daftarGuru.map((guru) => (
+                          <SelectItem key={guru.id} value={guru.id.toString()}>
+                            {guru.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+                <FormField
+                  control={form.control}
+                  name="siswa"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Siswa*</FormLabel>
+                      <FormControl>
+                        {loadingStudents ? (
+                          <p>Loading...</p>
+                        ) : siswa.length > 0 ? (
+                          <SelectPills
+                            data={siswa.map((s: DataSiswa) => ({ id: s.id.toString(), name: s.name }))}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Pilih siswa"
+                          />
+                        ) : (
+                          <p className="text-gray-500">Tidak ada siswa tersedia</p>
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+              {/* Status Mata Pelajaran */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status*</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Container untuk Tombol */}
+              <div className="flex justify-between items-center gap-2 pt-2">
+                {/* Tombol Kembali - Lebih Kecil */}
+                <Button
+                  className="bg-gray-300 text-black hover:bg-gray-400 transition px-4 py-2 text-sm"
+                  type="button"
+                  onClick={() => router.back()} // 🔹 Kembali ke halaman sebelumnya
+                >
+                  Kembali
+                </Button>
+
+                {/* Tombol Tambah - Lebih Besar */}
+                <Button
+                  className="bg-blue-500 text-white hover:bg-blue-600 transition px-6 py-2 text-base"
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={() => setIsExplicitSubmit(true)}
+                >
+                  {isSubmitting ? "Menyimpan..." : "Tambah"}
+                </Button>
+              </div>
 
 
-      {/* Radio Group Sifat Mata Pelajaran */}
-      <label className="block text-sm font-medium">Sifat Mata Pelajaran*</label>
-      <RadioGroup className="mb-4" value={kategoriMatpel} onValueChange={(value: "Wajib" | "Peminatan") => setKategoriMatpel(value)}>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <RadioGroupItem value="Wajib" /> Wajib
-          </label>
-          <label className="flex items-center gap-2">
-            <RadioGroupItem value="Peminatan" /> Peminatan
-          </label>
-        </div>
-      </RadioGroup>
-            {/* Select Guru */}
-            <label className="block text-sm font-medium">Guru Mata Pelajaran*</label>
-      <Select onValueChange={(value: string) => setGuru(Number(value))}>
-        <SelectTrigger className={`mb-2 ${errors.guru ? "border-red-500" : ""}`}>
-          <SelectValue placeholder="Pilih Guru" />
-        </SelectTrigger>
-        <SelectContent>
-          {daftarGuru.map((guru) => (
-            <SelectItem key={guru.id} value={guru.id.toString()}>
-              {guru.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {errors.guru && <p className="text-red-500 text-sm">Guru wajib dipilih!</p>}
-      <label className="block text-sm font-medium">Tahun Ajaran (Format: TA xxxx/xxxx)*</label>
-<div className="flex items-center mb-2">
-  <span className="mr-2">TA </span>
-  <Input
-    type="text"
-    placeholder="2023"
-    maxLength={4}
-    value={tahunAjaran}
-    onChange={(e) => {
-      const input = e.target.value.replace(/[^\d]/g, ""); // Hanya angka
-      setTahunAjaran(input);
-    }}
-    className={`w-20 ${errors.tahunAjaran ? "border-red-500" : ""}`}
-  />
-  <span className="mx-2">/</span>
-  <Input
-    type="text"
-    maxLength={2}
-    value={tahunAjaran ? (Number(tahunAjaran) + 1).toString() : ""}
-    disabled // ✅ Auto-calculated, tidak bisa diubah manual
-    className="w-20 bg-gray-100 cursor-not-allowed"
-  />
-</div>
-{errors.tahunAjaran && (
-  <p className="text-red-500 text-sm">Tahun ajaran wajib diisi dengan format dua angka, contoh: "23/24"!</p>
-)}
-
-
-      {/* Select Angkatan */}
-      <label className="block text-sm font-medium">Angkatan*</label>
-      <Select onValueChange={setAngkatan}>
-        <SelectTrigger className={`mb-2 ${errors.angkatan ? "border-red-500" : ""}`}>
-          <SelectValue placeholder="Pilih Angkatan" />
-        </SelectTrigger>
-        <SelectContent>
-          {daftarAngkatan.map((tahun) => (
-            <SelectItem key={tahun} value={tahun}>
-              {tahun}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {errors.angkatan && <p className="text-red-500 text-sm">Angkatan wajib dipilih!</p>}
-
-      {/* Select Siswa (Multiple Select) */}
-      <label className="block text-sm font-medium">Siswa*</label>
-<SelectPills
-  data={
-    filteredSiswa.length > 0
-      ? filteredSiswa.map((siswa) => ({ id: siswa.id.toString(), name: siswa.name }))
-      : [{ id: "no-data", name: "Tidak ada siswa yang terdaftar pada angkatan yang dipilih" }]
-  }
-  value={siswa.map((id) => (id ? id.toString() : ""))}
-  onValueChange={(selectedValues) => {
-    const validIds = selectedValues.map((val) => (val ? Number(val) : null)).filter((id) => id !== null);
-    setSiswa(validIds);
-  }}
-  placeholder="Pilih Siswa..."
-/>
-{errors.siswa && <p className="text-red-500 text-sm">Minimal satu siswa harus dipilih!</p>}
-
-
-      {/* Status Dropdown */}
-      <label className="block text-sm font-medium">Status*</label>
-      <Select value={status} onValueChange={(value: "active" | "inactive") => setStatus(value)}>
-        <SelectTrigger className="mb-4">
-          <SelectValue placeholder="Pilih Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="inactive">Inactive</SelectItem>
-        </SelectContent>
-      </Select>
-      
-      {/* Buttons */}
-      <div className="flex gap-4 mt-4">
-        <Button variant="outline">Kembali</Button>
-        <Button onClick={handleSubmit}>Simpan</Button>
-      </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
