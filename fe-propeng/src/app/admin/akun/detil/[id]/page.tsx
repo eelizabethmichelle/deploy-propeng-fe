@@ -22,7 +22,9 @@ interface UserProfile {
   user_id: number;
   username: string;
   name: string;
+  role: string;
   nisn: string;
+  nisp: string;
   angkatan: number;
   status: string;
   createdAt: string;

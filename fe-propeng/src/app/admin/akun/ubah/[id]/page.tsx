@@ -268,8 +268,8 @@ export default function EditAccountForm() {
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} value={field.value}>
                     {status.map((status) => (
-                      <div key={status.id} className="flex items-center space-x-3">
-                        <RadioGroupItem value={status.id} />
+                      <div key={String(status.id)} className="flex items-center space-x-3">
+                        <RadioGroupItem value={String(status.id)} />
                         <FormLabel className="text-sm font-medium">{status.label}</FormLabel>
                       </div>
                     ))}
