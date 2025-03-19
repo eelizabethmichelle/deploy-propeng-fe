@@ -1,9 +1,7 @@
-import { useParams } from "next/navigation";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request,) {
-    const params = useParams();
-    const userId = params?.id; 
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    const userId = params.id;
 
     // Extract the JWT token from the Authorization header
     const authHeader = request.headers.get("Authorization");
@@ -15,7 +13,7 @@ export async function GET(request: Request,) {
 
     try {
         // Fetch user profile data using userId from params
-        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
+        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -23,7 +21,7 @@ export async function GET(request: Request,) {
         });
 
         if (!profileRes.ok) {
-            return NextResponse.json({ message: "Failed to fetch user profile with id" + userId }, { status: profileRes.status });
+            return NextResponse.json({ message: "Failed to fetch user profile" }, { status: profileRes.status });
         }
 
         const profileData = await profileRes.json();
