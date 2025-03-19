@@ -83,12 +83,12 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "/admin/lihat-kelas",
+            url: "/admin/kelas/lihat-kelas",
           },
           {
             title: "Tambah",
             icon: PlusCircle,
-            url: "/admin/tambah-kelas",
+            url: "/admin/kelas/tambah-kelas",
           }
         ],
       },

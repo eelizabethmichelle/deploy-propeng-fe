@@ -1,4 +1,3 @@
-// src/app/admin/detail-kelas/[id]/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -41,12 +40,15 @@ import {
 } from "@/components/ui/select";
 import { SelectPills } from "@/components/ui/multiple-select";
 
+// Base API URL
+const BASE_API_URL = "http://203.194.113.127/api";
+
 // Schema for class name validation
 const classNameSchema = z.object({
     namaKelas: z.string()
         .min(1, { message: "Nama kelas wajib diisi" })
         .regex(
-            /^(X|IX|IV|V?I{0,3})([A-Za-z]+)$/,
+            /^(X|XI|XII)([A-Za-z]+)$/,
             { message: "Format kelas harus diawali dengan angka Romawi (X, XI, XII) dan diakhiri dengan huruf (A, B, C, dst)" }
         ),
 });
@@ -135,7 +137,7 @@ export default function ClassDetailPage() {
                 if (!token) return;
 
                 // Fetch class details with students included
-                const response = await fetch(`http://127.0.0.1:8000/api/kelas/${classId}`, {
+                const response = await fetch(`${BASE_API_URL}/kelas/${classId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -221,7 +223,7 @@ export default function ClassDetailPage() {
                         return;
                     }
 
-                    const response = await fetch("http://127.0.0.1:8000/api/kelas/list_available_homeroom/", {
+                    const response = await fetch(`${BASE_API_URL}/kelas/list_available_homeroom/`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -282,7 +284,7 @@ export default function ClassDetailPage() {
 
                 const normalizedAngkatan = parseInt(selectedAngkatan);
 
-                const response = await fetch(`http://127.0.0.1:8000/api/kelas/list_available_student/${normalizedAngkatan}`, {
+                const response = await fetch(`${BASE_API_URL}/kelas/list_available_student/${normalizedAngkatan}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -324,7 +326,7 @@ export default function ClassDetailPage() {
     // Add this near the top of your component
     const handleBackNavigation = () => {
         // Force a refresh of the list page when navigating back
-        router.push("/admin/lihat-kelas");
+        router.push("/admin/kelas/lihat-kelas");
     };
 
 
@@ -357,7 +359,7 @@ export default function ClassDetailPage() {
                 return;
             }
 
-            const response = await fetch(`http://127.0.0.1:8000/api/kelas/update_nama_kelas/${classId}/`, {
+            const response = await fetch(`${BASE_API_URL}/kelas/update_nama_kelas/${classId}/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -409,7 +411,7 @@ export default function ClassDetailPage() {
             const token = getAuthToken();
             if (!token) return;
 
-            const response = await fetch(`http://127.0.0.1:8000/api/kelas/update_wali_kelas/${classId}/`, {
+            const response = await fetch(`${BASE_API_URL}/kelas/update_wali_kelas/${classId}/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -486,7 +488,7 @@ export default function ClassDetailPage() {
                 .filter(id => id !== null && id !== undefined && id !== "")
                 .map(id => parseInt(id));
 
-            const response = await fetch(`http://127.0.0.1:8000/api/kelas/add_siswa_to_kelas/${classId}/`, {
+            const response = await fetch(`${BASE_API_URL}/kelas/add_siswa_to_kelas/${classId}/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -502,7 +504,7 @@ export default function ClassDetailPage() {
 
             if (responseData.status === 200) {
                 // Refresh the class data to get updated student list
-                const refreshResponse = await fetch(`http://127.0.0.1:8000/api/kelas/${classId}/`, {
+                const refreshResponse = await fetch(`${BASE_API_URL}/kelas/${classId}/`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -585,7 +587,7 @@ export default function ClassDetailPage() {
                     }
 
                     // Log the URL being called for debugging
-                    const url = `http://127.0.0.1:8000/api/kelas/delete_siswa_from_kelas/${classId}/${studentId}/`;
+                    const url = `${BASE_API_URL}/kelas/delete_siswa_from_kelas/${classId}/${studentId}/`;
                     console.log(`Deleting student with URL: ${url}`);
 
                     const response = await fetch(url, {
@@ -710,7 +712,7 @@ export default function ClassDetailPage() {
         return (
             <div className="p-8 flex flex-col items-center justify-center">
                 <div className="text-red-500 mb-4">Error: {error}</div>
-                <Button onClick={() => router.push("/admin/lihat-kelas")}>
+                <Button onClick={() => router.push("/admin/kelas/lihat-kelas")}>
                     Kembali ke Daftar Kelas
                 </Button>
             </div>

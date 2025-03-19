@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
+// Base API URL
+const BASE_API_URL = "http://203.194.113.127/api";
+
 export default function Page() {
   const router = useRouter();
   const [data, setData] = useState<any[] | null>(null);
@@ -19,26 +22,26 @@ export default function Page() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get auth token
       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
-      
+
       // Check if token exists
       if (!token) {
         console.error("No authentication token found");
         router.push("/login");
         return;
       }
-      
+
       // Make API request with proper error handling
-      const response = await fetch("http://127.0.0.1:8000/api/kelas/", {
+      const response = await fetch(`${BASE_API_URL}/kelas/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         }
       });
-      
+
       // Handle HTTP errors
       if (!response.ok) {
         if (response.status === 401) {
@@ -48,30 +51,37 @@ export default function Page() {
           router.push("/login");
           return;
         }
+
+        // For 400 status, we'll treat it as empty data
+        if (response.status === 400 || 404) {
+          setData([]);
+          setLoading(false);
+          return;
+        }
+
         throw new Error(`Server responded with status: ${response.status}`);
       }
-      
+
       // Parse JSON response
       const jsonData = await response.json();
-      
+
       // Check API response status
       if (jsonData.status === 201) {
         setData(jsonData.data || []);
       } else if (jsonData.status === 400) {
         // Handle empty data case
         setData([]);
-        setError(jsonData.errorMessage || "No data available");
       } else {
         throw new Error(jsonData.errorMessage || "Failed to fetch data");
       }
-      
+
       // Clear the refresh flag
       localStorage.removeItem('kelas_data_refresh');
     } catch (error: any) {
       console.error("Error fetching data:", error);
       setError(error.message || "Failed to fetch data");
       setData([]);
-      
+
       // Show error toast
       toast.error("Gagal memuat data", {
         description: error.message || "Terjadi kesalahan saat mengambil data kelas"
@@ -80,6 +90,7 @@ export default function Page() {
       setLoading(false);
     }
   };
+
 
   // Fetch data on initial load
   useEffect(() => {
@@ -96,9 +107,9 @@ export default function Page() {
         }
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     // Check for refresh flag periodically
     const refreshInterval = setInterval(() => {
       const needsRefresh = localStorage.getItem('kelas_data_refresh') === 'true';
@@ -106,7 +117,7 @@ export default function Page() {
         fetchData();
       }
     }, 2000);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(refreshInterval);
@@ -126,23 +137,15 @@ export default function Page() {
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            onClick={fetchData}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button
             variant="default"
-            onClick={() => router.push("/admin/tambah-kelas")}
+            onClick={() => router.push("/admin/kelas/tambah-kelas")}
           >
             Tambah Kelas
             <Plus className="h-5 w-5 ml-2" />
           </Button>
         </div>
       </div>
-      
+
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <p>Memuat data...</p>
@@ -153,7 +156,10 @@ export default function Page() {
           <Button onClick={fetchData}>Coba Lagi</Button>
         </div>
       ) : (
-        <DataTable data={data || []} columns={columns} />
+        <>
+          {/* Remove any error message display here if it exists */}
+          <DataTable data={data || []} columns={columns} />
+        </>
       )}
     </div>
   );

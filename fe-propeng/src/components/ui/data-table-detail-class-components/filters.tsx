@@ -39,10 +39,10 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           </div>
           <div>
             {/* Judul toast */}
-            <p className="text-lg font-semibold text-foreground font-sans">Kelas Dinonaktifkan!</p>
+            <p className="text-lg font-semibold text-foreground font-sans">Kelas Dihapus!</p>
             {/* Deskripsi toast */}
             <p className="text-sm text-muted-foreground font-sans">
-              Kelas berhasil dinonaktifkan
+              Kelas berhasil dihapus
             </p>
           </div>
         </div>

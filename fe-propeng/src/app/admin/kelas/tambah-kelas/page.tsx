@@ -49,12 +49,15 @@ interface StudentData {
     angkatan: number;
 }
 
+// Base API URL
+const BASE_API_URL = "http://203.194.113.127/api";
+
 // Validation schema with Zod
 const formSchema = z.object({
     namaKelas: z.string()
         .min(1, { message: "Nama kelas wajib diisi" })
         .regex(
-            /^(X|IX|IV|V?I{0,3})([A-Za-z]+)$/,
+            /^(X|XI|XII)([A-Za-z]+)$/,
             { message: "Format kelas harus diawali dengan angka Romawi (X, XI, XII) dan diakhiri dengan huruf (A, B, C, dst)" }
         ),
     tahunAjaran: z.string().min(1, { message: "Tahun ajaran wajib diisi" }),
@@ -115,7 +118,7 @@ export default function TambahKelas() {
                     return;
                 }
 
-                const response = await fetch("http://127.0.0.1:8000/api/kelas/list_available_homeroom/", {
+                const response = await fetch(`${BASE_API_URL}/kelas/list_available_homeroom/`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -164,6 +167,7 @@ export default function TambahKelas() {
 
             setLoadingStudents(true);
             setAvailableStudents([]);
+            console.log("Fetching available students for angkatan:", selectedAngkatan);
 
             try {
                 const token = getAuthToken();
@@ -174,13 +178,14 @@ export default function TambahKelas() {
 
                 const normalizedAngkatan = parseInt(selectedAngkatan);
 
-                const response = await fetch(`http://127.0.0.1:8000/api/kelas/list_available_student/${normalizedAngkatan}`, {
+                const response = await fetch(`${BASE_API_URL}/kelas/list_available_student/${normalizedAngkatan}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`,
                     },
                 });
+                
 
                 if (response.status === 401) {
                     localStorage.removeItem("accessToken");
@@ -197,8 +202,16 @@ export default function TambahKelas() {
                     form.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
+                    // Replace the existing toast.warning with this version that has a black description text
                     toast.warning("Tidak ada siswa", {
-                        description: `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`,
+                        description: (
+                            <span style={{
+                                color: "#000000",       // Black text for maximum visibility
+                                fontWeight: "500",      // Medium font weight for better readability
+                            }}>
+                                Tidak ada siswa tanpa kelas untuk angkatan {normalizedAngkatan}
+                            </span>
+                        ),
                     });
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
@@ -260,7 +273,7 @@ export default function TambahKelas() {
 
             console.log("Submitting requestData:", requestData);
 
-            const response = await fetch("http://127.0.0.1:8000/api/kelas/create/", {
+            const response = await fetch(`${BASE_API_URL}/kelas/create/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -277,7 +290,7 @@ export default function TambahKelas() {
                     description: responseData.message || "Kelas baru telah berhasil dibuat.",
                 });
                 setTimeout(() => {
-                    router.push("/admin/lihat-kelas");
+                    router.push("/admin/kelas/lihat-kelas");
                 }, 1500);
             } else {
                 throw new Error(responseData.errorMessage || "Gagal menambahkan kelas");
