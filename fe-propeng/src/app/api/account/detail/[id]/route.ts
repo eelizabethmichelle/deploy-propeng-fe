@@ -1,7 +1,9 @@
+import { useParams } from "next/navigation";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request, context: { params: { id: string } }) {
-    const userId = context.params.id; 
+export async function GET(request: Request,) {
+    const params = useParams();
+    const userId = params?.id; 
 
     // Extract the JWT token from the Authorization header
     const authHeader = request.headers.get("Authorization");
