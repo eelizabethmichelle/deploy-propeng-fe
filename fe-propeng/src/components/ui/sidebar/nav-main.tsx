@@ -26,7 +26,6 @@ export function NavMain({
       title: string
       icon?: LucideIcon
       url: string
-      icon?: LucideIcon
     }[]
   }[]
 }) {
