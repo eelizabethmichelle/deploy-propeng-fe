@@ -1,21 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+    eslint: {
+      ignoreDuringBuilds: true,
   },
-  async headers() {
+   async rewrites() {
     return [
       {
-        source: "/(.*)", // HSTS ke semua halaman
-        headers: [
-          {
-            key: "Strict-Transport-Security", // HSTS
-            value: "max-age=31536000; includeSubDomains; preload",
-          },
-        ],
+        source: "/api/:path*", // Semua request ke /api/...
+        destination: "http://203.194.113.127/api/:path*", // Diteruskan ke backend HTTP
       },
     ];
   },
-};
-
-module.exports = nextConfig;
+  };
+  
+  module.exports = nextConfig;
