@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input"
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -127,7 +128,7 @@ export default function AddAccountForm() {
               <FormItem>
                 <FormLabel>Password *</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Contoh: Ujang123!" {...field} />
+                  <PasswordInput placeholder="Contoh: Ujang123!" {...field} />
                 </FormControl>
                 <FormDescription>
                   *Password harus memiliki minimal 8 karakter, mengandung huruf

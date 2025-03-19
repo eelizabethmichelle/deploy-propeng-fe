@@ -20,56 +20,12 @@ export default function DashboardPage() {
     const [user, setUser] = useState<{ username: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const accessToken =
-            localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-        if (!accessToken) {
-            router.push("/login");
-            return;
-        }
-
-        const fetchUserData = async () => {
-            try {
-                const res = await fetch("/api/user", {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    setUser(data);
-                } else {
-                    localStorage.removeItem("accessToken");
-                    sessionStorage.removeItem("accessToken");
-                    router.push("/login");
-                }
-            } catch (error) {
-                console.error("Failed to fetch user data:", error);
-                router.push("/login");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, [router]);
-
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         sessionStorage.removeItem("accessToken");
         toast.success("Berhasil keluar dari sistem")
         router.push("/login");
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <p className="text-lg text-gray-700">Loading...</p>
-            </div>
-        );
-    }
 
     return (
         <div className="flex min-h-screen flex-col items-center">
