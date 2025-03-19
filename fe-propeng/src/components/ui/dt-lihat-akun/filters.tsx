@@ -38,7 +38,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const uniqueStatus = [...new Set(allRows.map((row) => row.original.isActive))].map(
     (isActive) => ({
-      value: isActive,
+      value: String(isActive),
       label: isActive ? "Aktif" : "Tidak Aktif",
     })
   );
