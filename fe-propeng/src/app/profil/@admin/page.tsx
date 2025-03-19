@@ -23,7 +23,7 @@ interface UserProfile {
   username: string;
 }
 
-export default function ProfilePage({ userId }: { userId: number }) {
+export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const router = useRouter();
 
@@ -35,35 +35,40 @@ export default function ProfilePage({ userId }: { userId: number }) {
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const accessToken =
-        localStorage.getItem("accessToken") ||
-        sessionStorage.getItem("accessToken");
+  const fetchUserData = async () => {
+    const accessToken =
+      localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-      try {
-        const response = await fetch(`/api/profile`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+    console.log("Access Token:", accessToken); // Debugging token
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            router.push("/404");
-          }
-          throw new Error("Failed to fetch data");
+    try {
+      const response = await fetch(`http://203.194.113.127/api/auth/profile/${user_id}/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      console.log("Response status:", response.status);
+      const responseData = await response.json();
+      console.log("Response data:", responseData);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          router.push("/404");
         }
-
-        const data = await response.json();
-        setUser(data.data);
-      } catch (error) {
-        console.error(error);
+        throw new Error("Failed to fetch data");
       }
-    };
 
-    fetchUserData();
-  }, [userId, router]);
+      setUser(responseData.data);
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+
+  fetchUserData();
+}, [user_id, router]);
 
   if (!user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;

@@ -1,100 +1,72 @@
-"use client";
-import { useEffect, useState } from "react";
+"use client"
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { useEffect } from "react";
+import {jwtDecode} from "jwt-decode";
 
 interface TokenDecodePayload {
-  user_id: number;
-  exp: number;
-  iat: number;
+    token_type: string;
+    exp: number;
+    iat: number;
+    jti: string;
+    user_id: number;
+    email: string;
+    role: string;
 }
 
-interface UserData {
-  user_id: number;
-  username: string;
-  role: string;
-}
+const HomePage = () => {
+    const router = useRouter();
 
-async function getMyData(): Promise<UserData | null> {
-  try {
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-    if (!token) return null;
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-    const response = await fetch("http://localhost:8000/api/auth/protected/", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) throw new Error("Gagal mengambil data dari server");
-
-    const jsonData = await response.json();
-    return jsonData.data_user;
-  } catch (error) {
-    console.error("Error:", error);
-    return null;
-  }
-}
-
-export default function HomePage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
-
-    // **1. Jika sudah login dan akses home, langsung redirect ke page sesuai role**
-    if (token && role) {
-      redirectToRolePage(role, router);
-      return;
-    }
-
-    // **2. Jika belum login, arahkan ke login**
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    const fetchUserData = async () => {
-      try {
-        const decodedToken = jwtDecode<TokenDecodePayload>(token);
-        const user = await getMyData();
-
-        if (!user || user.user_id !== decodedToken.user_id) {
-          console.error("User tidak valid");
-          router.push("/login");
-          return;
+        if (!token) {
+            console.log("Token tidak ditemukan, redirect ke /login");
+            router.push("/login");
+            return;
         }
 
-        localStorage.setItem("role", user.role);
-        sessionStorage.setItem("role", user.role);
+        try {
+            const decodedToken = jwtDecode<TokenDecodePayload>(token);
+            console.log("Decoded JWT:", decodedToken);
 
-        redirectToRolePage(user.role, router);
-      } catch (error) {
-        console.error("Error:", error);
-        router.push("/login");
-      }
-    };
+            const { role, exp } = decodedToken;
+            if (Date.now() >= exp * 1000) {
+                console.error("Token expired, redirect ke /login");
+                router.push("/login");
+                return;
+            }
 
-    fetchUserData();
-  }, [router]);
+            // Simpan role di storage
+            localStorage.setItem("role", role);
+            sessionStorage.setItem("role", role);
 
-  return null;
-}
+            console.log("Redirecting to:", role);
+            redirectToRolePage(role, router);
+        } catch (error) {
+            console.error("Invalid token, redirect ke /login", error);
+            router.push("/login");
+        }
+    }, [router]);
 
-function redirectToRolePage(role: string, router: any) {
-  switch (role) {
-    case "student":
-      router.push("/sample/sidebar-false");
-      break;
-    case "teacher":
-    case "admin":
-      router.push("/admin/lihat-murid");
-      break;
-    default:
-      router.push("/login");
-  }
-}
+    return <div>Loading...</div>;
+};
+
+const redirectToRolePage = (role: string, router: any) => {
+    switch (role) {
+        case "admin":
+            router.push("/profil");
+            break;
+        case "teacher":
+            router.push("/profil");
+            break;
+        case "student":
+            router.push("/profil");
+            break;
+        default:
+            console.warn("Role tidak dikenal:", role);
+            router.push("/");
+            break;
+    }
+};
+
+export default HomePage;
