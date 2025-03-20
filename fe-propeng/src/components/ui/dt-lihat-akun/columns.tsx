@@ -90,12 +90,10 @@ export const columns: ColumnDef<Schema>[] = [
           {isActive ? (
             <>
               <CheckCircle size={20} className="text-green-600" />
-              <span className="text-green-600 font-medium">Aktif</span>
             </>
           ) : (
             <>
               <X size={20} className="text-red-500" />
-              <span className="text-red-600 font-medium">Tidak Aktif</span>
             </>
           )}
           <span className="capitalize">
