@@ -85,7 +85,7 @@ const data = {
           {
             title: "Tambah",
             icon: PlusCircle,
-            url: "/admin/kelas/tambah-kelas",
+            url: "/admin/kelas/tambah",
           }
         ],
       },

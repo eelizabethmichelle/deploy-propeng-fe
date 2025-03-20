@@ -135,7 +135,7 @@ export default function Page() {
         <div className="flex gap-2">
           <Button
             variant="default"
-            onClick={() => router.push("/admin/kelas/tambah-kelas")}
+            onClick={() => router.push("/admin/kelas/tambah")}
             className="bg-blue-800 hover:bg-blue-900"
           >
             Tambah Kelas
