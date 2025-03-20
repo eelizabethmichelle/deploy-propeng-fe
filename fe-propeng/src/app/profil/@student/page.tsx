@@ -60,48 +60,116 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
   const router = useRouter();
 
         
-      const form = useForm({
-        resolver: zodResolver(passwordSchema),
-        defaultValues: {
-          currentPassword: "",
-          newPassword: "",
-        },
-      });
-  
-      const onSubmit = (data: any) => {
-        console.log("Form Data:", data);
-      };
-    
-    
-    /* Toast success */
-    const handleSuccess = () => {
-        toast("", {
-          description: (
-            <div className="flex items-start gap-3">
-              {/* Icon di kiri */}
-              <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                <Check className="text-background w-4 h-4" />
-              </div>
-              <div>
-                {/* Judul dibuat lebih besar */}
-                <p className="text-lg font-semibold text-foreground font-sans">Berhasil Diubah</p>
-                {/* Deskripsi dengan warna lebih muted */}
-                <p className="text-sm text-muted-foreground font-sans">
-                  Password kamu berhasil diubah
-                </p>
-              </div>
-            </div>
-          ),
-          action: {
-            label: (
-              <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
-                Tutup
-              </span>
-            ),
-            onClick: () => console.log("Tutup"),
-          },
-        })
-      }
+            const form = useForm({
+              resolver: zodResolver(passwordSchema),
+              defaultValues: {
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+              },
+            });
+        
+            
+                  const onSubmit = async (data: any) => {
+                    const accessToken =
+                        localStorage.getItem("accessToken") ||
+                        sessionStorage.getItem("accessToken");
+                    const { currentPassword, newPassword } = data;
+            
+                    try {
+                        const response = await fetch("/api/auth/change-password", {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${accessToken}`,
+                            },
+                            body: JSON.stringify({ old_password: currentPassword, new_password: newPassword }),
+                        });
+            
+                        // Ambil JSON dari respons, meskipun statusnya error
+                        const responseData = await response.json();
+            
+                        if (!response.ok) {
+                            console.log("Response:", responseData);
+                            console.log("Status:", response.status);
+            
+                          // Tampilkan pesan error dari Django
+                            handleError()
+                            throw new Error(responseData.message || "Gagal mengubah password!");
+                        }
+            
+                        handleSuccess(); 
+                        console.log("Success:", responseData.message);
+                    } catch (error: any) {
+                        console.error("Error:", error.message);
+                    }
+                };
+            
+                
+                
+                /* Toast success */
+                const handleSuccess = () => {
+                    toast("", {
+                      description: (
+                        <div className="flex items-start gap-3">
+                          {/* Icon di kiri */}
+                          <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
+                            <Check className="text-background w-4 h-4" />
+                          </div>
+                          <div>
+                            {/* Judul dibuat lebih besar */}
+                            <p className="text-lg font-semibold text-foreground font-sans">Berhasil Diubah</p>
+                            {/* Deskripsi dengan warna lebih muted */}
+                            <p className="text-sm text-muted-foreground font-sans">
+                              Password kamu berhasil diubah
+                            </p>
+                          </div>
+                        </div>
+                      ),
+                      action: {
+                        label: (
+                          <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
+                            Tutup
+                          </span>
+                        ),
+                        onClick: () => console.log("Tutup"),
+                      },
+                    })
+                  }
+              
+            
+                /* Toast error */
+                const handleError = () => {
+                    toast("", {
+                      description: (
+                        <div className="flex items-start gap-3">
+                          {/* Icon di kiri */}
+                          <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
+                            <Check className="text-background w-4 h-4" />
+                          </div>
+                          <div>
+                            {/* Judul dibuat lebih besar */}
+                            <p className="text-lg font-semibold text-foreground font-sans">Gagal diubah!</p>
+                            {/* Deskripsi dengan warna lebih muted */}
+                            <p className="text-sm text-muted-foreground font-sans">
+                              Password sebelumnya tidak sesuai
+                            </p>
+                          </div>
+                        </div>
+                      ),
+                      action: {
+                        label: (
+                          <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
+                            Tutup
+                          </span>
+                        ),
+                        onClick: () => console.log("Tutup"),
+                      },
+                    })
+                }
+        
+          
+        
   
 
   const handleLogout = () => {

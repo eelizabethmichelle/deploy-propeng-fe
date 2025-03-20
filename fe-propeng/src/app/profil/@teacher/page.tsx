@@ -63,6 +63,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
       defaultValues: {
         currentPassword: "",
         newPassword: "",
+        confirmPassword: "",
       },
     });
 
