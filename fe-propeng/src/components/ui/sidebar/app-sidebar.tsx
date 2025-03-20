@@ -100,12 +100,12 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "#",
+            url: "/admin/mata-pelajaran",
           },
           {
             title: "Tambah",
             icon: PlusCircle,
-            url: "#",
+            url: "/admin/mata-pelajaran/tambah",
           }
         ],
       },
