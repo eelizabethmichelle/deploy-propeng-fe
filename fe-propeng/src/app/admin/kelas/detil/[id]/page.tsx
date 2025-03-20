@@ -392,7 +392,9 @@ export default function ClassDetailPage() {
                     addStudentsForm.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
-                    toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
+                    toast.warning("Tidak ada siswa", {
+                        description: `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`,
+                    });
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
@@ -412,7 +414,7 @@ export default function ClassDetailPage() {
     // Add this near the top of your component
     const handleBackNavigation = () => {
         // Force a refresh of the list page when navigating back
-        router.push("/admin/kelas/lihat-kelas");
+        router.push("/admin/kelas");
     };
 
 
@@ -813,7 +815,7 @@ export default function ClassDetailPage() {
         return (
             <div className="p-8 flex flex-col items-center justify-center">
                 <div className="text-red-500 mb-4">Error: {error}</div>
-                <Button variant="secondary" onClick={() => router.push("/admin/kelas/lihat-kelas")}>
+                <Button onClick={() => router.push("/admin/kelas")}>
                     Kembali ke Daftar Kelas
                 </Button>
             </div>

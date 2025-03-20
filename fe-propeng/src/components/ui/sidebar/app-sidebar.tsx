@@ -80,7 +80,7 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "/admin/kelas/lihat-kelas",
+            url: "/admin/kelas",
           },
           {
             title: "Tambah",

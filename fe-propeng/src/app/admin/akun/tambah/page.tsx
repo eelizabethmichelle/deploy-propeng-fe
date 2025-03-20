@@ -212,7 +212,11 @@ export default function AddAccountForm() {
             <FormField
               control={form.control}
               name="angkatan"
-              rules={{ required: "Angkatan wajib diisi" }}
+              rules={{
+                required: "Angkatan wajib diisi",
+                min: { value: 2000, message: "Angkatan tidak boleh kurang dari 2000" },
+                max: { value: 2100, message: "Angkatan tidak boleh lebih dari 2100" },
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{isTeacher ? "Tahun Masuk *" : isStudent ? "Angkatan *" : "Angkatan *"}</FormLabel>

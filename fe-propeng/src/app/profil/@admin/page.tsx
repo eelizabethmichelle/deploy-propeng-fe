@@ -24,7 +24,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, D
 import React from "react"
 import { Label } from "@/components/ui/label"
 import { useForm } from "react-hook-form";
-import { Form } from "@/components/ui/form";
+import { Form, FormDescription } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -46,7 +46,6 @@ const passwordSchema = z.object({
   message: "Konfirmasi password tidak cocok",
   path: ["confirmPassword"],
 });
-  
 export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
     
   
@@ -95,7 +94,6 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
               }
           };
       
-          
           
           /* Toast success */
           const handleSuccess = (message: string) => {
@@ -275,28 +273,32 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <div>
-                        <Label htmlFor="currentPassword">Current Password</Label>
-                        <PasswordInput id="currentPassword" {...form.register("currentPassword")} autoComplete="current-password" />
+                        <Label htmlFor="currentPassword">Password Saat Ini *</Label>
+                        <PasswordInput id="currentPassword" className="mt-2" {...form.register("currentPassword")} autoComplete="current-password" placeholder="Contoh: Ujang123!"/>
                         <p className="text-red-500 text-sm">{form.formState.errors.currentPassword?.message}</p>
                       </div> 
                     <div>
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <PasswordInput id="newPassword" {...form.register("newPassword")} autoComplete="new-password" />
+                      <Label htmlFor="newPassword">Password Baru *</Label>
+                      <PasswordInput id="newPassword" className="mt-2" {...form.register("newPassword")} autoComplete="new-password" placeholder="Contoh: UjangNew123!"/>
                       <p className="text-red-500 text-sm">{form.formState.errors.newPassword?.message}</p>
+                      <FormDescription className="mt-2">*Password baru harus berbeda dari password saat ini</FormDescription>
                     </div>
                       <div>
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
-                        <PasswordInput id="confirmPassword" {...form.register("confirmPassword")} autoComplete="new-password" />
+                        <Label htmlFor="confirmPassword">Konfirmasi Password Baru *</Label>
+                        <PasswordInput id="confirmPassword" className="mt-2"{...form.register("confirmPassword")} autoComplete="new-password" placeholder="Contoh: UjangNew123!"/>
                         <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword?.message}</p>
                       </div>
                       <div className="flex gap-4 w-full">
                         
+                      <div className="flex gap-4 w-full mt-2">
                         <DialogClose asChild>
                           <Button variant="secondary">Kembali</Button>
                         </DialogClose>
-                        <Button className="max-w-xs w-full" type="submit">
+                        <Button type="submit" className="ml-auto">
                           Ubah
                         </Button>
+                      </div>
+
                       </div>
                     </form>
                   </Form>

@@ -38,6 +38,7 @@ interface UserProfile {
   createdAt: string;
   updatedAt: string;
 }
+
 const passwordSchema = z.object({
    currentPassword: z.string().min(1, "Password lama harus diisi"),
    newPassword: z.string()
@@ -52,6 +53,18 @@ const passwordSchema = z.object({
    path: ["confirmPassword"],
  });
 
+const formatDate = (isoString: string) => {
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
 
 export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -344,11 +357,11 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
             </div>
             <div>
               <p className="text-gray-500">Dibuat Pada Tanggal</p>
-              <p className="text-blue-900">{user.createdAt}</p>
+              <p className="text-blue-900">{formatDate(user.createdAt)}</p>
             </div>
             <div>
               <p className="text-gray-500">Diperbarui Pada Tanggal</p>
-              <p className="text-blue-900">{user.updatedAt}</p>
+              <p className="text-blue-900">{formatDate(user.updatedAt)}</p>
             </div>
           </div>
         </CardContent>

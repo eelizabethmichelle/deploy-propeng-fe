@@ -32,9 +32,11 @@ async function fetchAccount(token: string | null) {
 
 export default function Page() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setLoading(true);
     const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
     if (!token) {
@@ -43,6 +45,7 @@ export default function Page() {
     }
 
     fetchAccount(token).then(setData);
+    setLoading(false);
   }, [router]);
 
   return (

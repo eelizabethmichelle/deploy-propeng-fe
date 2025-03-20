@@ -164,7 +164,7 @@ export default function EditAccountForm() {
               <FormItem>
                 <FormLabel>Username *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan username" {...field} />
+                  <Input placeholder="Masukkan username" {...field} disabled/>
                 </FormControl>
                 <FormDescription>*Username wajib diisi</FormDescription>
                 <FormMessage />
@@ -219,7 +219,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{"NISN *"}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nomor Induk" {...field} />
+                    <Input placeholder="Masukkan Nomor Induk" {...field} disabled/>
                   </FormControl>
                   <FormDescription>*Nomor Induk wajib diisi dengan nomor yang terdaftar secara resmi</FormDescription>
                   <FormMessage />
@@ -234,7 +234,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{"NISP *"}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nomor Induk" {...field} />
+                    <Input placeholder="Masukkan Nomor Induk" {...field} disabled/>
                   </FormControl>
                   <FormDescription>*Nomor Induk wajib diisi dengan nomor yang terdaftar secara resmi</FormDescription>
                   <FormMessage />
@@ -251,7 +251,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{isTeacher ? "Tahun Masuk *" : isStudent ? "Angkatan *" : "Angkatan *"}</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} placeholder="Contoh: 2025" />
+                    <Input type="number" {...field} placeholder="Contoh: 2025" disabled/>
                   </FormControl>
                   <FormDescription>
                     {isTeacher ? "*Tahun Masuk diisi dengan tahun masuk saat guru mulai mengajar" : 

@@ -96,8 +96,8 @@ export default function MataPelajaranPage() {
           kode: matpel.kode || "",
           status: matpel.status || "Unknown",
           teacher: matpel.teacher?.name || "Unknown",
-          tahunAjaran: matpel.tahunAjaran || "-", // ✅ Tambahkan ini
-          students: matpel.jumlah_siswa || 0, // ✅ Tambahkan ini
+          tahunAjaran: matpel.tahunAjaran || "-", 
+          students: matpel.jumlah_siswa || 0, 
       }));
 
         setData(formattedData);

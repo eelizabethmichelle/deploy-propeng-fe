@@ -14,6 +14,7 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Check } from "lucide-react";
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -23,7 +24,7 @@ export default function DashboardPage() {
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         sessionStorage.removeItem("accessToken");
-        toast.success("Berhasil keluar dari sistem")
+        toast.success("Berhasil keluar dari sistem")                    
         router.push("/login");
     };
 
