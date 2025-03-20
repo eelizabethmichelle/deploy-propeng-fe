@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input"
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -50,6 +51,7 @@ export default function EditAccountForm() {
       nisp: "",
       angkatan: currentYear.toString(),
       isActive: "",
+      password: "",
     }
   });
 
@@ -95,7 +97,7 @@ export default function EditAccountForm() {
         const userData = data.data;
 
         reset({
-          id: userId?.at(0) || "",
+          id: userId || "",
           username: userData.username || "",
           name: userData.name || "",
           role: userData.role || "",
@@ -124,6 +126,7 @@ export default function EditAccountForm() {
       sessionStorage.getItem("accessToken");
 
     try {
+      console.log(data)
       const response = await fetch(`/api/account/edit`, {
         method: "PUT",
         headers: {
@@ -279,6 +282,30 @@ export default function EditAccountForm() {
                   {isTeacher ? "*Pilih aktif jika guru masih aktif mengajar" : 
                   isStudent ? "*Pilih aktif jika siswa masih aktif terdaftar mengikuti kegiatan belajar mengajar" : ""}
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Password Field */}
+          <FormField control={control} name="password"
+            rules={{
+              minLength: {
+                value: 8,
+                message: "Password minimal 8 karakter",
+              },
+              pattern: {
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                message: "Password harus memiliki huruf besar, huruf kecil, angka, dan simbol",
+              },
+            }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password Baru</FormLabel>
+                <FormControl>
+                  <PasswordInput placeholder="Contoh: Ujang123!" {...field} />
+                </FormControl>
+                <FormDescription>*Password bersifat opsional. Field ini hanya perlu diisi jika ingin mengubah password akun pengguna</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
