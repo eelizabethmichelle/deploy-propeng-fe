@@ -35,7 +35,31 @@ export default function LoginPage() {
             const loginData = await loginResponse.json();
             localStorage.setItem("accessToken", loginData.access);
             sessionStorage.setItem("accessToken", loginData.access)
-            router.push("/");
+
+            const detailResponse = await fetch("/api/auth/detail", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${loginData.access}`,
+                },
+            });
+    
+            if (!detailResponse.ok) {
+                throw new Error("Token tidak valid.");
+            }
+    
+            const detailData = await detailResponse.json();
+            const role = detailData.data_user.role
+
+            localStorage.setItem("user_id", detailData.data_user.user_id)
+            sessionStorage.setItem("user_id", detailData.data_user.user_id)
+
+            toast.success("Berhasil masuk ke dalam sistem");
+
+            if (role === "admin") router.push("/admin");
+            else if (role === "student") router.push("/siswa");
+            else if (role === "teacher") router.push("/guru");
+            else router.push("/unauthorized");
+
         } catch (error) {
             console.error("Login error:", error);
             alert("Login gagal! Periksa kembali kredensial Anda.");

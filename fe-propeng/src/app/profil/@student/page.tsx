@@ -112,37 +112,32 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
   };
 
   useEffect(() => {
-  const fetchUserData = async () => {
-    const accessToken =
-      localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+    const fetchUserData = async () => {
+      const accessToken =
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("accessToken");
 
-    console.log("Access Token:", accessToken); // Debugging token
+      try {
+        const response = await fetch(`/api/account/detail`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken} Id ${user_id}`,
+          },
+        });
 
-    try {
-      const response = await fetch(`http://203.194.113.127/api/auth/profile/${user_id}/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      console.log("Response status:", response.status);
-      const responseData = await response.json();
-      console.log("Response data:", responseData);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          router.push("/404");
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log(response)
+          }
+          throw new Error("Failed to fetch data");
         }
-        throw new Error("Failed to fetch data");
+
+        const data = await response.json();
+        setUser(data.data);
+      } catch (error) {
+        console.error(error);
       }
-
-      setUser(responseData.data);
-
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
+    };
 
   fetchUserData();
 }, [user_id, router]);

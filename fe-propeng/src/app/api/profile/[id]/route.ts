@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
     // Parse the URL and extract the ID from the path
     const url = new URL(request.url);
     const pathSegments = url.pathname.split("/");
@@ -16,10 +16,6 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Decode JWT langsung dari token
-        const decodedToken: { id: string } = jwtDecode(token);
-        const userId = decodedToken.id;
-
         if (!userId) {
             return NextResponse.json({ message: "Invalid token" }, { status: 401 });
         }

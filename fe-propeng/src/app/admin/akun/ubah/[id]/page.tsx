@@ -78,10 +78,10 @@ export default function EditAccountForm() {
         sessionStorage.getItem("accessToken");
 
       try {
-        const response = await fetch(`/api/account/detail/${userId}`, {
+        const response = await fetch(`/api/account/detail`, {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken} Id ${userId}`,
           },
         });
 

@@ -28,8 +28,6 @@ import { Form } from "@/components/ui/form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-
-
 interface UserProfile {
   user_id: number;
   username: string;
@@ -108,33 +106,28 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
     useEffect(() => {
       const fetchUserData = async () => {
         const accessToken =
-          localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-        console.log("Access Token:", accessToken); // Debugging token
-
+          localStorage.getItem("accessToken") ||
+          sessionStorage.getItem("accessToken");
+  
         try {
-          const response = await fetch(`http://203.194.113.127/api/auth/profile/${user_id}/`, {
+          const response = await fetch(`/api/account/detail`, {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${accessToken} Id ${user_id}`,
             },
           });
-
-          console.log("Response status:", response.status);
-          const responseData = await response.json();
-          console.log("Response data:", responseData);
-
+  
           if (!response.ok) {
             if (response.status === 404) {
-              router.push("/404");
+              console.log(response)
             }
             throw new Error("Failed to fetch data");
           }
-
-          setUser(responseData.data);
-
+  
+          const data = await response.json();
+          setUser(data.data);
         } catch (error) {
-          console.error("Fetch error:", error);
+          console.error(error);
         }
       };
 

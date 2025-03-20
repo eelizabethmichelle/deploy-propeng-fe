@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-    // Parse the URL and extract the ID from the path
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split("/");
-    const userId = pathSegments[pathSegments.length - 1]; 
+export async function GET(request: Request) {    
+    
+    // Extract JWT token from headers
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.split(" ")[1];
+    const userId = authHeader?.split(" ")[3];
 
     if (!userId) {
         return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     }
-
-    // Extract JWT token from headers
-    const authHeader = request.headers.get("Authorization");
-    const token = authHeader?.split(" ")[1];
-
+    
     if (!token) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    
     try {
+        // return NextResponse.json({ message: {url: url, pathSegments: pathSegments, userId: userId, fetchUrl: `http://203.194.113.127/api/auth/profile/${userId}`} }, { status: 401 });
+        
+        
         // Fetch user profile
         const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
             method: "GET",
