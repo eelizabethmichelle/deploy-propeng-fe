@@ -1,4 +1,4 @@
-// src/app/admin/layout.tsx
+// src/app/admin/layout.tsx - MODIFIED VERSION
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -178,7 +178,7 @@ export default function AdminLayout({
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
+          {children} {/* This is the only place where page content should be rendered */}
         </div>
       </SidebarInset>
     </SidebarProvider>

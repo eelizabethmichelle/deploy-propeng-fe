@@ -125,7 +125,7 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
+    <>
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <h2 className="text-3xl font-semibold tracking-tight">
@@ -160,6 +160,6 @@ export default function Page() {
         // Always render the DataTable, even with empty data
         <DataTable data={data} columns={columns} />
       )}
-    </div>
+    </>
   );
 }

@@ -30,11 +30,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster />
-        {children}
         <AuthProvider>
-          {children}
+          {children} {/* Only render children once */}
         </AuthProvider>
       </body>
     </html>
   );
 }
+
