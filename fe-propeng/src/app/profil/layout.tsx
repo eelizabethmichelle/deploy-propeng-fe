@@ -74,7 +74,7 @@ export default function ProfileLayout({
         const response = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken} Id ${userId}`,
         },
       });
 
