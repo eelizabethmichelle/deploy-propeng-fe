@@ -87,14 +87,17 @@ export const columns: ColumnDef<Schema>[] = [
       const isActive = row.getValue("isActive") === true;
       return (
          <div className="flex w-[100px] items-center">
-          {type === "Active" ? (
-            <CheckCircle size={20} className="mr-2 text-green-500" />
+          {isActive ? (
+            <>
+              <CheckCircle size={20} className="text-green-600" />
+              <span className="font-medium">Aktif</span>
+            </>
           ) : (
-            <X size={20} className="mr-2 text-red-500" />
+            <>
+              <X size={20} className="text-red-500" />
+              <span className="font-medium">Tidak Aktif</span>
+            </>
           )}
-          <span className="capitalize">
-            {type === "Active" ? "Aktif" : "Tidak Aktif"}
-          </span>
         </div>
       );
     },
