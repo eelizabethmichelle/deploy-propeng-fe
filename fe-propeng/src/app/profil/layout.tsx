@@ -72,7 +72,7 @@ export default function ProfileLayout({
       const accessToken =
         localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-      const response = await fetch(`/api/auth/profile`, {
+      const response = await fetch(`/api/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken} Id ${userId}`,

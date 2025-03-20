@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtDecode } from "jwt-decode";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://203.194.113.127';
 
-export async function GET(request: Request) {
-    // Parse the URL and extract the ID from the path
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split("/");
-    const userId = pathSegments[pathSegments.length - 1]; 
-
-    // Ambil token dari Authorization header
+export async function GET(request: Request) {    
+    
+    // Extract JWT token from headers
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
+    const userId = authHeader?.split(" ")[3];
 
+    if (!userId) {
+        return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+    }
+    
     if (!token) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    
     try {
-        if (!userId) {
-            return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-        }
-
-        // Fetch user profile data langsung pakai userId dari JWT
-        const profileRes = await fetch(`api/auth/profile/${userId}/`, {
+        // return NextResponse.json({ message: {url: url, pathSegments: pathSegments, userId: userId, fetchUrl: `http://203.194.113.127/api/auth/profile/${userId}`} }, { status: 401 });
+        
+        
+        // Fetch user profile
+        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -37,7 +35,7 @@ export async function GET(request: Request) {
         return NextResponse.json(profileData);
 
     } catch (error) {
-        console.error("Error decoding token or fetching data:", error);
+        console.error("Error fetching user profile:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }
