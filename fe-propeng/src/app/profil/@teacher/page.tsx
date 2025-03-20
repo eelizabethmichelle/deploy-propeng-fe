@@ -92,11 +92,11 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
                     console.log("Status:", response.status);
     
                   // Tampilkan pesan error dari Django
-                    handleError()
+                    handleError(responseData.message)
                     throw new Error(responseData.message || "Gagal mengubah password!");
                 }
     
-                handleSuccess(); 
+                handleSuccess(responseData.message); 
                 console.log("Success:", responseData.message);
             } catch (error: any) {
                 console.error("Error:", error.message);
@@ -106,7 +106,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
         
         
         /* Toast success */
-        const handleSuccess = () => {
+        const handleSuccess = (message: string) => {
             toast("", {
               description: (
                 <div className="flex items-start gap-3">
@@ -119,7 +119,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
                     <p className="text-lg font-semibold text-foreground font-sans">Berhasil Diubah</p>
                     {/* Deskripsi dengan warna lebih muted */}
                     <p className="text-sm text-muted-foreground font-sans">
-                      Password kamu berhasil diubah
+                      {message!=="" ? message : "Password kamu berhasil diubah"}
                     </p>
                   </div>
                 </div>
@@ -137,7 +137,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
       
     
         /* Toast error */
-        const handleError = () => {
+        const handleError = (message: string) => {
             toast("", {
               description: (
                 <div className="flex items-start gap-3">
@@ -150,7 +150,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
                     <p className="text-lg font-semibold text-foreground font-sans">Gagal diubah!</p>
                     {/* Deskripsi dengan warna lebih muted */}
                     <p className="text-sm text-muted-foreground font-sans">
-                      Password sebelumnya tidak sesuai
+                      {message!=="" ? message : "Password sebelumnya tidak sesuai"}
                     </p>
                   </div>
                 </div>
@@ -303,9 +303,9 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
                         <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword?.message}</p>
                       </div>
                       <div className="flex gap-4 w-full">
-                        <Button type="button" variant="secondary">
-                          Kembali
-                        </Button>
+                        <DialogClose asChild>
+                          <Button variant="secondary">Kembali</Button>
+                        </DialogClose>
                         <Button className="max-w-xs w-full" type="submit">
                           Ubah
                         </Button>
