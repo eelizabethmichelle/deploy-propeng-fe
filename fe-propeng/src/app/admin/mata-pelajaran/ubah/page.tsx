@@ -102,7 +102,7 @@ export default function UbahMataPelajaran() {
         if (!token) return router.push("/login");
 
         const response = await fetch(
-          "http://203.194.113.127/api/auth/list_teacher/",
+          "/api/mata-pelajaran/list_teacher/",
           {
             method: "GET",
             headers: {
@@ -137,7 +137,7 @@ export default function UbahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("http://203.194.113.127/api/auth/list_student/", {
+        const response = await fetch("/api/mata-pelajaran/list_student/", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -205,7 +205,7 @@ export default function UbahMataPelajaran() {
         }
     
         const response = await fetch(
-          `http://203.194.113.127/api/matpel/${matpelId}/`,
+          `/api/mata-pelajaran/detail/${matpelId}/`,
           {
             method: "GET",
             headers: {
@@ -316,7 +316,7 @@ export default function UbahMataPelajaran() {
       console.log("Request body:", requestBody);
 
       const response = await fetch(
-        `http://203.194.113.127/api/matpel/update/${matpelId}/`,
+        `/api/mata-pelajaran/ubah/${matpelId}/`,
         {
           method: "PUT",
           headers: {

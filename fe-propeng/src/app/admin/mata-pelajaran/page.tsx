@@ -72,7 +72,7 @@ export default function MataPelajaranPage() {
         console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
 
         // ✅ Fetch Data Guru untuk Mendapatkan Nama
-        const teacherResponse = await fetch("http://203.194.113.127/api/auth/list_teacher/", {
+        const teacherResponse = await fetch("/api/mata-pelajaran/list_teacher/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

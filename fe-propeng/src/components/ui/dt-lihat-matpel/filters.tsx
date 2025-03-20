@@ -68,7 +68,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     try {
       const deleteRequests = selectedRowIds.map(async (id) => {
         try {
-          const res = await fetch(`http://203.194.113.127/api/matpel/delete/${id}/`, {
+          const res = await fetch(`/api/mata-pelajaran/hapus/${id}/`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",

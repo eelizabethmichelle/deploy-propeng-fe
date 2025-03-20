@@ -99,7 +99,7 @@ export function DataTableRowActions<TData extends RowData>({
     }
 
     try {
-      const res = await fetch(`http://203.194.113.127/api/matpel/delete/${id}/`, {
+      const res = await fetch(`/api/mata-pelajaran/hapus/${id}/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +142,7 @@ export function DataTableRowActions<TData extends RowData>({
     }
   
     try {
-      const res = await fetch(`api/mata-pelajaran/${id}/`, {
+      const res = await fetch(`/api/mata-pelajaran/detail/${id}/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -183,8 +183,13 @@ export function DataTableRowActions<TData extends RowData>({
       setLoading(false);
     }
   };
-  
 
+  useEffect(() => {
+    if (isDeleteDialogOpen && id) {
+      handleFetchDetail();
+    }
+  }, [isDeleteDialogOpen, id]);
+  
   return (
     <>
       {/* Dropdown Menu */}
