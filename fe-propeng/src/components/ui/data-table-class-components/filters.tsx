@@ -11,16 +11,19 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner"
 
-interface RowData {
+// Define a base interface for your data that includes the id property
+interface BaseData {
     id: string;
-    tahunAjaran: string;
 }
 
-interface DataTableToolbarProps {
-    table: Table<RowData>;
+// Update the DataTableToolbarProps to constrain TData to extend BaseData
+interface DataTableToolbarProps<TData extends BaseData> {
+    table: Table<TData>;
 }
 
-export function DataTableToolbar({ table }: DataTableToolbarProps) {
+export function DataTableToolbar<TData extends BaseData>({
+    table
+}: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0;
     const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
     const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -38,7 +41,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
             const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
 
             // Make API request to delete multiple classes
-            const response = await fetch("http://127.0.0.1:8000/api/kelas/delete_multiple/", {
+            const response = await fetch("http://203.194.113.127/api/kelas/delete_multiple/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -65,9 +68,9 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
                             <Check className="text-background w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-lg font-semibold text-foreground font-sans">Kelas Dinonaktifkan!</p>
+                            <p className="text-lg font-semibold text-foreground font-sans">Kelas Dihapus!</p>
                             <p className="text-sm text-muted-foreground font-sans">
-                                {selectedIds.length} kelas berhasil dinonaktifkan
+                                {selectedIds.length} kelas berhasil dihapus
                             </p>
                         </div>
                     </div>

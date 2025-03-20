@@ -104,7 +104,7 @@ export const columns: ColumnDef<Class>[] = [
           <Button
             variant="secondary"
             className="bg-[hsl(237,100%,98%)] text-[hsl(232,74%,21%)] hover:bg-[hsl(237,90%,95%)]"
-            onClick={() => router.push(`/admin/detail-kelas/${id}`)}
+            onClick={() => router.push(`/admin/kelas/detail-kelas/${id}`)}
           >
             Lihat Detail
           </Button>

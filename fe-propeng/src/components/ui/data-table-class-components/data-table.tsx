@@ -25,12 +25,17 @@ import { DataTablePagination } from "./pagination";
 import { DataTableToolbar } from "./filters";
 import { useState } from "react";
 
-interface DataTableProps<TData, TValue> {
+// Import the BaseData interface or define it here
+interface BaseData {
+  id: string;
+}
+
+interface DataTableProps<TData extends BaseData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends BaseData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -64,7 +69,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table as any} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
