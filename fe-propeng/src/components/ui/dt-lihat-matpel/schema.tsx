@@ -2,12 +2,13 @@ import { z } from "zod";
 
 // Definisi schema data
 export const dataSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   name: z.string(),
-  username: z.string(),
-  nisn: z.string(),
-  angkatan: z.string(),
+  kode: z.string(),
   status: z.string(),
+  teacher: z.string(),
+  tahunAjaran: z.union([z.number(), z.string()]),
+  students: z.number(),
 });
 
 export type Schema = z.infer<typeof dataSchema>;

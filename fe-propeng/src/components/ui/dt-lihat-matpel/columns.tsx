@@ -38,7 +38,7 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
       <DataTableColumnHeader column={column} title="Tahun Ajaran" />
     ),
     cell: ({ row }) => {
-      const tahunAjaran = row.getValue("tahunAjaran");
+      const tahunAjaran = row.getValue("tahunAjaran") as string;
       const formattedTahunAjaran = tahunAjaran ? `TA ${tahunAjaran}/${parseInt(tahunAjaran) + 1}` : "-";
       
       return (

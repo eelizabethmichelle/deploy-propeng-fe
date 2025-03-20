@@ -55,6 +55,7 @@ interface DataSiswa {
 }
 
 const formSchema = z.object({
+  classId: z.string().min(1, { message: "ID mata pelajaran wajib diisi" }),
   namaPelajaran: z.string().min(1, { message: "Nama pelajaran wajib diisi" }),
   kategoriMatpel: z.enum(["Wajib", "Peminatan"]),
   angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
@@ -83,6 +84,7 @@ export default function UbahMataPelajaran() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      classId: "",
       namaPelajaran: "",
       kategoriMatpel: "Wajib",
       tahunAjaran: "",
@@ -204,19 +206,16 @@ export default function UbahMataPelajaran() {
           return;
         }
     
-        const response = await fetch(
-          `/api/mata-pelajaran/detail/${matpelId}/`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const res = await fetch(`/api/matpel/detail/`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token} Id ${matpelId}`,
+          },
+        });
     
-        const result = await response.json();
-        if (response.ok) {
+        const result = await res.json();
+        if (res.ok) {
           const { data } = result;
     
           const registeredStudents = data.siswa_terdaftar?.map((siswa: DataSiswa) => ({
@@ -230,6 +229,7 @@ export default function UbahMataPelajaran() {
           form.setValue("siswa", registeredStudents.map((s: DataSiswa) => s.name));
           
           form.reset({
+            classId: data.id,
             namaPelajaran: data.nama || "",
             kategoriMatpel: data.kategoriMatpel || "Wajib",
             tahunAjaran: data.tahunAjaran?.toString() || "",

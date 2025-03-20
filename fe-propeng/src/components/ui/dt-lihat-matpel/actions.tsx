@@ -99,12 +99,13 @@ export function DataTableRowActions<TData extends RowData>({
     }
 
     try {
-      const res = await fetch(`/api/mata-pelajaran/hapus/${id}/`, {
+      const res = await fetch(`/api/mata-pelajaran/hapus/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({ id }),
       });
 
       if (!res.ok) {
@@ -142,11 +143,11 @@ export function DataTableRowActions<TData extends RowData>({
     }
   
     try {
-      const res = await fetch(`/api/mata-pelajaran/detail/${id}/`, {
+      const res = await fetch(`/api/mata-pelajaran/detail/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token} Id ${id}`,
         },
       });
   
@@ -209,10 +210,10 @@ export function DataTableRowActions<TData extends RowData>({
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleEdit}>Ubah</DropdownMenuItem>
 
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
+          {/* <DropdownMenuSeparator /> */}
+          {/* <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
             Hapus
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
 

@@ -56,7 +56,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     let token: string | null = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
   
     if (!token) {
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Delay to allow token retrieval
+      await new Promise((resolve) => setTimeout(resolve, 500));
       token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
     }
   
@@ -68,19 +68,20 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     try {
       const deleteRequests = selectedRowIds.map(async (id) => {
         try {
-          const res = await fetch(`/api/mata-pelajaran/hapus/${id}/`, {
+          const res = await fetch(`/api/mata-pelajaran/hapus/`, {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
+            body: JSON.stringify({ id }),
           });
-  
+
           if (!res.ok) {
-            throw new Error(`Gagal menghapus ID ${id}: ${res.statusText}`);
+            throw new Error(`Failed to delete mata pelajaran with ID ${id}`);
           }
-  
-          return res.status === 204 || res.status === 200 ? "Deleted" : await res.json();
+
+          return "Deleted";
         } catch (error) {
           console.error(`Delete error for ID ${id}:`, error);
           return `Error deleting ID ${id}`;
@@ -88,14 +89,10 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       });
   
       const deleteResponses = await Promise.all(deleteRequests);
-  
-      // Count successfully deleted items
       const successCount = deleteResponses.filter((res) => res === "Deleted").length;
   
       if (successCount > 0) {
         toast.success(`Berhasil menghapus ${successCount} mata pelajaran!`);
-  
-        // ✅ Full page reload after 1 second
         setTimeout(() => {
           window.location.reload();
         }, 1000);
