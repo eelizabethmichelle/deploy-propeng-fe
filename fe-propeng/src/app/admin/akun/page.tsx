@@ -10,7 +10,7 @@ async function fetchAccount(token: string | null) {
   if (!token) return null;
 
   try {
-    const response = await fetch("/api/account/viewall", {
+    const response = await fetch("http://203.194.113.127/api/auth/list_student/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

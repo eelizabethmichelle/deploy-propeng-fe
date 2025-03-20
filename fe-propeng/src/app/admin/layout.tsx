@@ -28,7 +28,7 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(false);
   
   // Extract class ID from pathname if we're on a detail page
-  const classId = pathname.includes("/admin/detail-kelas/") 
+  const classId = pathname.includes("/admin/kelas/detail-kelas/") 
     ? pathname.split("/").pop() 
     : null;
   
@@ -51,7 +51,7 @@ export default function AdminLayout({
         }
         
         // Make API request with proper error handling
-        const response = await fetch(`http://127.0.0.1:8000/api/kelas/${classId}`, {
+        const response = await fetch(`http://203.194.113.127/api/kelas/${classId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function AdminLayout({
     e.preventDefault();
     
     // If navigating to class list from detail page, signal refresh
-    if (href === "/admin/lihat-kelas" && pathname.includes("/admin/detail-kelas/")) {
+    if (href === "/admin/lihat-kelas" && pathname.includes("/admin/kelas/detail-kelas/")) {
       localStorage.setItem('kelas_data_refresh', 'true');
     }
     
@@ -107,18 +107,18 @@ export default function AdminLayout({
   // Determine breadcrumbs based on pathname
   let breadcrumbs: any[] = [];
   
-  if (pathname.includes("/admin/lihat-kelas")) {
+  if (pathname.includes("/admin/kelas/lihat-kelas")) {
     breadcrumbs = [
-      { label: "Kelas", href: "/admin/lihat-kelas", current: true },
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas", current: true },
     ];
-  } else if (pathname.includes("/admin/tambah-kelas")) {
+  } else if (pathname.includes("/admin/kelas/tambah-kelas")) {
     breadcrumbs = [
-      { label: "Kelas", href: "/admin/lihat-kelas" },
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas" },
       { label: "Tambah Kelas", current: true },
     ];
-  } else if (pathname.includes("/admin/detail-kelas/")) {
+  } else if (pathname.includes("/admin/kelas/detail-kelas/")) {
     breadcrumbs = [
-      { label: "Kelas", href: "/admin/lihat-kelas" },
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas" },
       { label: loading ? "Loading..." : (className ? `Detail Kelas ${className}` : "Detail Kelas"), current: true },
     ];
   } else if (pathname.includes("/admin/akun")) {
