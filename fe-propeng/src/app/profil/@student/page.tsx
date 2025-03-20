@@ -49,6 +49,7 @@ interface UserProfile {
   nisn: string;
   angkatan: number;
   isActive: boolean;
+  activeClasses: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -270,6 +271,10 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
             <div>
               <p className="text-gray-500">Angkatan</p>
               <p className="text-blue-900">{user.angkatan}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Kelas</p>
+              <p className="text-blue-900">{user.activeClasses[0]}</p>
             </div>
             <div>
               <p className="text-gray-500">Status</p>

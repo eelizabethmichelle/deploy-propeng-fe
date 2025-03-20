@@ -1,6 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ interface DataTableToolbarProps {
 }
 
 export function DataTableToolbar({ table }: DataTableToolbarProps) {
+  const router = useRouter();
   const allRows = table.getCoreRowModel().rows;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
@@ -55,7 +56,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const router = useRouter();
+  
   useEffect(() => {
     setAccessToken(
       localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken")
@@ -92,12 +93,16 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
         setProgress(((i + 1) / selectedRows.length) * 100);
       }
 
-      toast.success("Semua akun berhasil dihapus");
+      if (selectedRows.length > 1) {
+        toast.success("Semua akun pengguna berhasil dihapus");
+      } else {
+        toast.success("Akun pengguna berhasil dihapus")
+      }
       table.resetRowSelection();
       setDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting accounts:", error);
-      toast.error("Terjadi kesalahan saat menghapus akun");
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus akun pengguna");
     } finally {
       setLoading(false);
       setProgress(0);

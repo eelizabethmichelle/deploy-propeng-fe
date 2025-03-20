@@ -35,12 +35,13 @@ export async function DELETE(request: Request) {
                 "Content-Type": "application/json",
             }
         });
+        
+        const data = await res.json();
 
         if (!res.ok) {
-            return NextResponse.json({ error: "Failed to delete user" }, { status: res.status });
+            return NextResponse.json({ error: data.message }, { status: res.status });
         }
 
-        const data = await res.json();
         return NextResponse.json(data);
 
     } catch (error) {

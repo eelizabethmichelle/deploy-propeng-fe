@@ -1,7 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
 
-export async function GET(request: Request) { 
+export async function GET(request: NextRequest) {
+    // Parse the URL and extract the ID from the path
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split("/");
+    const userId = pathSegments[pathSegments.length - 1]; 
+
     // Ambil token dari Authorization header
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];

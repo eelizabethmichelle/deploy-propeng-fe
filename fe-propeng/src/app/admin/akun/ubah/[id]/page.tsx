@@ -51,7 +51,6 @@ export default function EditAccountForm() {
       nisp: "",
       angkatan: currentYear.toString(),
       isActive: "",
-      password: "",
     }
   });
 
@@ -94,17 +93,18 @@ export default function EditAccountForm() {
         }
 
         const data = await response.json();
+        console.log(data)
         const userData = data.data;
 
         reset({
-          id: userId || "",
+          id: userData.user_id || "",
           username: userData.username || "",
           name: userData.name || "",
           role: userData.role || "",
           nisn: userData.nisn || "",
           nisp: userData.nisp || "",
           angkatan: userData.angkatan || currentYear.toString(),
-          isActive: userData.isActive,
+          isActive: userData.isActive ? "true" : "false",
         });
 
       } catch (error) {
