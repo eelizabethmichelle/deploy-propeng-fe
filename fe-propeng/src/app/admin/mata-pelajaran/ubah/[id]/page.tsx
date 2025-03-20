@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -71,8 +71,8 @@ type FormData = z.infer<typeof formSchema>;
 
 function UbahMataPelajaranContent() {
   const router = useRouter();
-  const pathname = usePathname();
-  const matpelId = localStorage.getItem("selectedMatpelId");
+  const params = useParams();
+  const matpelId = params?.id;
 
   const [daftarGuru, setDaftarGuru] = useState([]);
   const [siswa, setSiswa] = useState<DataSiswa[]>([]);
@@ -217,8 +217,6 @@ function UbahMataPelajaranContent() {
             Authorization: `Bearer ${token} Id ${matpelId}`,
           },
         });
-
-
     
         const result = await res.json();
         console.log(result);

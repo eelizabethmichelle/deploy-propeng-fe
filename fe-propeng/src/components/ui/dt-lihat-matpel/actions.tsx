@@ -74,7 +74,7 @@ export function DataTableRowActions<TData extends RowData>({
       console.error("No ID found for this row");
       return;
     }
-    router.push(`/admin/mata-pelajaran/ubah?matpelId=${id}`);
+    router.push(`/admin/mata-pelajaran/ubah/${id}`);
   };
 
   const handleDelete = async () => {
