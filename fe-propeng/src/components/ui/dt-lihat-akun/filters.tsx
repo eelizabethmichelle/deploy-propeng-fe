@@ -1,5 +1,5 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
@@ -24,7 +24,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 interface RowData {
   id: string;
-  isActive: boolean;
+  isActive: string;
   role: string;
 }
 
@@ -38,7 +38,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const uniqueStatus = [...new Set(allRows.map((row) => row.original.isActive))].map(
     (isActive) => ({
-      value: isActive,
+      value: (isActive),
       label: isActive ? "Aktif" : "Tidak Aktif",
     })
   );
@@ -55,7 +55,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-
+  const router = useRouter();
   useEffect(() => {
     setAccessToken(
       localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken")
