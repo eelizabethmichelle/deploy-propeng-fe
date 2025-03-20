@@ -6,6 +6,7 @@ import { DataTableColumnHeader } from "./sort";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { CheckCircle, X } from "lucide-react";
 
 export type Class = {
   id: string;
@@ -87,11 +88,21 @@ export const columns: ColumnDef<Class>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => (
-      <div className="w-[100px]">
-        {row.getValue("isActive") ? "Aktif" : "Tidak Aktif"}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const isActive = row.getValue("isActive");
+      return (
+        <div className="flex w-[100px] items-center">
+          {isActive ? (
+            <CheckCircle size={20} className="mr-2 text-green-500" />
+          ) : (
+            <X size={20} className="mr-2 text-red-500" />
+          )}
+          <span className="capitalize">
+            {isActive ? "Aktif" : "Tidak Aktif"}
+          </span>
+        </div>
+      );
+    },
   },
   {
     id: "detail",

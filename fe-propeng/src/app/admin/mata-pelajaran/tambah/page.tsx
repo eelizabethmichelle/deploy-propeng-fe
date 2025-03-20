@@ -33,6 +33,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { SelectPills } from "@/components/ui/multiple-select";
+import { Plus } from "lucide-react";
 
 interface DataGuru {
   id: string;
@@ -59,7 +60,12 @@ const formSchema = z.object({
   kategoriMatpel: z.enum(["Wajib", "Peminatan"]),
   angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
   siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
-  tahunAjaran: z.string().min(1, { message: "Tahun ajaran wajib diisi" }),
+  tahunAjaran: z.string()
+    .min(1, { message: "Tahun ajaran wajib diisi" })
+    .refine((val) => {
+      const year = parseInt(val);
+      return year >= 2000 && year <= 2100;
+    }, { message: "Tahun ajaran harus antara 2000-2100" }),
   guru: z.string().min(1, { message: "Guru wajib dipilih" }),
   // status: z.enum(["active", "inactive"]),
 });
@@ -260,9 +266,7 @@ export default function TambahMataPelajaran() {
             form.setValue("siswa", []);
           } else {
             setSiswa([]);
-            toast.warning("Tidak ada siswa", {
-              description: `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`,
-            });
+            toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`);
           }
         } else {
           throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
@@ -360,9 +364,7 @@ export default function TambahMataPelajaran() {
       console.log("Response data:", responseData);
 
       if (response.ok) {
-        toast.success("Mata Pelajaran Berhasil Ditambahkan!", {
-          description: responseData.message || "Mata pelajaran baru telah berhasil dibuat.",
-        });
+        toast.success("Mata Pelajaran Berhasil Ditambahkan!");
         setTimeout(() => {
           router.push("/admin/mata-pelajaran");
         }, 1500);
@@ -454,9 +456,22 @@ export default function TambahMataPelajaran() {
                         <Input
                           type="number"
                           placeholder="Contoh: 2024"
-                          className="flex-1"
+                          className={`flex-1 ${field.value && (parseInt(field.value) < 2000 || parseInt(field.value) > 2100) ? 'text-red-500' : ''}`}
+                          min="2000"
+                          max="2100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value);
+                            if (value && (parseInt(value) < 2000 || parseInt(value) > 2100)) {
+                              form.setError('tahunAjaran', {
+                                type: 'manual',
+                                message: 'Tahun ajaran harus antara 2000-2100'
+                              });
+                            } else {
+                              form.clearErrors('tahunAjaran');
+                            }
+                          }}
                         />
                         <span className="text-sm font-medium">/</span>
                         <Input
@@ -575,21 +590,22 @@ export default function TambahMataPelajaran() {
               <div className="flex justify-between items-center gap-2 pt-2">
                 {/* Tombol Kembali - Lebih Kecil */}
                 <Button
-                  className="bg-gray-300 text-black hover:bg-gray-400 transition px-4 py-2 text-sm"
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()} // 🔹 Kembali ke halaman sebelumnya
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
                   Kembali
                 </Button>
 
                 {/* Tombol Tambah - Lebih Besar */}
                 <Button
-                  className="bg-blue-500 text-white hover:bg-blue-600 transition px-6 py-2 text-base"
+                  className="bg-blue-800 hover:bg-blue-900"
                   type="submit"
                   disabled={isSubmitting}
                   onClick={() => setIsExplicitSubmit(true)}
                 >
-                  {isSubmitting ? "Menyimpan..." : "Tambah"}
+                  {isSubmitting ? "Menyimpan..." : "Tambah Mata Pelajaran"}
+                  <Plus className="h-5 w-5 ml-2" />
                 </Button>
               </div>
 

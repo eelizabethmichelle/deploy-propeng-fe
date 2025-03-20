@@ -392,9 +392,7 @@ export default function ClassDetailPage() {
                     addStudentsForm.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
-                    toast.warning("Tidak ada siswa", {
-                        description: `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`,
-                    });
+                    toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
@@ -815,7 +813,7 @@ export default function ClassDetailPage() {
         return (
             <div className="p-8 flex flex-col items-center justify-center">
                 <div className="text-red-500 mb-4">Error: {error}</div>
-                <Button onClick={() => router.push("/admin/kelas/lihat-kelas")}>
+                <Button variant="secondary" onClick={() => router.push("/admin/kelas/lihat-kelas")}>
                     Kembali ke Daftar Kelas
                 </Button>
             </div>

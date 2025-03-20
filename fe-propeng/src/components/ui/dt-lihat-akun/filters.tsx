@@ -137,7 +137,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
         {selectedRowsCount > 0 && (
           <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="destructive">
                 <TrashIcon className="mr-2 size-4" aria-hidden="true" />
                 Delete ({selectedRowsCount})
               </Button>

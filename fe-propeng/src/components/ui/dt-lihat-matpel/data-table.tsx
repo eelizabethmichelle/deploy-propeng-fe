@@ -113,9 +113,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-lg text-gray-500"
                 >
-                  No results.
+                  Belum ada mata pelajaran yang terdaftar! Silahkan menambahkan mata pelajaran baru.
                 </TableCell>
               </TableRow>
             )}

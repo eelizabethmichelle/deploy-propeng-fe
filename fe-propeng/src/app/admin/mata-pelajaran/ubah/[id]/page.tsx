@@ -173,9 +173,7 @@ function UbahMataPelajaranContent() {
             form.setValue("siswa", []);
           } else {
             setSiswa([]);
-            toast.warning("Tidak ada siswa", {
-              description: `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`,
-            });
+            toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`);
           }
         } else {
           throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
@@ -411,9 +409,22 @@ function UbahMataPelajaranContent() {
                         <Input
                           type="number"
                           placeholder="Contoh: 2024"
-                          className="flex-1"
+                          className={`flex-1 ${field.value && (parseInt(field.value) < 2000 || parseInt(field.value) > 2100) ? 'text-red-500' : ''}`}
+                          min="2000"
+                          max="2100"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value);
+                            if (value && (parseInt(value) < 2000 || parseInt(value) > 2100)) {
+                              form.setError('tahunAjaran', {
+                                type: 'manual',
+                                message: 'Tahun ajaran harus antara 2000-2100'
+                              });
+                            } else {
+                              form.clearErrors('tahunAjaran');
+                            }
+                          }}
                         />
                         <span className="text-sm font-medium">/</span>
                         <Input
@@ -545,15 +556,15 @@ function UbahMataPelajaranContent() {
 
               {/* Buttons */}
               <div className="flex justify-between items-center gap-2 pt-2">
-                <Button
-                  className="bg-gray-300 text-black hover:bg-gray-400 transition px-4 py-2 text-sm"
+              <Button
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()}
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
                   Kembali
                 </Button>
                 <Button
-                  className="bg-blue-500 text-white hover:bg-blue-600 transition px-6 py-2 text-base"
+                  className="bg-blue-800 hover:bg-blue-900 text-white transition px-6 py-2 text-base"
                   type="submit"
                   disabled={loading}
                 >

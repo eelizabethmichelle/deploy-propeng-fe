@@ -99,7 +99,9 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
           ) : (
             <X size={20} className="mr-2 text-red-500" />
           )}
-          <span className="capitalize"> {row.getValue("status")}</span>
+          <span className="capitalize">
+            {type === "Active" ? "Aktif" : "Tidak Aktif"}
+          </span>
         </div>
       );
     },
