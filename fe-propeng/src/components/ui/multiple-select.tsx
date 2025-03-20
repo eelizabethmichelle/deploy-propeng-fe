@@ -61,15 +61,8 @@ export const SelectPills: React.FC<SelectPillsProps> = ({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex flex-wrap gap-2 min-h-12">
-
-        {(value || selectedPills).map((pill) => (
-          <Badge
-            key={pill}
-            variant="outline"
-            onClick={() => handlePillRemove(pill)}
-            className="hover:cursor-pointer gap-1 group"
-          >
-            
+        {selectedPills.map((pill) => (
+          <Badge key={pill} variant="outline" className="gap-1">
             {pill}
             <button onClick={() => handlePillRemove(pill)}>
               <X size={12} />
