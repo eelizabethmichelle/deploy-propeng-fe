@@ -6,7 +6,6 @@ import { jwtDecode } from "jwt-decode";
 import ProfilePageStudent from "./@student/page";
 import ProfilePageTeacher from "./@teacher/page";
 import ProfilePageAdmin from "./@admin/page";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://203.194.113.127';
 // tutprr
 
 interface TokenPayload {
@@ -72,7 +71,7 @@ export default function ProfileLayout({
       const accessToken =
         localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-      const response = await fetch(`/api/auth/profile/${userId}/`, {
+        const response = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,

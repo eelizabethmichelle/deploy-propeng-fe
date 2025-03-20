@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtDecode } from "jwt-decode";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://203.194.113.127';
 
 export async function GET(request: Request) {
     // Parse the URL and extract the ID from the path
@@ -22,7 +21,7 @@ export async function GET(request: Request) {
         }
 
         // Fetch user profile data langsung pakai userId dari JWT
-        const profileRes = await fetch(`api/auth/profile/${userId}/`, {
+        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
