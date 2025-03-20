@@ -1,16 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { jwtDecode } from "jwt-decode";
 
-export async function GET(request: NextRequest) {
-    // Parse the URL and extract the ID from the path
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.split("/");
-    const userId = pathSegments[pathSegments.length - 1]; 
-
-    if (!userId) {
-        return NextResponse.json({ message: "User ID is required" }, { status: 400 });
-    }
-
-    // Extract JWT token from headers
+export async function GET(request: Request, context: { params: { id: string } }) {
+    // Ambil token dari Authorization header
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
 
@@ -19,8 +11,16 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Fetch user profile
-        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
+        // Decode JWT langsung dari token
+        const decodedToken: { id: string } = jwtDecode(token);
+        const userId = decodedToken.id;
+
+        if (!userId) {
+            return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+        }
+
+        // Fetch user profile data langsung pakai userId dari JWT
+        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(profileData);
 
     } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error decoding token or fetching data:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }

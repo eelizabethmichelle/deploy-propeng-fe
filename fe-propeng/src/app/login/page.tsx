@@ -20,7 +20,7 @@ export default function LoginPage() {
         setLoading(true);
     
         try {
-            const loginResponse = await fetch("/api/auth/login", {
+            const loginResponse = await fetch("api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -29,41 +29,16 @@ export default function LoginPage() {
             });
     
             if (!loginResponse.ok) {
-                throw new Error("Periksa kembali kredensial Anda.");
+                throw new Error("Periksa kembali kredensial Anda");
             }
     
             const loginData = await loginResponse.json();
             localStorage.setItem("accessToken", loginData.access);
             sessionStorage.setItem("accessToken", loginData.access)
-
-            const detailResponse = await fetch("/api/auth/detail", {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${loginData.access}`,
-                },
-            });
-    
-            if (!detailResponse.ok) {
-                throw new Error("Token tidak valid.");
-            }
-    
-            const detailData = await detailResponse.json();
-            const role = detailData.data_user.role
-
-            toast.success("Berhasil masuk ke dalam sistem");
-
-            if (role === "admin") router.push("/admin");
-            else if (role === "student") router.push("/siswa");
-            else if (role === "teacher") router.push("/guru");
-            else router.push("/unauthorized");
-            
+            router.push("/");
         } catch (error) {
             console.error("Login error:", error);
-            toast.error(
-                error instanceof Error
-                  ? error.message
-                  : "Gagal masuk ke dalam sistem"
-              );
+            alert("Login gagal! Periksa kembali kredensial Anda.");
         } finally {
             setLoading(false);
         }
@@ -118,7 +93,6 @@ export default function LoginPage() {
                                 <div>
                                     <label className="text-sm font-medium">Password</label>
                                     <PasswordInput 
-                                        type="password" 
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
                                         placeholder="Masukkan password akun" 

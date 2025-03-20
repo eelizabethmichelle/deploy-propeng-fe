@@ -10,7 +10,6 @@ export async function PUT(request: Request) {
     }
 
     try {
-        // Verify authorization with Django backend
         const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
             method: "GET",
             headers: {

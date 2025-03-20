@@ -1,209 +1,138 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Lock, User } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
-const roles = [
-  { id: "teacher", label: "Guru" },
-  { id: "student", label: "Siswa" },
-];
+interface UserProfile {
+  user_id: number;
+  username: string;
+  name: string;
+  role: string;
+  nisn: string;
+  nisp: string;
+  angkatan: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export default function EditAccountForm() {
+export default function ProfilePage() {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const router = useRouter();
   const params = useParams();
   const userId = params?.id;
-  const currentYear = new Date().getFullYear();
 
-  const form = useForm({
-    defaultValues: {
-      id: "",
-      username: "",
-      password: "",
-      name: "",
-      role: "",
-      nisn: "",
-      nisp: "",
-      angkatan: currentYear.toString(),
-    },
-    shouldUnregister: false,
-  });
-
-  const { watch, control, handleSubmit, reset } = form;
-  const role = watch("role");
-  const isStudent = role === "student";
-  const isTeacher = role === "teacher";
-  const isFormValid = watch("username") && watch("name") && watch("role") && (watch("nisn") || watch("nisp")) && watch("angkatan");
-
-  const [selectedAngkatan, setSelectedAngkatan] = useState("Pilih Tahun");
-  const angkatanOptions = Array.from({ length: 17 }, (_, i) => (currentYear - 15 + i).toString());
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    sessionStorage.removeItem("accessToken");
+    toast.success("Berhasil keluar dari sistem");
+    router.push("/login");
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userId) {
-        router.push("/404")
-      }
-
-      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      const accessToken =
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("accessToken");
 
       try {
-        const response = await fetch(`/api/profile/${userId}`, {
+        const response = await fetch(`/api/account/detail/${userId}`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
         if (!response.ok) {
-          if (response.status == 404) {
-            router.push("/404")
+          if (response.status === 404) {
+            console.log(response)
           }
-          throw new Error("Gagal mengambil data dari server");
+          throw new Error("Failed to fetch data");
         }
 
         const data = await response.json();
-        const userData = data.data;
-
-        reset({
-          id: userId?.at(0) || "",
-          username: userData.username || "",
-          name: userData.name || "",
-          role: userData.role || "",
-          nisn: userData.nisn || "",
-          nisp: userData.nisp || "",
-          angkatan: userData.angkatan || currentYear.toString(),
-        });
-
-        setSelectedAngkatan(data.angkatan || "Pilih Tahun");
+        setUser(data.data);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error(error);
       }
     };
 
     fetchUserData();
-  }, [userId, reset]);
+  }, [userId, router]);
+
+  if (!user) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
 
   return (
-    <div className="flex justify-center items-center mt-8 p-4">
-      <div className="w-full max-w-3xl p-8 shadow-lg rounded-xl">
-        <h2 className="text-center text-2xl font-bold mb-6">Lihat Detail Akun</h2>
-        <Form {...form}>
-          <form className="space-y-5">
-            {/* Username Field */}
-            <FormField control={control} name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input value={field.value} readOnly/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Name Field */}
-            <FormField control={control} name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Lengkap</FormLabel>
-                  <FormControl>
-                    <Input value={field.value} readOnly/>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Role Selection */}
-            <FormField control={control} name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <FormControl>
-                    <RadioGroup onValueChange={field.onChange} value={field.value} disabled>
-                      {roles.map((role) => (
-                        <div key={role.id} className="flex items-center space-x-3">
-                          <RadioGroupItem value={role.id} />
-                          <FormLabel className="text-sm font-medium">{role.label}</FormLabel>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Nomor Induk Field */}
-            {(isStudent) && (
-              <FormField control={control} name="nisn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>NISN</FormLabel>
-                    <FormControl>
-                      <Input value={field.value} readOnly/>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            {(isTeacher) && (
-              <FormField control={control} name="nisp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>NISP</FormLabel>
-                    <FormControl>
-                      <Input value={field.value} readOnly/>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {/* Angkatan Field */}
-            {(isStudent || isTeacher) && (
-              <FormField control={control} name="angkatan"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{ isStudent ? "Angkatan" : "Tahun Masuk" }</FormLabel>
-                    <FormControl>
-                      <Input value={field.value} readOnly/>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {/* Buttons */}
-            <div className="flex justify-between">
-              <Button variant="outline" type="button" onClick={() => router.push("/admin/akun")}>Kembali</Button>
-              <Button type="button" onClick={() => router.push(`/admin/akun/ubah/${userId}`)}>Ubah</Button>
+    <div className="p-6">
+      <h3 className="text-lg font-semibold mb-4">Detil Akun</h3>
+      <div className="flex justify-center">
+        <Card className="w-full">
+          <div className="h-32 bg-blue-900 rounded-t-lg"></div>
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="font-bold text-blue-900">{user.username}</p>
+              <p className="text-gray-500">{user.role === "teacher" ? "Guru" : "Siswa"}</p>
             </div>
-          </form>
-        </Form>
+          </CardContent>
+        </Card>
       </div>
+      <Card className="w-full mt-5">
+        <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
+          <div className="flex items-center space-x-2">
+            <User className="w-5 h-5 text-gray-500" />
+            <CardTitle>Informasi Akun</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid gap-3 text-sm">
+            <div>
+              <p className="text-gray-500">Nama</p>
+              <p className="text-blue-900">{user.name}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Username</p>
+              <p className="text-blue-900">{user.username}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{user.role === "teacher" ? "NISP" : "NISN"}</p>
+              <p className="text-blue-900">{user.role === "teacher" ? user.nisp : user.nisn}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">{user.role === "teacher" ? "Tahun Masuk" : "Angkatan"}</p>
+              <p className="text-blue-900">{user.angkatan}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Status</p>
+              <p className="text-blue-900">{user.status ? "Aktif" : "Tidak Aktif"}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Dibuat Pada Tanggal</p>
+              <p className="text-blue-900">{user.createdAt}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Diperbarui Pada Tanggal</p>
+              <p className="text-blue-900">{user.updatedAt}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
