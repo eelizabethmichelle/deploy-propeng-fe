@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, Plus, Check } from "lucide-react";
+import { Pencil, Trash2, Plus, Check, Search } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table-detail-class-components/data-table";
 import { columns } from "@/components/ui/data-table-detail-class-components/columns";
 import { toast } from "sonner";
@@ -86,6 +86,31 @@ export default function ClassDetailPage() {
     const [loadingTeachers, setLoadingTeachers] = useState(false);
     const [loadingStudents, setLoadingStudents] = useState(false);
 
+    const [teacherSearchQuery, setTeacherSearchQuery] = useState("");
+    const [isTeacherSelectOpen, setIsTeacherSelectOpen] = useState(false);
+    const teacherSelectRef = useRef<HTMLDivElement>(null);
+
+
+
+    // Filter teachers based on search query
+    const filteredTeachers = availableTeachers.filter(teacher =>
+        teacher.name.toLowerCase().includes(teacherSearchQuery.toLowerCase())
+    );
+
+    // Handle click outside to close the custom select
+    useEffect(() => {
+        function handleClickOutside(event: { target: any; }) {
+            if (teacherSelectRef.current && !teacherSelectRef.current.contains(event.target)) {
+                setIsTeacherSelectOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [teacherSelectRef]);
+
     // State for selected students to remove
     const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
@@ -126,6 +151,45 @@ export default function ClassDetailPage() {
         return token;
     };
 
+    const [studentSearchQuery, setStudentSearchQuery] = useState("");
+    const [isStudentSelectOpen, setIsStudentSelectOpen] = useState(false);
+    const studentSelectRef = useRef<HTMLDivElement>(null);
+
+    // Add this where you define other state variables
+    const filteredStudents = searchTerm
+        ? students.filter(student =>
+            (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (student.nisn && student.nisn.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (student.username && student.username.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        : students;
+
+
+    // Filter available students based on search query
+    const filteredAvailableStudents = studentSearchQuery
+        ? availableStudents.filter(student =>
+            (student.name && student.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
+            (student.nisn && student.nisn.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
+            (student.username && student.username.toLowerCase().includes(studentSearchQuery.toLowerCase()))
+        )
+        : availableStudents;
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (studentSelectRef.current && !studentSelectRef.current.contains(event.target as Node)) {
+                setIsStudentSelectOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [studentSelectRef]);
+
+
+
+    // Fetch class details
     // Fetch class details
     useEffect(() => {
         const fetchClassDetails = async () => {
@@ -135,6 +199,8 @@ export default function ClassDetailPage() {
 
                 const token = getAuthToken();
                 if (!token) return;
+
+                console.log("Fetching class details for ID:", classId);
 
                 // Fetch class details with students included
                 const response = await fetch(`${BASE_API_URL}/kelas/${classId}`, {
@@ -156,6 +222,7 @@ export default function ClassDetailPage() {
                 }
 
                 const data = await response.json();
+                console.log("API Response:", data);
 
                 if (data.status === 201) {
                     // Set class data
@@ -173,7 +240,9 @@ export default function ClassDetailPage() {
                     classNameForm.setValue("namaKelas", data.namaKelas);
 
                     // Set students data
+                    console.log("Students data from API:", data.siswa);
                     setStudents(data.siswa || []);
+                    console.log("Students state after setting:", data.siswa || []);
 
                     // Show toast for special cases
                     if (data.message === "Tidak ada wali kelas di kelas ini") {
@@ -188,12 +257,16 @@ export default function ClassDetailPage() {
                 } else {
                     throw new Error(data.errorMessage || "Failed to fetch class details");
                 }
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Error fetching data:", err);
-                setError(err.message || "An error occurred while fetching data");
+                if (err instanceof Error) {
+                    setError(err.message || "An error occurred while fetching data");
+                } else {
+                    setError("An error occurred while fetching data");
+                }
 
                 toast.error("Gagal memuat data", {
-                    description: err.message || "Terjadi kesalahan saat mengambil data kelas"
+                    description: err instanceof Error ? err.message : "Terjadi kesalahan saat mengambil data kelas"
                 });
             } finally {
                 setLoading(false);
@@ -202,6 +275,7 @@ export default function ClassDetailPage() {
 
         fetchClassDetails();
     }, [classId, router]);
+
 
 
     // Update form values when classData changes
@@ -268,6 +342,7 @@ export default function ClassDetailPage() {
     // Fetch available students when angkatan changes
     const selectedAngkatan = addStudentsForm.watch("angkatan");
 
+    // Fetch available students when angkatan changes
     useEffect(() => {
         if (!selectedAngkatan || !isAddStudentsOpen) return;
 
@@ -283,6 +358,9 @@ export default function ClassDetailPage() {
                 }
 
                 const normalizedAngkatan = parseInt(selectedAngkatan);
+
+                // Log the API call for debugging
+                console.log(`Fetching available students for angkatan: ${normalizedAngkatan}`);
 
                 const response = await fetch(`${BASE_API_URL}/kelas/list_available_student/${normalizedAngkatan}`, {
                     method: "GET",
@@ -300,9 +378,16 @@ export default function ClassDetailPage() {
                 }
 
                 const data = await response.json();
+                console.log("Available students API response:", data);
 
                 if (data.status === 200) {
-                    setAvailableStudents(data.data);
+                    console.log("Available students before filtering:", data.data);
+
+                    // Filter students with isAssignedtoClass=false
+                    const unassignedStudents = data.data.filter((student: { isAssignedtoClass: boolean; }) => student.isAssignedtoClass === false);
+                    console.log("Unassigned students after filtering:", unassignedStudents);
+
+                    setAvailableStudents(unassignedStudents);
                     addStudentsForm.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
@@ -312,9 +397,10 @@ export default function ClassDetailPage() {
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Error fetching available students:", err);
-                toast.error("Gagal mengambil data siswa", { description: err.message });
+                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+                toast.error("Gagal mengambil data siswa", { description: errorMessage });
             } finally {
                 setLoadingStudents(false);
             }
@@ -322,6 +408,7 @@ export default function ClassDetailPage() {
 
         fetchAvailableStudents();
     }, [selectedAngkatan, isAddStudentsOpen, router, addStudentsForm]);
+
 
     // Add this near the top of your component
     const handleBackNavigation = () => {
@@ -343,12 +430,6 @@ export default function ClassDetailPage() {
         label: year.toString(),
     }));
 
-    // Filter students based on search term
-    const filteredStudents = students.filter(student =>
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.nisn.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     // Handle form submissions
     const onUpdateClassName = async (data: z.infer<typeof classNameSchema>) => {
@@ -401,7 +482,7 @@ export default function ClassDetailPage() {
         } catch (err: any) {
             console.error("Error updating class name:", err);
             toast.error("Gagal memperbarui nama kelas", {
-                description: err.message,
+                description: err instanceof Error ? err.message : "An unknown error occurred",
             });
         }
     };
@@ -476,7 +557,7 @@ export default function ClassDetailPage() {
         }
     };
 
-    const onAddStudents = async (data: z.infer<typeof addStudentsSchema>) => {
+    const onAddStudents = async (data: { siswa: any[]; angkatan: string; }) => {
         try {
             const token = getAuthToken();
             if (!token) {
@@ -487,6 +568,13 @@ export default function ClassDetailPage() {
             const studentIds = data.siswa
                 .filter(id => id !== null && id !== undefined && id !== "")
                 .map(id => parseInt(id));
+
+            if (studentIds.length === 0) {
+                toast.error("Pilih minimal satu siswa", {
+                    description: "Anda harus memilih minimal satu siswa untuk ditambahkan ke kelas"
+                });
+                return;
+            }
 
             const response = await fetch(`${BASE_API_URL}/kelas/add_siswa_to_kelas/${classId}/`, {
                 method: "POST",
@@ -526,6 +614,11 @@ export default function ClassDetailPage() {
                     });
 
                     setStudents(refreshData.siswa || []);
+
+                    // Update the isAssignedtoClass flag for the added students in our local state
+                    setAvailableStudents(prevStudents =>
+                        prevStudents.filter(student => !studentIds.includes(parseInt(student.id.toString())))
+                    );
                 }
 
                 toast("", {
@@ -546,14 +639,15 @@ export default function ClassDetailPage() {
 
                 setIsAddStudentsOpen(false);
                 addStudentsForm.reset();
+                setStudentSearchQuery("");
             } else {
                 throw new Error(responseData.errorMessage || "Gagal menambahkan siswa");
             }
 
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error adding students:", err);
             toast.error("Gagal menambahkan siswa", {
-                description: err.message,
+                description: err instanceof Error ? err.message : "An unknown error occurred",
             });
         }
     };
@@ -803,32 +897,52 @@ export default function ClassDetailPage() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Wali Kelas</FormLabel>
-                                                        <Select
-                                                            onValueChange={field.onChange}
-                                                            value={field.value}
-                                                            defaultValue={availableTeachers.length > 0 ? availableTeachers[0].id.toString() : undefined}
-                                                        >
+                                                        <div className="relative" ref={teacherSelectRef}>
                                                             <FormControl>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder={loadingTeachers ? "Memuat..." : "Pilih wali kelas"} />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent>
-                                                                {availableTeachers.length === 0 && !loadingTeachers && (
-                                                                    <div className="p-2 text-gray-500 text-center">
-                                                                        Tidak ada guru yang tersedia
+                                                                <div className="relative">
+                                                                    <Input
+                                                                        placeholder={loadingTeachers ? "Memuat..." : "Cari wali kelas..."}
+                                                                        value={teacherSearchQuery}
+                                                                        onChange={(e) => {
+                                                                            setTeacherSearchQuery(e.target.value);
+                                                                            if (!isTeacherSelectOpen) setIsTeacherSelectOpen(true);
+                                                                        }}
+                                                                        onFocus={() => setIsTeacherSelectOpen(true)}
+                                                                        className={`${field.value ? "pr-10" : ""}`}
+                                                                    />
+                                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                        <Search className="h-4 w-4 text-gray-400" />
                                                                     </div>
-                                                                )}
-                                                                {availableTeachers.map((teacher) => (
-                                                                    <SelectItem
-                                                                        key={teacher.id}
-                                                                        value={teacher.id.toString()}
-                                                                    >
-                                                                        {teacher.name}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                                </div>
+                                                            </FormControl>
+
+                                                            {isTeacherSelectOpen && (
+                                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                                                    {loadingTeachers ? (
+                                                                        <div className="p-2 text-gray-500 text-center">Memuat...</div>
+                                                                    ) : filteredTeachers.length === 0 ? (
+                                                                        <div className="p-2 text-gray-500 text-center">
+                                                                            {teacherSearchQuery ? "Tidak ditemukan wali kelas" : "Tidak ada guru yang tersedia"}
+                                                                        </div>
+                                                                    ) : (
+                                                                        filteredTeachers.map((teacher) => (
+                                                                            <div
+                                                                                key={teacher.id}
+                                                                                className={`p-2 cursor-pointer hover:bg-gray-100 ${field.value === teacher.id.toString() ? "bg-gray-100" : ""
+                                                                                    }`}
+                                                                                onClick={() => {
+                                                                                    field.onChange(teacher.id.toString());
+                                                                                    setTeacherSearchQuery(teacher.name);
+                                                                                    setIsTeacherSelectOpen(false);
+                                                                                }}
+                                                                            >
+                                                                                {teacher.name}
+                                                                            </div>
+                                                                        ))
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -908,6 +1022,7 @@ export default function ClassDetailPage() {
                             </DialogHeader>
                             <Form {...addStudentsForm}>
                                 <form onSubmit={addStudentsForm.handleSubmit(onAddStudents)} className="space-y-4">
+                                    {/* Keep the angkatan dropdown */}
                                     <FormField
                                         control={addStudentsForm.control}
                                         name="angkatan"
@@ -915,7 +1030,12 @@ export default function ClassDetailPage() {
                                             <FormItem>
                                                 <FormLabel>Angkatan</FormLabel>
                                                 <Select
-                                                    onValueChange={field.onChange}
+                                                    onValueChange={(value) => {
+                                                        field.onChange(value);
+                                                        // Reset selected students when angkatan changes
+                                                        addStudentsForm.setValue("siswa", []);
+                                                        setStudentSearchQuery("");
+                                                    }}
                                                     value={field.value}
                                                 >
                                                     <FormControl>
@@ -938,50 +1058,115 @@ export default function ClassDetailPage() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Replace the siswa field with a searchable multi-select */}
                                     <FormField
                                         control={addStudentsForm.control}
                                         name="siswa"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Siswa</FormLabel>
-                                                <FormControl>
-                                                    {selectedAngkatan ? (
-                                                        <div>
-                                                            <SelectPills
-                                                                data={availableStudents
-                                                                    .filter(siswa => siswa.id !== null && siswa.id !== undefined)
-                                                                    .map((siswa) => ({
-                                                                        id: siswa.id.toString(),
-                                                                        name: siswa.name,
-                                                                    }))}
-                                                                value={field.value
-                                                                    .map(id => {
-                                                                        const student = availableStudents.find(s => s.id.toString() === id);
-                                                                        return student ? student.name : '';
-                                                                    })
-                                                                    .filter(Boolean)}
-                                                                onValueChange={(selectedStudentNames) => {
-                                                                    const selectedStudentIds = selectedStudentNames
-                                                                        .map(name => {
-                                                                            const student = availableStudents.find(s => s.name.trim() === name.trim());
-                                                                            return student ? student.id.toString() : null;
-                                                                        })
-                                                                        .filter(id => id !== null) as string[];
-                                                                    field.onChange(selectedStudentIds);
-                                                                }}
-                                                                placeholder={loadingStudents ? "Memuat..." : "Cari nama siswa"}
-                                                            />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="border rounded p-2 text-gray-500 text-sm">
-                                                            Pilih angkatan terlebih dahulu
-                                                        </div>
-                                                    )}
-                                                </FormControl>
-                                                <FormMessage />
+                                                <div ref={studentSelectRef} className="relative">
+                                                    <FormControl>
+                                                        {selectedAngkatan ? (
+                                                            loadingStudents ? (
+                                                                <div className="border rounded p-2 text-gray-500 text-sm">
+                                                                    Memuat daftar siswa...
+                                                                </div>
+                                                            ) : availableStudents.length === 0 ? (
+                                                                <div className="border rounded p-2 text-gray-500 text-sm">
+                                                                    Tidak ada siswa yang tersedia untuk angkatan ini
+                                                                </div>
+                                                            ) : (
+                                                                <div>
+                                                                    {/* Selected Students Tags */}
+                                                                    <div className="flex flex-wrap gap-2 mb-2">
+                                                                        {field.value.map(studentId => {
+                                                                            const student = availableStudents.find(s => s.id.toString() === studentId);
+                                                                            return student ? (
+                                                                                <div
+                                                                                    key={student.id}
+                                                                                    className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+                                                                                >
+                                                                                    <span className="mr-1">{student.name}</span>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => {
+                                                                                            field.onChange(field.value.filter(id => id !== studentId));
+                                                                                        }}
+                                                                                        className="text-gray-500 hover:text-gray-700"
+                                                                                    >
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : null;
+                                                                        })}
+                                                                    </div>
+
+                                                                    {/* Student Search Input */}
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Cari nama siswa"
+                                                                            value={studentSearchQuery}
+                                                                            onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                            onFocus={() => setIsStudentSelectOpen(true)}
+                                                                        />
+                                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                                                                                <path d="M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path>
+                                                                                <path d="M21 21l-4.35-4.35"></path>
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Dropdown for search results */}
+                                                                    {isStudentSelectOpen && (
+                                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                                                            {filteredAvailableStudents.length === 0 ? (
+                                                                                <div className="p-2 text-gray-500 text-center">
+                                                                                    {studentSearchQuery ? "Tidak ditemukan siswa" : "Tidak ada siswa yang tersedia"}
+                                                                                </div>
+                                                                            ) : (
+                                                                                filteredAvailableStudents
+                                                                                    .filter(student => !field.value.includes(student.id.toString()))
+                                                                                    .map((student) => (
+                                                                                        <div
+                                                                                            key={student.id}
+                                                                                            className="p-2 cursor-pointer hover:bg-gray-100"
+                                                                                            onClick={() => {
+                                                                                                field.onChange([...field.value, student.id.toString()]);
+                                                                                                setStudentSearchQuery("");
+                                                                                            }}
+                                                                                        >
+                                                                                            <div className="font-medium">{student.name}</div>
+                                                                                        </div>
+                                                                                    ))
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="mt-2 text-sm text-gray-500">
+                                                                        {field.value.length} siswa dipilih dari {availableStudents.length} siswa yang tersedia
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        ) : (
+                                                            <div className="border rounded p-2 text-gray-500 text-sm">
+                                                                Pilih angkatan terlebih dahulu
+                                                            </div>
+                                                        )}
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </div>
                                             </FormItem>
                                         )}
                                     />
+
                                     <DialogFooter className="sm:justify-end">
                                         <div className="flex gap-4">
                                             <DialogClose asChild>
@@ -989,7 +1174,12 @@ export default function ClassDetailPage() {
                                                     Batal
                                                 </Button>
                                             </DialogClose>
-                                            <Button type="submit">Tambah</Button>
+                                            <Button
+                                                type="submit"
+                                                disabled={!selectedAngkatan || addStudentsForm.watch("siswa").length === 0 || loadingStudents}
+                                            >
+                                                Tambah
+                                            </Button>
                                         </div>
                                     </DialogFooter>
                                 </form>
@@ -1016,4 +1206,3 @@ export default function ClassDetailPage() {
 function triggerRefresh() {
     throw new Error("Function not implemented.");
 }
-

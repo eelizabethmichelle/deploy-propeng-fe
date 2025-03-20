@@ -17,4 +17,3 @@ export async function POST(req: Request) {
     const data = await res.json();
     return NextResponse.json(data); // Return JWT token
 }
-
