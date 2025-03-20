@@ -11,7 +11,7 @@ interface MataPelajaran {
   id: number;
   kode: string;
   nama: string;
-  is_archived: boolean;
+  status: string;
   teacher: { id: number; name: string } | null; 
   jumlah_siswa: number;
 }
@@ -46,7 +46,7 @@ export default function MataPelajaranPage() {
           return;
         }
 
-        const response = await fetch("http://localhost:8000/api/matpel/", {
+        const response = await fetch("/api/mata-pelajaran/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export default function MataPelajaranPage() {
         console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
 
         // ✅ Fetch Data Guru untuk Mendapatkan Nama
-        const teacherResponse = await fetch("http://localhost:8000/api/auth/list_teacher/", {
+        const teacherResponse = await fetch("http://203.194.113.127/api/auth/list_teacher/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export default function MataPelajaranPage() {
           id: matpel.id,
           name: matpel.nama || "", 
           kode: matpel.kode || "",
-          status: matpel.is_archived ? "Inactive" : "Active",
+          status: matpel.status || "Unknown",
           teacher: matpel.teacher?.name || "Unknown",
           tahunAjaran: matpel.tahunAjaran || "-", // ✅ Tambahkan ini
           students: matpel.jumlah_siswa || 0, // ✅ Tambahkan ini

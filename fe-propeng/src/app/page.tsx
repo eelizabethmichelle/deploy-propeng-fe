@@ -20,7 +20,7 @@ async function getMyData(): Promise<UserData | null> {
     const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
     if (!token) return null;
 
-    const response = await fetch("http://localhost:8000/api/auth/protected/", {
+    const response = await fetch("http://203.194.113.127/api/auth/protected/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

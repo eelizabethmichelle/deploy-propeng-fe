@@ -12,7 +12,7 @@
 // // async function getData() {
 // //   try {
 // //     // Fetch data dari API
-// //     const response = await fetch("http://localhost:8000/api/kelas/");
+// //     const response = await fetch("http://203.194.113.127/api/kelas/");
 
 // //     if (!response.ok) {
 // //       throw new Error("Gagal mengambil data dari server");
@@ -75,7 +75,7 @@ async function fetchStudents(token: string | null) {
   if (!token) return null;
 
   try {
-    const response = await fetch("http://localhost:8000/api/auth/list_student/", {
+    const response = await fetch("http://203.194.113.127/api/auth/list_student/", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

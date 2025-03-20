@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 async function getData() {
   try {
     // Fetch data dari APIhttp
-    const response = await fetch("http://localhost:8000/api/auth/list_student/");
+    const response = await fetch("http://203.194.113.127/api/auth/list_student/");
 
     if (!response.ok) {
       throw new Error("Gagal mengambil data dari server");

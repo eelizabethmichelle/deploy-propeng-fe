@@ -102,7 +102,7 @@ export default function UbahMataPelajaran() {
         if (!token) return router.push("/login");
 
         const response = await fetch(
-          "http://localhost:8000/api/auth/list_teacher/",
+          "http://203.194.113.127/api/auth/list_teacher/",
           {
             method: "GET",
             headers: {
@@ -137,7 +137,7 @@ export default function UbahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("http://127.0.0.1:8000/api/auth/list_student/", {
+        const response = await fetch("http://203.194.113.127/api/auth/list_student/", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -205,7 +205,7 @@ export default function UbahMataPelajaran() {
         }
     
         const response = await fetch(
-          `http://localhost:8000/api/matpel/${matpelId}/`,
+          `http://203.194.113.127/api/matpel/${matpelId}/`,
           {
             method: "GET",
             headers: {
@@ -238,7 +238,9 @@ export default function UbahMataPelajaran() {
             status: "active",
           });
 
-          setSelectedAngkatan(data.kode?.split("_")[1] || "");
+          const newAngkatan = data.kode?.split("_")[1] || "";
+          form.setValue("angkatan", newAngkatan);
+          setSelectedAngkatan(newAngkatan);
         } else {
           toast.error("Gagal memuat data mata pelajaran");
         }
@@ -259,6 +261,14 @@ export default function UbahMataPelajaran() {
     }
   }
   , [selectedStudents, form]);
+
+  useEffect(() => {
+    const angkatanValue = form.watch("angkatan"); 
+  
+    if (angkatanValue) {
+      setSelectedAngkatan(angkatanValue);
+    }
+  }, [form.watch("angkatan")]); 
 
   const currentYear = new Date().getFullYear();
   const tahunAjaran = parseInt(
@@ -306,7 +316,7 @@ export default function UbahMataPelajaran() {
       console.log("Request body:", requestBody);
 
       const response = await fetch(
-        `http://localhost:8000/api/matpel/update/${matpelId}/`,
+        `http://203.194.113.127/api/matpel/update/${matpelId}/`,
         {
           method: "PUT",
           headers: {

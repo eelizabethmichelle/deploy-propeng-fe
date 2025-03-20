@@ -61,13 +61,15 @@ const formSchema = z.object({
   siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
   tahunAjaran: z.string().min(1, { message: "Tahun ajaran wajib diisi" }),
   guru: z.string().min(1, { message: "Guru wajib dipilih" }),
-  status: z.enum(["active", "inactive"]),
+  // status: z.enum(["active", "inactive"]),
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function TambahMataPelajaran() {
   const router = useRouter();
+  const [guruSearch, setGuruSearch] = useState("");
   const [siswa, setSiswa] = useState<DataSiswa[]>([]);
   const [loadingTeachers, setLoadingTeachers] = useState<boolean>(true);
   const [loadingStudents, setLoadingStudents] = useState<boolean>(false);
@@ -91,7 +93,7 @@ export default function TambahMataPelajaran() {
       angkatan: "", // String kosong
       guru: "", // String kosong untuk ID guru
       siswa: [], // Array kosong untuk siswa yang dipilih
-      status: "active", // ✅ Menambahkan status dengan default "active"
+      // status: "active", // ✅ Menambahkan status dengan default "active"
     },
   });
 
@@ -114,7 +116,7 @@ export default function TambahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("http://localhost:8000/api/auth/list_teacher/", {
+        const response = await fetch("/api/mata-pelajaran/list_teacher/", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -161,51 +163,51 @@ export default function TambahMataPelajaran() {
     fetchAvailableTeachers();
   }, [router]);
 
-  // Fetch Data Angkatan
-  useEffect(() => {
-    const fetchAngkatan = async () => {
-      try {
-        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+  // // Fetch Data Angkatan
+  // useEffect(() => {
+  //   const fetchAngkatan = async () => {
+  //     try {
+  //       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-        if (!token) {
-          console.error("Token tidak tersedia.");
-          router.push("/login");
-          return;
-        }
+  //       if (!token) {
+  //         console.error("Token tidak tersedia.");
+  //         router.push("/login");
+  //         return;
+  //       }
 
-        const response = await fetch("http://localhost:8000/api/tahunajaran/list_angkatan/", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+  //       const response = await fetch("http://203.194.113.127/api/tahunajaran/list_angkatan/", {
+  //         method: "GET",
+  //         headers: {
+  //           "Authorization": `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       });
 
-        if (response.status === 401) {
-          localStorage.removeItem("accessToken");
-          sessionStorage.removeItem("accessToken");
-          router.push("/login");
-          return;
-        }
+  //       if (response.status === 401) {
+  //         localStorage.removeItem("accessToken");
+  //         sessionStorage.removeItem("accessToken");
+  //         router.push("/login");
+  //         return;
+  //       }
 
-        const data = await response.json();
+  //       const data = await response.json();
 
-        if (data.status === 200) {
-          setDaftarAngkatan(data.data.map((angkatan: any) => angkatan.angkatan.toString())); // ✅ Ambil value angkatan
-        } else if (data.status === 404) {
-          setDaftarAngkatan([]);
-          toast.warning("Tidak ada angkatan", { description: "Data angkatan tidak tersedia" });
-        } else {
-          throw new Error(data.message || "Gagal mendapatkan daftar angkatan");
-        }
-      } catch (err: any) {
-        console.error("Error fetching angkatan:", err);
-        toast.error("Gagal mengambil data angkatan", { description: err.message });
-      }
-    };
+  //       if (data.status === 200) {
+  //         setDaftarAngkatan(data.data.map((angkatan: any) => angkatan.angkatan.toString())); // ✅ Ambil value angkatan
+  //       } else if (data.status === 404) {
+  //         setDaftarAngkatan([]);
+  //         toast.warning("Tidak ada angkatan", { description: "Data angkatan tidak tersedia" });
+  //       } else {
+  //         throw new Error(data.message || "Gagal mendapatkan daftar angkatan");
+  //       }
+  //     } catch (err: any) {
+  //       console.error("Error fetching angkatan:", err);
+  //       toast.error("Gagal mengambil data angkatan", { description: err.message });
+  //     }
+  //   };
 
-    fetchAngkatan();
-  }, [router]);
+  //   fetchAngkatan();
+  // }, [router]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -221,7 +223,7 @@ export default function TambahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("http://127.0.0.1:8000/api/auth/list_student/", {
+        const response = await fetch("/api/mata-pelajaran/list_student/", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -341,12 +343,11 @@ export default function TambahMataPelajaran() {
         tahunAjaran: Number(data.tahunAjaran),
         teacher: data.guru || null,
         siswa_terdaftar: studentIds,
-        status: data.status === "inactive" ? false : true,
       };
 
       console.log("Payload yang dikirim:", requestBody); // Debugging sebelum dikirim
 
-      const response = await fetch("http://127.0.0.1:8000/api/matpel/create/", {
+      const response = await fetch("/api/mata-pelajaran/tambah/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -505,29 +506,45 @@ export default function TambahMataPelajaran() {
               />
               {/* Guru Pengajar */}
               <FormField
-                control={form.control}
-                name="guru"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Guru Pengajar*</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih guru" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {daftarGuru.map((guru) => (
-                          <SelectItem key={guru.id} value={guru.id.toString()}>
-                            {guru.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+  control={form.control}
+  name="guru"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Guru Pengajar*</FormLabel>
+      <Select onValueChange={field.onChange} value={field.value}>
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Pilih guru" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+  <div className="p-2">
+    <Input
+      placeholder="Cari guru..."
+      value={guruSearch}
+      onChange={(e) => setGuruSearch(e.target.value)}
+      autoFocus={false} // Tambahkan ini untuk mencegah konflik fokus
+      onClick={(e) => e.stopPropagation()} // juga cegah klik dari menutup dropdown
+    />
+  </div>
+  <div className="max-h-56 overflow-auto">
+    {daftarGuru
+      .filter((guru) =>
+        guru.name.toLowerCase().includes(guruSearch.toLowerCase())
+      )
+      .map((guru) => (
+        <SelectItem key={guru.id} value={guru.id.toString()}>
+          {guru.name}
+        </SelectItem>
+      ))}
+  </div>
+</SelectContent>
+
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
                 <FormField
                   control={form.control}
