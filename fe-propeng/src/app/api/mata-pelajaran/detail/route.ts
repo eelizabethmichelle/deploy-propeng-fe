@@ -23,11 +23,11 @@ export async function GET(req: Request) {
     });
 
     console.log(res);
+    const data = await res.json();
 
     if (!res.ok) {
-        return NextResponse.json({ error: "Gagal mengambil data mata pelajaran." }, { status: 400 });
+        return NextResponse.json({ error: data.message || "Gagal mengambil data mata pelajaran." }, { status: 400 });
     }
 
-    const data = await res.json();
     return NextResponse.json(data);
 }

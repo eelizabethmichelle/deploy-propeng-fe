@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -69,10 +69,10 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function UbahMataPelajaran() {
-  const searchParams = useSearchParams();
-  const matpelId = searchParams.get("matpelId");
+function UbahMataPelajaranContent() {
   const router = useRouter();
+  const pathname = usePathname();
+  const matpelId = localStorage.getItem("selectedMatpelId");
 
   const [daftarGuru, setDaftarGuru] = useState([]);
   const [siswa, setSiswa] = useState<DataSiswa[]>([]);
@@ -194,7 +194,11 @@ export default function UbahMataPelajaran() {
   }, [selectedAngkatan, form, router]);
 
   useEffect(() => {
-    if (!matpelId) return;
+    if (!matpelId) {
+      toast.error("Data mata pelajaran tidak ditemukan");
+      router.push("/admin/mata-pelajaran");
+      return;
+    }
 
     const fetchData = async () => {
       setLoading(true);
@@ -206,15 +210,19 @@ export default function UbahMataPelajaran() {
           return;
         }
     
-        const res = await fetch(`/api/matpel/detail/`, {
+        const res = await fetch(`/api/mata-pelajaran/detail/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token} Id ${matpelId}`,
           },
         });
+
+
     
         const result = await res.json();
+        console.log(result);
+
         if (res.ok) {
           const { data } = result;
     
@@ -287,8 +295,6 @@ export default function UbahMataPelajaran() {
   }));
 
   const onSubmit = async (data: FormData) => {
-    
-
     try {
       const token =
         localStorage.getItem("accessToken") ||
@@ -304,6 +310,7 @@ export default function UbahMataPelajaran() {
       }).filter((id) => id !== null);      
 
       const requestBody = {
+        id: matpelId,
         nama: data.namaPelajaran,
         kategoriMatpel: data.kategoriMatpel,
         angkatan: Number(data.angkatan),
@@ -313,10 +320,8 @@ export default function UbahMataPelajaran() {
         is_archived: data.status === "inactive",
       };
 
-      console.log("Request body:", requestBody);
-
       const response = await fetch(
-        `/api/mata-pelajaran/ubah/${matpelId}/`,
+        `/api/mata-pelajaran/ubah`,
         {
           method: "PUT",
           headers: {
@@ -328,6 +333,7 @@ export default function UbahMataPelajaran() {
       );
 
       if (response.ok) {
+        localStorage.removeItem("selectedMatpelId"); // Clean up after successful update
         toast.success("Mata Pelajaran berhasil diperbarui!");
         router.push("/admin/mata-pelajaran");
       } else {
@@ -561,5 +567,13 @@ export default function UbahMataPelajaran() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function UbahMataPelajaran() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <UbahMataPelajaranContent />
+    </Suspense>
   );
 }
