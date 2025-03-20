@@ -121,6 +121,25 @@ export default function AdminLayout({
       { label: "Kelas", href: "/admin/lihat-kelas" },
       { label: loading ? "Loading..." : (className ? `Detail Kelas ${className}` : "Detail Kelas"), current: true },
     ];
+  } else if (pathname.includes("/admin/akun")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/detil")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun" },
+      { label: loading ? "Loading..." : "Detail Akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/tambah")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun" },
+      { label: loading ? "Loading..." : "Tambah Akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/ubah")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun" },
+      { label: loading ? "Loading..." : "Ubah Detil Akun", current: true },
+    ];
   }
 
   return (
