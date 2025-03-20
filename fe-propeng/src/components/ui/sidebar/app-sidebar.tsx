@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from '@/context/AuthContext';
 
 
 import type * as React from "react"
@@ -61,17 +62,13 @@ const data = {
         isActive: true,
         items: [
           {
-            title: "Lihat Murid",
-            url: "/admin/lihat-murid",
-          },
-          {
-            title: "Lihat Guru",
-            url: "/admin/lihat-guru",
+            title: "Lihat Semua",
+            url: "/admin/akun/",
           },
           {
             title: "Tambah",
             icon: PlusCircle,
-            url: "/admin/tambah-user",
+            url: "/admin/akun/tambah",
           }
         ],
       },
@@ -166,6 +163,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setRole(localStorage.getItem("role") || sessionStorage.getItem("role"));
   }, []);
 
+  const { user, isLoading } = useAuth();
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader>
+          <TeamSwitcher teams={data.teams} />
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="p-4 text-center">Loading sidebar...</div>
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={data.user} />
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+    );
+  }
+
+  // User not authenticated or no role
+  if (!user) {
+    return null; // Or a fallback sidebar
+  }
+
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -173,9 +195,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        {role === "admin" && <NavMain items={data.navMain.admin} />}
-        {role === "teacher" && <NavMain items={data.navMain.teacher} />}
-        {role === "other" && <NavMain items={data.navMain.other} />}
+        {user.role === "admin" && <NavMain items={data.navMain.admin} />}
+        {user.role === "teacher" && <NavMain items={data.navMain.teacher} />}
+        {user.role === "student" && <NavMain items={data.navMain.other} />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

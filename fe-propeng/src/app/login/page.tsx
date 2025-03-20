@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
 import { toast } from "sonner";
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
     const router = useRouter()
@@ -15,6 +16,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
 
+    const { setUser } = useAuth();
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -48,7 +50,13 @@ export default function LoginPage() {
             }
     
             const detailData = await detailResponse.json();
-            const role = detailData.data_user.role
+            const role = detailData.data_user.role;
+            const user_id = detailData.data_user.user_id;
+
+            setUser({
+                id: user_id,
+                role: role
+            });
 
             localStorage.setItem("user_id", detailData.data_user.user_id)
             sessionStorage.setItem("user_id", detailData.data_user.user_id)
