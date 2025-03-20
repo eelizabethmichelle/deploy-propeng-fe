@@ -132,19 +132,17 @@ export default function Page() {
             Semua Kelas
           </h2>
           <p className="text-muted-foreground">
-            Kelola semua kelas yang tersedia.
+            Kelola semua kelas yang tersedia
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="default"
-            onClick={() => router.push("/admin/kelas/tambah-kelas")}
-            className="bg-blue-800 hover:bg-blue-900"
-          >
-            Tambah Kelas
-            <Plus className="h-5 w-5 ml-2" />
-          </Button>
-        </div>
+        <Button
+          variant="default"
+          onClick={() => router.push("/admin/kelas/tambah-kelas")}
+          className="bg-blue-800 hover:bg-blue-900"
+        >
+          Tambah Kelas
+          <Plus className="h-5 w-5 ml-2" />
+        </Button>
       </div>
 
       {loading ? (
@@ -157,7 +155,6 @@ export default function Page() {
           <Button onClick={fetchData}>Coba Lagi</Button>
         </div>
       ) : (
-        // Always render the DataTable, even with empty data
         <DataTable data={data} columns={columns} />
       )}
     </>

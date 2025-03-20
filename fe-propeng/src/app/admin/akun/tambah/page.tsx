@@ -231,7 +231,7 @@ export default function AddAccountForm() {
 
           {/* Buttons */}
           <div className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/admin/akun")}>
+            <Button variant="secondary" type="button" onClick={() => router.push("/admin/akun")}>
               Kembali
             </Button>
             <Button type="submit" disabled={!isFormValid}>

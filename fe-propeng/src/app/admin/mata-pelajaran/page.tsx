@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/dt-lihat-matpel/data-table";
 import { mataPelajaranColumns } from "@/components/ui/dt-lihat-matpel/columns";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface MataPelajaran {
   tahunAjaran: number;
@@ -112,29 +113,32 @@ export default function MataPelajaranPage() {
   }, []);
 
   return (
-    <div className="p-6 relative">
-       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Manajemen Mata Pelajaran</h1>
-        {/* ✅ Tambahkan Button "+ Tambah" */}
+    <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-semibold tracking-tight">
+            Manajemen Mata Pelajaran
+          </h2>
+          <p className="text-muted-foreground">
+            Kelola semua mata pelajaran yang tersedia
+          </p>
+        </div>
         <Button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+          variant="default"
           onClick={() => router.push("/admin/mata-pelajaran/tambah")}
+          className="bg-blue-800 hover:bg-blue-900"
         >
-          + Tambah
+          Tambah Mata Pelajaran
+          <Plus className="h-5 w-5 ml-2" />
         </Button>
       </div>
-      {/* 📊 Status Loading atau Error */}
+
       {loading && <p>Loading data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* 📊 Table */}
       {!loading && !error && (
         <div className="relative">
-          {data.length > 0 ? (
-            <DataTable columns={mataPelajaranColumns} data={data} />
-          ) : (
-            <p className="text-gray-500">Belum ada mata pelajaran yang terdaftar! Silahkan menambahkan mata pelajaran baru.</p>
-          )}
+          <DataTable columns={mataPelajaranColumns} data={data} />
         </div>
       )}
     </div>

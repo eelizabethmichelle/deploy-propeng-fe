@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import { X as XIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -241,51 +242,88 @@ export function DataTableRowActions<TData extends RowData>({
 
       {/* Modal for Viewing Class Details */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setDetailDialogOpen}>
-  <DialogContent className="sm:max-w-lg">
-    <DialogHeader>
-      <DialogTitle>Detail Mata Pelajaran</DialogTitle>
-    </DialogHeader>
+        <DialogContent className="sm:max-w-2xl [&>button]:h-10 [&>button]:w-10 [&>button]:rounded-full [&>button>svg]:h-6 [&>button>svg]:w-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-primary">Detail Mata Pelajaran</DialogTitle>
+          </DialogHeader>
 
-    {loading ? (
-      <p>Loading...</p>
-    ) : error ? (
-      <p className="text-red-500">{error}</p>
-    ) : mataPelajaran ? (
-      <Card>
-        <CardHeader>
-          <CardTitle>{mataPelajaran.nama || "Nama Tidak Diketahui"}</CardTitle>
-          <CardDescription>Kode: {mataPelajaran.kode || "Tidak Ada"}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p><strong>Kategori:</strong> {mataPelajaran.kategoriMatpel || "Tidak Ada"}</p>
-          <p><strong>Angkatan:</strong> {mataPelajaran.angkatan || "Tidak Ada"}</p>
-          <p><strong>Tahun Ajaran:</strong> {mataPelajaran.tahunAjaran || "Tidak Ada"}</p>
-          <p><strong>Jumlah Siswa:</strong> {mataPelajaran.jumlah_siswa || 0}</p>
-          <p><strong>Guru:</strong> {mataPelajaran.teacher.name || "Tidak Ada"}</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-red-500 font-medium">{error}</p>
+            </div>
+          ) : mataPelajaran ? (
+            <div className="space-y-6">
+              {/* Header Section */}
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <h3 className="text-xl font-semibold text-primary">{mataPelajaran.nama || "Nama Tidak Diketahui"}</h3>
+                <p className="text-muted-foreground">Kode: {mataPelajaran.kode || "Tidak Ada"}</p>
+              </div>
 
-          {/* Daftar Siswa */}
-          <p className="mt-2 font-semibold">Daftar Siswa:</p>
-          {mataPelajaran.students .length > 0 ? (
-            <ul className="list-disc pl-5">
-              {mataPelajaran.students.map((siswa) => (
-                <li key={siswa.id}>
-                  {siswa.name} ({siswa.username})
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">Tidak ada siswa terdaftar</p>
-          )}
-        </CardContent>
-        <CardFooter>
-          <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>
-            Tutup
-          </Button>
-        </CardFooter>
-      </Card>
-    ) : null}
-  </DialogContent>
-</Dialog>
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Kategori</p>
+                    <p className="font-medium">{mataPelajaran.kategoriMatpel || "Tidak Ada"}</p>
+                  </div>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Angkatan</p>
+                    <p className="font-medium">{mataPelajaran.angkatan || "Tidak Ada"}</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Tahun Ajaran</p>
+                    <p className="font-medium">{mataPelajaran.tahunAjaran || "Tidak Ada"}</p>
+                  </div>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Jumlah Siswa</p>
+                    <p className="font-medium">{mataPelajaran.jumlah_siswa || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Teacher Info */}
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground">Guru Pengajar</p>
+                <p className="font-medium">{mataPelajaran.teacher.name || "Tidak Ada"}</p>
+              </div>
+
+              {/* Students List */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-lg">Daftar Siswa</h4>
+                {mataPelajaran.students.length > 0 ? (
+                  <div className="bg-muted rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {mataPelajaran.students.map((siswa) => (
+                        <div key={siswa.id} className="flex items-center space-x-2 p-2 bg-background rounded-md">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-medium text-primary">
+                              {siswa.name.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{siswa.name}</p>
+                            <p className="text-sm text-muted-foreground">{siswa.username}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-muted p-4 rounded-lg text-center text-muted-foreground">
+                    Tidak ada siswa terdaftar
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
     </>
   );
