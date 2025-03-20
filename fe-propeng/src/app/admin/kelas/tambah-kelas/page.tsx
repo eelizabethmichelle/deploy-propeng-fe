@@ -50,7 +50,7 @@ interface StudentData {
 }
 
 // Base API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+// const BASE_API_URL = "http://203.194.113.127/api";
 
 // Validation schema with Zod
 const formSchema = z.object({
@@ -142,7 +142,7 @@ export default function TambahKelas() {
                     return;
                 }
 
-                const response = await fetch(`${BASE_API_URL}/kelas/list_available_homeroom/`, {
+                const response = await fetch(`/api/kelas/list-available-homeroom`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -202,14 +202,13 @@ export default function TambahKelas() {
 
                 const normalizedAngkatan = parseInt(selectedAngkatan);
 
-                const response = await fetch(`${BASE_API_URL}/kelas/list_available_student/${normalizedAngkatan}`, {
+                const response = await fetch(`/api/kelas/list-available-student?angkatan=${normalizedAngkatan}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`,
                     },
                 });
-
 
                 if (response.status === 401) {
                     localStorage.removeItem("accessToken");
@@ -297,7 +296,7 @@ export default function TambahKelas() {
 
             console.log("Submitting requestData:", requestData);
 
-            const response = await fetch(`${BASE_API_URL}/kelas/create/`, {
+            const response = await fetch(`/api/kelas/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

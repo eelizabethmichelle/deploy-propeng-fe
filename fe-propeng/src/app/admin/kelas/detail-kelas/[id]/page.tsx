@@ -41,7 +41,7 @@ import {
 import { SelectPills } from "@/components/ui/multiple-select";
 
 // Base API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+// const BASE_API_URL = "http://203.194.113.127/api";
 
 // Schema for class name validation
 const classNameSchema = z.object({
@@ -202,14 +202,15 @@ export default function ClassDetailPage() {
 
                 console.log("Fetching class details for ID:", classId);
 
-                // Fetch class details with students included
-                const response = await fetch(`${BASE_API_URL}/kelas/${classId}`, {
+                // Use the new header format
+                const response = await fetch(`/api/kelas/detail`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
+                        "Authorization": `Bearer ${token} Id ${classId}`,
                     },
                 });
+
 
                 if (!response.ok) {
                     if (response.status === 401) {
@@ -297,7 +298,7 @@ export default function ClassDetailPage() {
                         return;
                     }
 
-                    const response = await fetch(`${BASE_API_URL}/kelas/list_available_homeroom/`, {
+                    const response = await fetch(`/api/kelas/list-available-homeroom`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -362,7 +363,7 @@ export default function ClassDetailPage() {
                 // Log the API call for debugging
                 console.log(`Fetching available students for angkatan: ${normalizedAngkatan}`);
 
-                const response = await fetch(`${BASE_API_URL}/kelas/list_available_student/${normalizedAngkatan}`, {
+                const response = await fetch(`/api/kelas/list-available-student?angkatan=${normalizedAngkatan}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -440,14 +441,15 @@ export default function ClassDetailPage() {
                 return;
             }
 
-            const response = await fetch(`${BASE_API_URL}/kelas/update_nama_kelas/${classId}/`, {
+            const response = await fetch(`/api/kelas/update-nama-kelas`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    namaKelas: data.namaKelas,
+                    id: classId,  // Include ID in the body
+                    namaKelas: data.namaKelas
                 }),
             });
 
@@ -492,14 +494,15 @@ export default function ClassDetailPage() {
             const token = getAuthToken();
             if (!token) return;
 
-            const response = await fetch(`${BASE_API_URL}/kelas/update_wali_kelas/${classId}/`, {
+            const response = await fetch(`/api/kelas/update-wali-kelas`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    waliKelas: parseInt(data.waliKelas),
+                    id: classId,  // Include ID in the body
+                    waliKelas: parseInt(data.waliKelas)
                 }),
             });
 
@@ -576,13 +579,20 @@ export default function ClassDetailPage() {
                 return;
             }
 
-            const response = await fetch(`${BASE_API_URL}/kelas/add_siswa_to_kelas/${classId}/`, {
+            // Store the selected student objects before making the API call
+            const selectedStudentObjects = studentIds.map(id => {
+                const student = availableStudents.find(s => s.id === id || s.id.toString() === id.toString());
+                return student;
+            }).filter(Boolean);
+
+            const response = await fetch(`/api/kelas/add-siswa`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({
+                    id: classId,  // Include ID in the body
                     students: studentIds,
                     angkatan: parseInt(data.angkatan)
                 }),
@@ -591,35 +601,30 @@ export default function ClassDetailPage() {
             const responseData = await response.json();
 
             if (responseData.status === 200) {
-                // Refresh the class data to get updated student list
-                const refreshResponse = await fetch(`${BASE_API_URL}/kelas/${classId}/`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                });
+                // Update the students state directly with the newly added students
+                const newStudents = selectedStudentObjects.map(student => ({
+                    id: student.id,
+                    name: student.name,
+                    nisn: student.nisn || "",
+                    username: student.username || "",
+                    // Add any other properties that your student objects have
+                }));
 
-                const refreshData = await refreshResponse.json();
+                // Update students state
+                setStudents(prevStudents => [...prevStudents, ...newStudents]);
 
-                if (refreshData.status === 201) {
-                    setClassData({
-                        id: refreshData.id,
-                        namaKelas: refreshData.namaKelas,
-                        tahunAjaran: refreshData.tahunAjaran,
-                        waliKelas: refreshData.waliKelas,
-                        totalSiswa: refreshData.totalSiswa,
-                        isActive: refreshData.isActive,
-                        angkatan: refreshData.angkatan
-                    });
+                // Update class data total students count
+                setClassData((prev: { totalSiswa: any; }) => ({
+                    ...prev,
+                    totalSiswa: (prev.totalSiswa || 0) + newStudents.length
+                }));
 
-                    setStudents(refreshData.siswa || []);
-
-                    // Update the isAssignedtoClass flag for the added students in our local state
-                    setAvailableStudents(prevStudents =>
-                        prevStudents.filter(student => !studentIds.includes(parseInt(student.id.toString())))
-                    );
-                }
+                // Remove the added students from available students
+                setAvailableStudents(prevAvailableStudents =>
+                    prevAvailableStudents.filter(student =>
+                        !studentIds.includes(parseInt(student.id.toString()))
+                    )
+                );
 
                 toast("", {
                     description: (
@@ -637,6 +642,9 @@ export default function ClassDetailPage() {
                     ),
                 });
 
+                // Signal that the list page needs to refresh when navigating back
+                localStorage.setItem('kelas_data_refresh', 'true');
+
                 setIsAddStudentsOpen(false);
                 addStudentsForm.reset();
                 setStudentSearchQuery("");
@@ -651,6 +659,7 @@ export default function ClassDetailPage() {
             });
         }
     };
+
 
     const onRemoveStudents = async () => {
         if (selectedStudents.length === 0) {
@@ -680,16 +689,16 @@ export default function ClassDetailPage() {
                         continue;
                     }
 
-                    // Log the URL being called for debugging
-                    const url = `${BASE_API_URL}/kelas/delete_siswa_from_kelas/${classId}/${studentId}/`;
-                    console.log(`Deleting student with URL: ${url}`);
-
-                    const response = await fetch(url, {
+                    const response = await fetch(`/api/kelas/delete-siswa`, {
                         method: "DELETE",
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `Bearer ${token}`,
-                        }
+                        },
+                        body: JSON.stringify({
+                            classId: classId,
+                            studentId: studentId
+                        })
                     });
 
                     // Check if response is OK

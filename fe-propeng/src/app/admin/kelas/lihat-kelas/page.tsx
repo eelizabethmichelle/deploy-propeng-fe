@@ -1,20 +1,16 @@
 // src/app/admin/lihat-kelas/page.tsx
 "use client";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/data-table-class-components/data-table";
 import { columns } from "@/components/ui/data-table-class-components/columns";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
-
-// Base API URL
-const BASE_API_URL = "http://203.194.113.127/api";
 
 export default function Page() {
   const router = useRouter();
-  const [data, setData] = useState<any[] | null>(null);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,12 +30,12 @@ export default function Page() {
       }
 
       // Make API request with proper error handling
-      const response = await fetch(`${BASE_API_URL}/kelas/`, {
+      const response = await fetch(`/api/kelas/list`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          "Authorization": `Bearer ${token}`,
+        },
       });
 
       // Handle HTTP errors
@@ -52,8 +48,9 @@ export default function Page() {
           return;
         }
 
-        // For 400 status, we'll treat it as empty data
-        if (response.status === 400 || 404) {
+        // For 400 or 404 status, we'll treat it as empty data
+        if (response.status === 400 || response.status === 404) {
+          console.log(response);
           setData([]);
           setLoading(false);
           return;
@@ -67,8 +64,12 @@ export default function Page() {
 
       // Check API response status
       if (jsonData.status === 201) {
-        setData(jsonData.data || []);
-      } else if (jsonData.status === 400) {
+        if (!jsonData.data || jsonData.data.length === 0) {
+          setData([]);
+        } else {
+          setData(jsonData.data);
+        }
+      } else if (jsonData.status === 400 || jsonData.status === 404 || jsonData.status == 500) {
         // Handle empty data case
         setData([]);
       } else {
@@ -90,7 +91,6 @@ export default function Page() {
       setLoading(false);
     }
   };
-
 
   // Fetch data on initial load
   useEffect(() => {
@@ -139,6 +139,7 @@ export default function Page() {
           <Button
             variant="default"
             onClick={() => router.push("/admin/kelas/tambah-kelas")}
+            className="bg-blue-800 hover:bg-blue-900"
           >
             Tambah Kelas
             <Plus className="h-5 w-5 ml-2" />
@@ -156,10 +157,8 @@ export default function Page() {
           <Button onClick={fetchData}>Coba Lagi</Button>
         </div>
       ) : (
-        <>
-          {/* Remove any error message display here if it exists */}
-          <DataTable data={data || []} columns={columns} />
-        </>
+        // Always render the DataTable, even with empty data
+        <DataTable data={data} columns={columns} />
       )}
     </div>
   );
