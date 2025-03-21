@@ -45,11 +45,12 @@ interface ProfileData {
 const Logo = () => (
   <div className="flex items-center justify-center">
     <Image 
+      color="#ffffff"
       src="/logo.svg" 
       alt="SIMAK SMA Kristen Anglo" 
       width={50} 
       height={72} 
-      className="w-auto h-auto"
+      className="w-auto h-auto rounded-lg"
     />
   </div>
 );
