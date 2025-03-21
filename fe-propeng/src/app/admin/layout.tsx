@@ -7,7 +7,6 @@ import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -15,17 +14,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
-  hideSidebar?: boolean;
-}
-
+// Change the export format to match Next.js layout requirements
 export default function AdminLayout({
   children,
-  hideSidebar,
-}: AdminLayoutProps) {
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
+  const hideSidebar = false; // Set a default value or handle it differently
 
   const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
     if (!href) return;
@@ -36,6 +33,7 @@ export default function AdminLayout({
     router.push(href);
   };
 
+  // Rest of your code remains the same
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
     "/admin/kelas": [{ label: "Manajemen Kelas" }],
     "/admin/kelas/tambah": [
