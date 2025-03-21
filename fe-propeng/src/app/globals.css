@@ -5,7 +5,7 @@
 
 
 @layer base {
-  :root  {
+  :root {
     font-family: "Trebuchet MS", sans-serif !important;
     /*  Custom Primary Colors */
     --custom-primary-light: 240 100% 99.8%;
@@ -50,9 +50,7 @@
 
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 96.1%;
-
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 233, 13.8%, 88.6% --secondary-foreground: 0 0% 9%;
 
     --muted: 0 0% 96.1%;
 
@@ -82,24 +80,18 @@
 
     --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem
-  ;
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 240 100% 98%;
+    /* This is #05218E in HSL format */
+    --sidebar-foreground: 0 0% 0%;
+    /* White text */
 
     --sidebar-primary: 240 5.9% 10%;
 
     --sidebar-primary-foreground: 0 0% 98%;
+  }
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%}
   .dark {
 
     --background: 0 0% 3.9%;
@@ -148,10 +140,9 @@
 
     --chart-4: 280 65% 60%;
 
-    --chart-5: 340 75% 55%
-  ;
+    --chart-5: 340 75% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 229, 94%, 21%;
 
     --sidebar-foreground: 240 4.8% 95.9%;
 
@@ -165,7 +156,8 @@
 
     --sidebar-border: 240 3.7% 15.9%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
 }
 
 
@@ -174,6 +166,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

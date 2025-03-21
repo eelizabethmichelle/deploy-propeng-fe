@@ -10,7 +10,7 @@ import { DataTable } from "@/components/ui/data-table-detail-class-components/da
 import { columns } from "@/components/ui/data-table-detail-class-components/columns";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { z } from "zod";
+import { custom, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -63,6 +63,23 @@ const addStudentsSchema = z.object({
     angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
     siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
 });
+const customToast = {
+    success: (title: string, description: string) => {
+        toast.success(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    error: (title: string, description: string) => {
+        toast.error(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    warning: (title: string, description: string) => {
+        toast.warning(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    }
+};
 
 export default function ClassDetailPage() {
     const params = useParams();
@@ -247,13 +264,9 @@ export default function ClassDetailPage() {
 
                     // Show toast for special cases
                     if (data.message === "Tidak ada wali kelas di kelas ini") {
-                        toast.warning("Tidak ada wali kelas", {
-                            description: "Kelas ini belum memiliki wali kelas"
-                        });
+                        customToast.warning("Tidak ada wali kelas", "Kelas ini belum memiliki wali kelas" );
                     } else if (data.message === "Tidak ada siswa di kelas ini") {
-                        toast.warning("Tidak ada siswa", {
-                            description: "Kelas ini belum memiliki siswa"
-                        });
+                        customToast.warning("Tidak ada siswa", "Kelas ini belum memiliki siswa" );
                     }
                 } else {
                     throw new Error(data.errorMessage || "Failed to fetch class details");
@@ -266,9 +279,7 @@ export default function ClassDetailPage() {
                     setError("An error occurred while fetching data");
                 }
 
-                toast.error("Gagal memuat data", {
-                    description: err instanceof Error ? err.message : "Terjadi kesalahan saat mengambil data kelas"
-                });
+                customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data kelas");
             } finally {
                 setLoading(false);
             }
@@ -322,15 +333,13 @@ export default function ClassDetailPage() {
                         }
                     } else if (data.status === 404) {
                         setAvailableTeachers([]);
-                        toast.error("Tidak ada guru yang tersedia", {
-                            description: "Semua guru sudah menjadi wali kelas",
-                        });
+                        customToast.error("Tidak ada guru yang tersedia", "Semua guru sudah menjadi wali kelas");
                     } else {
                         throw new Error(data.errorMessage || "Gagal mendapatkan daftar guru");
                     }
                 } catch (err: any) {
                     console.error("Error fetching available teachers:", err);
-                    toast.error("Gagal mengambil data guru", { description: err.message });
+                    customToast.error("Gagal mengambil data guru", err.message || "Terjadi kesalahan saat mengambil data guru");
                 } finally {
                     setLoadingTeachers(false);
                 }
@@ -392,14 +401,14 @@ export default function ClassDetailPage() {
                     addStudentsForm.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
-                    toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
+                    customToast.warning("Tidak ada siswa", `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
             } catch (err) {
                 console.error("Error fetching available students:", err);
                 const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-                toast.error("Gagal mengambil data siswa", { description: errorMessage });
+                customToast.error("Gagal mengambil data siswa", errorMessage);
             } finally {
                 setLoadingStudents(false);
             }
@@ -412,7 +421,7 @@ export default function ClassDetailPage() {
     // Add this near the top of your component
     const handleBackNavigation = () => {
         // Force a refresh of the list page when navigating back
-        router.push("/admin/kelas/lihat-kelas");
+        router.push("/admin/kelas");
     };
 
 
@@ -459,21 +468,10 @@ export default function ClassDetailPage() {
                     namaKelas: data.namaKelas,
                 }));
 
-                toast("", {
-                    description: (
-                        <div className="flex items-start gap-3">
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                                <Check className="text-background w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-semibold text-foreground font-sans">Nama Kelas Diperbarui!</p>
-                                <p className="text-sm text-muted-foreground font-sans">
-                                    Nama kelas berhasil diperbarui menjadi {data.namaKelas}
-                                </p>
-                            </div>
-                        </div>
-                    ),
-                });
+                customToast.success(
+                    "Nama Kelas Diperbarui!",
+                    `Nama kelas berhasil diperbarui menjadi ${data.namaKelas}`
+                );                
 
                 setIsEditClassNameOpen(false);
             } else {
@@ -481,9 +479,7 @@ export default function ClassDetailPage() {
             }
         } catch (err: any) {
             console.error("Error updating class name:", err);
-            toast.error("Gagal memperbarui nama kelas", {
-                description: err instanceof Error ? err.message : "An unknown error occurred",
-            });
+            customToast.error("Gagal memperbarui nama kelas", err.message || "Terjadi kesalahan saat memperbarui nama kelas");  
         }
     };
 
@@ -527,21 +523,11 @@ export default function ClassDetailPage() {
                     waliKelas: selectedTeacher?.name || "Unknown",
                 }));
 
-                toast("", {
-                    description: (
-                        <div className="flex items-start gap-3">
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                                <Check className="text-background w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-semibold text-foreground font-sans">Wali Kelas Diperbarui!</p>
-                                <p className="text-sm text-muted-foreground font-sans">
-                                    Wali kelas berhasil diperbarui
-                                </p>
-                            </div>
-                        </div>
-                    ),
-                });
+                customToast.success(
+                    "Wali Kelas Diperbarui!",
+                    `Wali Kelas berhasil Diperbarui menjadi ${selectedTeacher?.name}`
+                );
+                
 
                 // Signal that the list page needs to refresh
                 localStorage.setItem('kelas_data_refresh', 'true');
@@ -552,9 +538,7 @@ export default function ClassDetailPage() {
             }
         } catch (err: any) {
             console.error("Error updating homeroom teacher:", err);
-            toast.error("Gagal memperbarui wali kelas", {
-                description: err.message || "Terjadi kesalahan saat memperbarui wali kelas",
-            });
+            customToast.error("Gagal memperbarui wali kelas", err.message || "Terjadi kesalahan saat memperbarui wali kelas");
         }
     };
 
@@ -571,9 +555,7 @@ export default function ClassDetailPage() {
                 .map(id => parseInt(id));
 
             if (studentIds.length === 0) {
-                toast.error("Pilih minimal satu siswa", {
-                    description: "Anda harus memilih minimal satu siswa untuk ditambahkan ke kelas"
-                });
+                customToast.error("Tidak ada siswa yang dipilih", "Pilih minimal satu siswa untuk ditambahkan ke kelas");
                 return;
             }
 
@@ -624,21 +606,11 @@ export default function ClassDetailPage() {
                     )
                 );
 
-                toast("", {
-                    description: (
-                        <div className="flex items-start gap-3">
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                                <Check className="text-background w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-semibold text-foreground font-sans">Siswa Ditambahkan!</p>
-                                <p className="text-sm text-muted-foreground font-sans">
-                                    {studentIds.length} siswa berhasil ditambahkan ke kelas
-                                </p>
-                            </div>
-                        </div>
-                    ),
-                });
+                customToast.success(
+                    "Siswa Ditambahkan!",
+                    `${newStudents.length} siswa berhasil ditambahkan ke kelas`
+                );
+                
 
                 // Signal that the list page needs to refresh when navigating back
                 localStorage.setItem('kelas_data_refresh', 'true');
@@ -652,18 +624,14 @@ export default function ClassDetailPage() {
 
         } catch (err) {
             console.error("Error adding students:", err);
-            toast.error("Gagal menambahkan siswa", {
-                description: err instanceof Error ? err.message : "An unknown error occurred",
-            });
+            customToast.error("Gagal menambahkan siswa", "Terjadi kesalahan saat menambahkan siswa");
         }
     };
 
 
     const onRemoveStudents = async () => {
         if (selectedStudents.length === 0) {
-            toast.error("Tidak ada siswa yang dipilih", {
-                description: "Pilih minimal satu siswa untuk dihapus dari kelas",
-            });
+            customToast.error("Tidak ada siswa yang dipilih", "Pilih minimal satu siswa untuk dihapus dari kelas");
             return;
         }
 
@@ -751,38 +719,22 @@ export default function ClassDetailPage() {
                 }));
 
                 // Show success toast
-                toast("", {
-                    description: (
-                        <div className="flex items-start gap-3">
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                                <Check className="text-background w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-semibold text-foreground font-sans">Siswa Dihapus!</p>
-                                <p className="text-sm text-muted-foreground font-sans">
-                                    {successCount} siswa berhasil dihapus dari kelas
-                                    {errorCount > 0 ? ` (${errorCount} gagal)` : ''}
-                                </p>
-                            </div>
-                        </div>
-                    ),
-                });
+                customToast.success(
+                    "Siswa berhasil dihapus",
+                    `${successCount} siswa berhasil dihapus dari kelas`
+                );
 
                 // Signal that the list page needs to refresh
                 localStorage.setItem('kelas_data_refresh', 'true');
             } else {
-                toast.error("Gagal menghapus siswa", {
-                    description: "Tidak ada siswa yang berhasil dihapus dari kelas",
-                });
+                customToast.error("Gagal menghapus siswa", "Terjadi kesalahan saat menghapus siswa");
             }
 
             setIsRemoveStudentsOpen(false);
             setSelectedStudents([]);
         } catch (err: any) {
             console.error("Error removing students:", err);
-            toast.error("Gagal menghapus siswa", {
-                description: err.message || "Terjadi kesalahan saat menghapus siswa",
-            });
+            customToast.error("Gagal menghapus siswa", "Terjadi kesalahan saat menghapus siswa");
         }
     };
 
@@ -813,7 +765,7 @@ export default function ClassDetailPage() {
         return (
             <div className="p-8 flex flex-col items-center justify-center">
                 <div className="text-red-500 mb-4">Error: {error}</div>
-                <Button variant="secondary" onClick={() => router.push("/admin/kelas/lihat-kelas")}>
+                <Button onClick={() => router.push("/admin/kelas")}>
                     Kembali ke Daftar Kelas
                 </Button>
             </div>
@@ -865,7 +817,7 @@ export default function ClassDetailPage() {
                                                 Batal
                                             </Button>
                                         </DialogClose>
-                                        <Button type="submit">Simpan</Button>
+                                        <Button variant="default" type="submit">Simpan</Button>
                                     </div>
                                 </DialogFooter>
                             </form>
@@ -961,7 +913,7 @@ export default function ClassDetailPage() {
                                                             Batal
                                                         </Button>
                                                     </DialogClose>
-                                                    <Button type="submit">Simpan</Button>
+                                                    <Button variant="default" type="submit">Simpan</Button>
                                                 </div>
                                             </DialogFooter>
                                         </form>
@@ -988,7 +940,7 @@ export default function ClassDetailPage() {
                     {selectedStudents.length > 0 && (
                         <Dialog open={isRemoveStudentsOpen} onOpenChange={setIsRemoveStudentsOpen}>
                             <DialogTrigger asChild>
-                                <Button variant="outline" className="flex items-center gap-2">
+                                <Button variant="destructive" className="flex items-center gap-2">
                                     <Trash2 className="h-4 w-4" />
                                     Hapus Siswa ({selectedStudents.length})
                                 </Button>
@@ -1015,9 +967,9 @@ export default function ClassDetailPage() {
                     )}
                     <Dialog open={isAddStudentsOpen} onOpenChange={setIsAddStudentsOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-blue-800 hover:bg-blue-900">
-                                <Plus className="mr-2 h-4 w-4" />
+                            <Button variant="default">
                                 Tambah Siswa
+                                <Plus className="h-5 w-5 ml-2"/>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">

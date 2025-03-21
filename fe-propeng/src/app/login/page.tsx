@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { PasswordInput } from "@/components/ui/password-input"
 import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
+import { custom } from "zod"
 
 export default function LoginPage() {
     const router = useRouter()
@@ -16,11 +17,29 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
 
+    const customToast = {
+        success: (title: string, description: string) => {
+            toast.success(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        },
+        error: (title: string, description: string) => {
+            toast.error(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        },
+        warning: (title: string, description: string) => {
+            toast.warning(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        }
+    };
+
     const { setUser } = useAuth();
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-    
+
         try {
             const loginResponse = await fetch("api/auth/login", {
                 method: "POST",
@@ -29,11 +48,11 @@ export default function LoginPage() {
                 },
                 body: JSON.stringify({ username, password }),
             });
-    
+
             if (!loginResponse.ok) {
                 throw new Error("Periksa kembali kredensial Anda");
             }
-    
+
             const loginData = await loginResponse.json();
             localStorage.setItem("accessToken", loginData.access);
             sessionStorage.setItem("accessToken", loginData.access)
@@ -44,11 +63,11 @@ export default function LoginPage() {
                     "Authorization": `Bearer ${loginData.access}`,
                 },
             });
-    
+
             if (!detailResponse.ok) {
                 throw new Error("Token tidak valid.");
             }
-    
+
             const detailData = await detailResponse.json();
             const role = detailData.data_user.role;
             const user_id = detailData.data_user.user_id;
@@ -61,9 +80,9 @@ export default function LoginPage() {
             localStorage.setItem("user_id", detailData.data_user.user_id)
             sessionStorage.setItem("user_id", detailData.data_user.user_id)
 
-            toast.success("Berhasil masuk ke dalam sistem");
+            customToast.success("Berhasil masuk ke dalam sistem", "Selamat datang di SIMAK SMA Kristen Anglo");
 
-            if (role === "admin") router.push("/admin");
+            if (role === "admin") router.push("/profil");
             else if (role === "student") router.push("/siswa");
             else if (role === "teacher") router.push("/guru");
             else router.push("/unauthorized");
@@ -82,9 +101,9 @@ export default function LoginPage() {
         <div className="flex min-h-screen w-full">
             {/* Left Side - Illustration (hanya muncul di layar besar) */}
             <div className="hidden lg:block w-1/2 max-w-[50vw] h-screen bg-gray-100 relative">
-                <Image 
-                    src="/Login.png" 
-                    alt="Illustration" 
+                <Image
+                    src="/Login.png"
+                    alt="Illustration"
                     layout="fill"
                     objectFit="cover"
                     objectPosition="center"
@@ -112,23 +131,23 @@ export default function LoginPage() {
                                 {/* Username Input */}
                                 <div>
                                     <label className="text-sm font-medium">Username</label>
-                                    <Input 
-                                        type="text" 
-                                        value={username} 
-                                        onChange={(e) => setUsername(e.target.value)} 
-                                        placeholder="Masukkan username akun" 
-                                        required 
+                                    <Input
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        placeholder="Masukkan username akun"
+                                        required
                                     />
                                 </div>
 
                                 {/* Password Input */}
                                 <div>
                                     <label className="text-sm font-medium">Password</label>
-                                    <PasswordInput 
-                                        value={password} 
-                                        onChange={(e) => setPassword(e.target.value)} 
-                                        placeholder="Masukkan password akun" 
-                                        required 
+                                    <PasswordInput
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Masukkan password akun"
+                                        required
                                     />
                                 </div>
 

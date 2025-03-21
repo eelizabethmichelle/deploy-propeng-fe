@@ -4,9 +4,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "./sort";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { CheckCircle, X } from "lucide-react";
+import { DataTableActions } from "./actions";
 
 export type Class = {
   id: string;
@@ -105,22 +104,10 @@ export const columns: ColumnDef<Class>[] = [
     },
   },
   {
-    id: "detail",
-    header: () => <div className="text-center">Detail</div>,
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const router = useRouter();
-      return (
-        <div className="text-center">
-          <Button
-            variant="secondary"
-            className="bg-[hsl(237,100%,98%)] text-[hsl(232,74%,21%)] hover:bg-[hsl(237,90%,95%)]"
-            onClick={() => router.push(`/admin/kelas/detail-kelas/${id}`)}
-          >
-            Lihat Detail
-          </Button>
-        </div>
-      );
-    },
-  }
+    id: "actions",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Aksi" />
+    ),
+    cell: ({ row }) => <DataTableActions row={row} />,
+  },
 ];

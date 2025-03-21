@@ -1,4 +1,3 @@
-// src/app/admin/lihat-kelas/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +12,24 @@ export default function Page() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const customToast = {
+    success: (title: string, description: string) => {
+      toast.success(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    error: (title: string, description: string) => {
+      toast.error(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    warning: (title: string, description: string) => {
+      toast.warning(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -84,9 +101,7 @@ export default function Page() {
       setData([]);
 
       // Show error toast
-      toast.error("Gagal memuat data", {
-        description: error.message || "Terjadi kesalahan saat mengambil data kelas"
-      });
+      customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data kelas");
     } finally {
       setLoading(false);
     }
@@ -128,21 +143,20 @@ export default function Page() {
     <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
-          <h2 className="text-3xl font-semibold tracking-tight">
-            Semua Kelas
+          <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+            Daftar Kelas
           </h2>
-          <p className="text-muted-foreground">
-            Kelola semua kelas yang tersedia
-          </p>
+          <p className="text-muted-foreground">Kelola semua kelas yang tersedia</p>
         </div>
-        <Button
-          variant="default"
-          onClick={() => router.push("/admin/kelas/tambah-kelas")}
-          className="bg-blue-800 hover:bg-blue-900"
-        >
-          Tambah Kelas
-          <Plus className="h-5 w-5 ml-2" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="default"
+            onClick={() => router.push("/admin/kelas/tambah")}
+          >
+            Tambah Kelas
+            <Plus className="h-5 w-5 ml-2" />
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -155,6 +169,7 @@ export default function Page() {
           <Button onClick={fetchData}>Coba Lagi</Button>
         </div>
       ) : (
+        // Always render the DataTable, even with empty data
         <DataTable data={data} columns={columns} />
       )}
     </div>

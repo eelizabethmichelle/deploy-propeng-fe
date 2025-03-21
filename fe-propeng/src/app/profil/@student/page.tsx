@@ -19,28 +19,40 @@ import {
 import { toast } from "sonner";
 import { Check, Lock, User } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
- import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose, DialogHeader, DialogFooter } from "@/components/ui/dialog";
- import React from "react"
- import { Label } from "@/components/ui/label"
- import { useForm } from "react-hook-form";
- import { Form } from "@/components/ui/form";
- import { z } from "zod";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import React from "react"
+import { Label } from "@/components/ui/label"
+import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
- 
-const passwordSchema = z.object({
-   currentPassword: z.string().min(1, "Password lama harus diisi"),
-   newPassword: z.string()
-     .min(8, "Password harus minimal 8 karakter")
-     .regex(/[a-z]/, "Password harus mengandung huruf kecil")
-     .regex(/[A-Z]/, "Password harus mengandung huruf besar")
-     .regex(/[0-9]/, "Password harus mengandung angka")
-     .regex(/[@$!%*?&]/, "Password harus mengandung simbol"),
-   confirmPassword: z.string().min(1, "Konfirmasi password harus diisi"),
- }).refine((data) => data.newPassword === data.confirmPassword, {
-   message: "Konfirmasi password tidak cocok",
-   path: ["confirmPassword"],
- });
 
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Password lama harus diisi"),
+  newPassword: z.string()
+    .min(8, "Password harus minimal 8 karakter")
+    .regex(/[a-z]/, "Password harus mengandung huruf kecil")
+    .regex(/[A-Z]/, "Password harus mengandung huruf besar")
+    .regex(/[0-9]/, "Password harus mengandung angka")
+    .regex(/[@$!%*?&]/, "Password harus mengandung simbol"),
+  confirmPassword: z.string().min(1, "Konfirmasi password harus diisi"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Konfirmasi password tidak cocok",
+  path: ["confirmPassword"],
+});
+
+const formatDate = (isoString: string) => {
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
 
 interface UserProfile {
   user_id: number;
@@ -54,128 +66,102 @@ interface UserProfile {
   updatedAt: string;
 }
 
+const customToast = {
+  success: (title: string, description: string) => {
+    toast.success(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  error: (title: string, description: string) => {
+    toast.error(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  warning: (title: string, description: string) => {
+    toast.warning(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  }
+};
+
 
 export default function ProfilePageStudent({ user_id }: { user_id: number }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const router = useRouter();
 
-        
-            const form = useForm({
-              resolver: zodResolver(passwordSchema),
-              defaultValues: {
-                currentPassword: "",
-                newPassword: "",
-                confirmPassword: "",
-              },
-            });
-        
-            
-                  const onSubmit = async (data: any) => {
-                    const accessToken =
-                        localStorage.getItem("accessToken") ||
-                        sessionStorage.getItem("accessToken");
-                    const { currentPassword, newPassword } = data;
-            
-                    try {
-                        const response = await fetch("/api/auth/change-password", {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${accessToken}`,
-                            },
-                            body: JSON.stringify({ old_password: currentPassword, new_password: newPassword }),
-                        });
-            
-                        // Ambil JSON dari respons, meskipun statusnya error
-                        const responseData = await response.json();
-            
-                        if (!response.ok) {
-                            console.log("Response:", responseData);
-                            console.log("Status:", response.status);
-            
-                          // Tampilkan pesan error dari Django
-                            handleError(responseData.message)
-                            throw new Error(responseData.message || "Gagal mengubah password!");
-                        }
-            
-                        handleSuccess(responseData.message); 
-                        console.log("Success:", responseData.message);
-                    } catch (error: any) {
-                        console.error("Error:", error.message);
-                    }
-                };
-            
-                
-                
-                /* Toast success */
-                const handleSuccess = (message: string) => {
-                    toast("", {
-                      description: (
-                        <div className="flex items-start gap-3">
-                          {/* Icon di kiri */}
-                          <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                            <Check className="text-background w-4 h-4" />
-                          </div>
-                          <div>
-                            {/* Judul dibuat lebih besar */}
-                            <p className="text-lg font-semibold text-foreground font-sans">Berhasil Diubah</p>
-                            {/* Deskripsi dengan warna lebih muted */}
-                            <p className="text-sm text-muted-foreground font-sans">
-                              { message !== "" ? message : "Password berhasil diubah" }
-                            </p>
-                          </div>
-                        </div>
-                      ),
-                      action: {
-                        label: (
-                          <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
-                            Tutup
-                          </span>
-                        ),
-                        onClick: () => console.log("Tutup"),
-                      },
-                    })
-                  }
-              
-            
-                /* Toast error */
-                const handleError = (message: string) => {
-                    toast("", {
-                      description: (
-                        <div className="flex items-start gap-3">
-                          {/* Icon di kiri */}
-                          <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-                            <Check className="text-background w-4 h-4" />
-                          </div>
-                          <div>
-                            {/* Judul dibuat lebih besar */}
-                            <p className="text-lg font-semibold text-foreground font-sans">Gagal diubah!</p>
-                            {/* Deskripsi dengan warna lebih muted */}
-                            <p className="text-sm text-muted-foreground font-sans">
-                              { message !== "" ? message : "Password sebelumnya tidak sesuai" }
-                            </p>
-                          </div>
-                        </div>
-                      ),
-                      action: {
-                        label: (
-                          <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
-                            Tutup
-                          </span>
-                        ),
-                        onClick: () => console.log("Tutup"),
-                      },
-                    })
-                }
-        
-          
-        
-  
+
+  const form = useForm({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+
+  const onSubmit = async (data: any) => {
+    const accessToken =
+      localStorage.getItem("accessToken") ||
+      sessionStorage.getItem("accessToken");
+    const { currentPassword, newPassword } = data;
+
+    try {
+      const response = await fetch("/api/auth/change-password", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ old_password: currentPassword, new_password: newPassword }),
+      });
+
+      // Ambil JSON dari respons, meskipun statusnya error
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.log("Response:", responseData);
+        console.log("Status:", response.status);
+
+        // Tampilkan pesan error dari Django
+        handleError(responseData.message)
+        throw new Error(responseData.message || "Gagal mengubah password!");
+      }
+
+      handleSuccess(responseData.message);
+      console.log("Success:", responseData.message);
+    } catch (error: any) {
+      console.error("Error:", error.message);
+    }
+  };
+
+
+
+  /* Toast success */
+  const handleSuccess = (message: string) => {
+    const handleSuccess = (message: string) => {
+      customToast.success(
+        "Berhasil Diubah",
+        message !== "" ? message : "Password berhasil diubah"
+      );
+    };
+  }
+
+
+  /* Toast error */
+  const handleError = (message: string) => {
+    customToast.error(
+      "Gagal diubah!",
+      message !== "" ? message : "Password sebelumnya tidak sesuai"
+    );
+  };  
+
+
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     sessionStorage.removeItem("accessToken");
-    toast.success("Berhasil keluar dari sistem")
+    customToast.success("Berhasil keluar dari sistem", "Anda akan dialihkan ke halaman login");
     router.push("/login");
   };
 
@@ -207,8 +193,8 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
       }
     };
 
-  fetchUserData();
-}, [user_id, router]);
+    fetchUserData();
+  }, [user_id, router]);
 
   if (!user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -218,39 +204,39 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
     <div className="p-6">
       <h3 className="text-lg font-semibold mb-4">Profil Saya</h3>
       <div className="flex justify-center">
-      <Card className="w-full">
-        {/* Blue Header Section */}
-        <div className="h-32 bg-blue-900 rounded-t-lg"></div>
+        <Card className="w-full">
+          {/* Blue Header Section */}
+          <div className="h-32 bg-blue-900 rounded-t-lg"></div>
 
-        {/* Profile Info Section */}
-        <CardContent className="p-6 flex items-center justify-between">
-          <div>
-            <p className="font-bold text-blue-900">{user.username}</p>
-            <p className="text-gray-500">Siswa</p>
-          </div>
+          {/* Profile Info Section */}
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="font-bold text-blue-900">{user.username}</p>
+              <p className="text-gray-500">Siswa</p>
+            </div>
 
-          {/* Logout Button (Aligned with Username) */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">Logout</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Yakin mau keluar?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Kamu bisa masuk lagi nanti.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Batal</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>
-                  Yakin, keluar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+            {/* Logout Button (Aligned with Username) */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Logout</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Yakin mau keluar?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Kamu bisa masuk lagi nanti.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLogout}>
+                    Yakin, keluar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
       </div>
 
 
@@ -262,62 +248,62 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
             <User className="w-5 h-5 text-gray-500" />
             <CardTitle>Informasi Saya</CardTitle>
           </div>
-          
-            <Dialog>
-              <DialogTrigger asChild>
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline">
-                    <Lock className="w-4 h-4 mr-2" /> Ubah Password
-                  </Button>
-                </div>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-          
-                <DialogHeader>
-                  <div className="fitems-center text-center">
-                    <div className="flex flex-col justify-center items-center text-center">
-                      <Lock className="flex items-center text-primary mb-2"></Lock>
-                      <DialogTitle className="flex text-center items-center mb-2">Ubah Password</DialogTitle>
-                    </div>
-                    <DialogDescription className="mb-4">
-                      Kamu bisa mengubah password yang beda dari sebelumnya.
-                    </DialogDescription>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline">
+                  <Lock className="w-4 h-4 mr-2" /> Ubah Password
+                </Button>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+
+              <DialogHeader>
+                <div className="fitems-center text-center">
+                  <div className="flex flex-col justify-center items-center text-center">
+                    <Lock className="flex items-center text-primary mb-2"></Lock>
+                    <DialogTitle className="flex text-center items-center mb-2">Ubah Password</DialogTitle>
                   </div>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <div>
-                        <Label htmlFor="currentPassword">Current Password</Label>
-                        <PasswordInput  id="currentPassword" {...form.register("currentPassword")} autoComplete="current-password" />
-                        <p className="text-red-500 text-sm">{form.formState.errors.currentPassword?.message}</p>
-                      </div> 
+                  <DialogDescription className="mb-4">
+                    Kamu bisa mengubah password yang beda dari sebelumnya.
+                  </DialogDescription>
+                </div>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div>
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <PasswordInput id="currentPassword" {...form.register("currentPassword")} autoComplete="current-password" />
+                      <p className="text-red-500 text-sm">{form.formState.errors.currentPassword?.message}</p>
+                    </div>
                     <div>
                       <Label htmlFor="newPassword">New Password</Label>
                       <PasswordInput id="newPassword" {...form.register("newPassword")} autoComplete="new-password" />
                       <p className="text-red-500 text-sm">{form.formState.errors.newPassword?.message}</p>
                     </div>
-                      <div>
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
-                        <PasswordInput id="confirmPassword" {...form.register("confirmPassword")} autoComplete="new-password" />
-                        <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword?.message}</p>
-                      </div>
-                      <div className="flex gap-4 w-full">
-                        
-                        <DialogClose asChild>
-                          <Button variant="secondary">Kembali</Button>
-                        </DialogClose>
-                        <Button className="max-w-xs w-full" type="submit">
-                          Ubah
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+                    <div>
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <PasswordInput id="confirmPassword" {...form.register("confirmPassword")} autoComplete="new-password" />
+                      <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword?.message}</p>
+                    </div>
+                    <div className="flex gap-4 w-full">
+
+                      <DialogClose asChild>
+                        <Button variant="secondary">Kembali</Button>
+                      </DialogClose>
+                      <Button className="max-w-xs w-full" type="submit">
+                        Ubah
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
 
         {/* User Details */}
-        
+
         <CardContent className="p-6">
           <div className="grid gap-3 text-sm">
             <div>
@@ -346,11 +332,11 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
             </div>
             <div>
               <p className="text-gray-500">Dibuat Pada Tanggal</p>
-              <p className="text-blue-900">{user.createdAt}</p>
+              <p className="text-blue-900">{formatDate(user.createdAt)}</p>
             </div>
             <div>
               <p className="text-gray-500">Diperbarui Pada Tanggal</p>
-              <p className="text-blue-900">{user.updatedAt}</p>
+              <p className="text-blue-900">{formatDate(user.updatedAt)}</p>
             </div>
           </div>
         </CardContent>

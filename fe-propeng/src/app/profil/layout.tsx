@@ -6,8 +6,16 @@ import { jwtDecode } from "jwt-decode";
 import ProfilePageStudent from "./@student/page";
 import ProfilePageTeacher from "./@teacher/page";
 import ProfilePageAdmin from "./@admin/page";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://203.194.113.127';
-// tutprr
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface TokenPayload {
   user_id: number;
@@ -94,12 +102,41 @@ export default function ProfileLayout({
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  return (
-    <>
-      {role === "admin" && <ProfilePageAdmin user_id={profile?.user_id} />}
-      {role === "student" && <ProfilePageStudent user_id={profile?.user_id} />}
-      {role === "teacher" && <ProfilePageTeacher user_id={profile?.user_id} />}
-    </>
-  );
+  // Render the appropriate profile component based on user role
+  const renderProfileContent = () => {
+    switch (role) {
+      case "admin":
+        return <ProfilePageAdmin user_id={profile?.user_id} />;
+      case "student":
+        return <ProfilePageStudent user_id={profile?.user_id} />;
+      case "teacher":
+        return <ProfilePageTeacher user_id={profile?.user_id} />;
+      default:
+        return <div>Unknown role</div>;
+    }
+  };
 
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Profil</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0" style={{ backgroundColor: "#fdfdff" }}>
+          {renderProfileContent()}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

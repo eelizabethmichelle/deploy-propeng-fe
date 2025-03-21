@@ -153,7 +153,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between space-y-4 py-4">
         <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} baris terpilih.
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -162,7 +162,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            Kembali
           </Button>
           <Button
             variant="outline"
@@ -170,7 +170,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Lanjut
           </Button>
         </div>
       </div>

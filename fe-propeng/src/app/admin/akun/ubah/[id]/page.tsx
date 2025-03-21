@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { custom } from "zod";
 
 const roles = [
   { id: "teacher", label: "Guru" },
@@ -33,6 +34,24 @@ const status = [
   { id: true, label: "Aktif" },
   { id: false, label: "Tidak Aktif" },
 ];
+
+const customToast = {
+  success: (title: string, description: string) => {
+    toast.success(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  error: (title: string, description: string) => {
+    toast.error(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  warning: (title: string, description: string) => {
+    toast.warning(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  }
+};
 
 export default function EditAccountForm() {
   const router = useRouter();
@@ -109,11 +128,7 @@ export default function EditAccountForm() {
 
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat mengambil data"
-        );
+        customToast.error("Error", "Gagal mengambil data akun pengguna");
       }
     };
 
@@ -141,14 +156,17 @@ export default function EditAccountForm() {
       if (!response.ok) {
         throw new Error(responseData.message || "Gagal memperbarui akun");
       }
-
-      toast.success("Akun " + responseData.detail.original_data.name + " berhasil diperbarui!");
+      customToast.success(
+        "Berhasil Diperbarui!", 
+        `Akun ${responseData.detail.original_data.name} berhasil diperbarui`
+      );
+      
       router.push("/admin/akun");
     } catch (error) {
       console.log(error)
       console.error("Error submitting form:", error);
       const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat memperbarui akun."
-      toast.error(errorMessage);
+      customToast.error("Error", errorMessage);
     }
   };
 
@@ -164,7 +182,7 @@ export default function EditAccountForm() {
               <FormItem>
                 <FormLabel>Username *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan username" {...field} />
+                  <Input placeholder="Masukkan username" {...field} disabled/>
                 </FormControl>
                 <FormDescription>*Username wajib diisi</FormDescription>
                 <FormMessage />
@@ -219,7 +237,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{"NISN *"}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nomor Induk" {...field} />
+                    <Input placeholder="Masukkan Nomor Induk" {...field} disabled/>
                   </FormControl>
                   <FormDescription>*Nomor Induk wajib diisi dengan nomor yang terdaftar secara resmi</FormDescription>
                   <FormMessage />
@@ -234,7 +252,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{"NISP *"}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan Nomor Induk" {...field} />
+                    <Input placeholder="Masukkan Nomor Induk" {...field} disabled/>
                   </FormControl>
                   <FormDescription>*Nomor Induk wajib diisi dengan nomor yang terdaftar secara resmi</FormDescription>
                   <FormMessage />
@@ -251,7 +269,7 @@ export default function EditAccountForm() {
                 <FormItem>
                   <FormLabel>{isTeacher ? "Tahun Masuk *" : isStudent ? "Angkatan *" : "Angkatan *"}</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} placeholder="Contoh: 2025" />
+                    <Input type="number" {...field} placeholder="Contoh: 2025" disabled/>
                   </FormControl>
                   <FormDescription>
                     {isTeacher ? "*Tahun Masuk diisi dengan tahun masuk saat guru mulai mengajar" : 
@@ -314,7 +332,7 @@ export default function EditAccountForm() {
           {/* Buttons */}
           <div className="flex justify-between">
             <Button variant="secondary" type="button" onClick={() => router.push("/admin/akun")}>Kembali</Button>
-            <Button type="submit" disabled={!isFormValid}>{"Simpan Perubahan"}</Button>
+            <Button variant="default" type="submit" disabled={!isFormValid}>{"Simpan Perubahan"}</Button>
           </div>
         </form>
       </Form>

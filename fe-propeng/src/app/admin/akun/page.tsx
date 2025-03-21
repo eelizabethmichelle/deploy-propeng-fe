@@ -32,9 +32,11 @@ async function fetchAccount(token: string | null) {
 
 export default function Page() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setLoading(true);
     const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
     if (!token) {
@@ -43,6 +45,7 @@ export default function Page() {
     }
 
     fetchAccount(token).then(setData);
+    setLoading(false);
   }, [router]);
 
   return (
@@ -59,7 +62,6 @@ export default function Page() {
         <Button
           variant="default"
           onClick={() => router.push("/admin/akun/tambah")}
-          className="bg-blue-800 hover:bg-blue-900"
         >
           Tambah Akun
           <Plus className="h-5 w-5 ml-2" />
