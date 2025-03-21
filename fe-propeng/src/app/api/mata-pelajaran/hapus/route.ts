@@ -21,11 +21,20 @@ export async function DELETE(req: Request) {
         },
     });
 
+    const data = await res.json();
   
     if (!res.ok) {
-        return NextResponse.json({ error: "Gagal menghapus mata pelajaran." }, { status: 400 });
+        if (data.message === "Cannot delete MataPelajaran because it has associated grades. Please delete the grades first.") {
+            return NextResponse.json({ 
+                error: "Has associated grades",
+                message: "Tidak dapat menghapus mata pelajaran karena masih memiliki nilai terkait. Harap hapus nilai terlebih dahulu."
+            }, { status: 400 });
+        }
+        return NextResponse.json({ 
+            error: "Delete failed",
+            message: data.message || "Gagal menghapus mata pelajaran."
+        }, { status: 400 });
     }
 
-    const data = await res.json();
     return NextResponse.json(data);
 }

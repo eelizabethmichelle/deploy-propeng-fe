@@ -77,48 +77,59 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
             body: JSON.stringify({ id }),
           });
 
+          const errorData = await res.json();
+
           if (!res.ok) {
-            const errorData = await res.json();
             if (errorData.error === "Has associated grades") {
-              return "has_grades";
+              return { status: "has_grades", id };
             }
-            throw new Error(`Failed to delete mata pelajaran with ID ${id}`);
+            return { status: "error", id, message: errorData.message };
           }
 
-          return "Deleted";
+          return { status: "success", id };
         } catch (error) {
           console.error(`Delete error for ID ${id}:`, error);
-          return `Error deleting ID ${id}`;
+          return { status: "error", id, message: `Error deleting ID ${id}` };
         }
       });
   
       const deleteResponses = await Promise.all(deleteRequests);
       
-      // Check if any of the responses indicate associated grades
-      if (deleteResponses.includes("has_grades")) {
-        toast.error("Tidak dapat menghapus mata pelajaran karena masih memiliki nilai terkait.");
-        return;
+      // Check for different response types
+      const hasGradesResponses = deleteResponses.filter(res => res.status === "has_grades");
+      const successResponses = deleteResponses.filter(res => res.status === "success");
+      const errorResponses = deleteResponses.filter(res => res.status === "error");
+
+      // Handle cases with associated grades
+      if (hasGradesResponses.length > 0) {
+        if (hasGradesResponses.length === deleteResponses.length) {
+          // All selected items have grades
+          toast.error("Tidak dapat menghapus mata pelajaran karena masih memiliki nilai terkait. Harap hapus nilai terlebih dahulu.");
+        } else {
+          // Some items have grades, some don't
+          toast.error(`${hasGradesResponses.length} mata pelajaran tidak dapat dihapus karena masih memiliki nilai terkait.`);
+        }
       }
 
-      const successCount = deleteResponses.filter((res) => res === "Deleted").length;
-  
-      if (successCount > 0) {
-        toast.success(`Berhasil menghapus ${successCount} mata pelajaran!`);
+      // Handle successful deletions
+      if (successResponses.length > 0) {
+        toast.success(`Berhasil menghapus ${successResponses.length} mata pelajaran!`);
         setTimeout(() => {
           window.location.reload();
         }, 1000);
-      } else {
-        toast.error("Gagal menghapus mata pelajaran. Coba lagi nanti.");
       }
+
+      // Handle other errors
+      if (errorResponses.length > 0) {
+        console.error("Errors during deletion:", errorResponses);
+        toast.error(`Gagal menghapus ${errorResponses.length} mata pelajaran. Coba lagi nanti.`);
+      }
+
     } catch (error) {
       console.error("Batch delete error:", error);
-      toast.error("Gagal menghapus beberapa mata pelajaran.");
+      toast.error("Gagal menghapus mata pelajaran. Coba lagi nanti.");
     }
-  };
-      
-  
-  
-  
+  };  
 
   return (
     <div className="flex flex-wrap items-center justify-between">

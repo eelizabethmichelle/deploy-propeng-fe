@@ -109,8 +109,14 @@ export function DataTableRowActions<TData extends RowData>({
         body: JSON.stringify({ id }),
       });
 
+      const errorData = await res.json();
+
       if (!res.ok) {
-        throw new Error(`Gagal menghapus mata pelajaran: ${res.statusText}`);
+        if (errorData.error === "Has associated grades") {
+          toast.error(errorData.message || "Tidak dapat menghapus mata pelajaran karena masih memiliki nilai terkait. Harap hapus nilai terlebih dahulu.");
+          return;
+        }
+        throw new Error(errorData.message || "Gagal menghapus mata pelajaran");
       }
 
       toast.success(`Mata pelajaran ${nama || "tanpa nama"} berhasil dihapus!`);
@@ -120,7 +126,7 @@ export function DataTableRowActions<TData extends RowData>({
       }, 1000);
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Gagal menghapus mata pelajaran. Coba lagi nanti.");
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus mata pelajaran. Coba lagi nanti.");
     }
   };
 
