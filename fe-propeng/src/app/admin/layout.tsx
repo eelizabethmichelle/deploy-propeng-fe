@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
@@ -13,13 +13,14 @@ import {
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
-// Define props for AdminLayout
-interface AdminLayoutProps {
+// This is the correct format for a Next.js layout component
+export default function Layout({
+  children,
+  hideSidebar = false,
+}: {
   children: React.ReactNode;
   hideSidebar?: boolean;
-}
-
-const AdminLayoutContent: React.FC<AdminLayoutProps> = ({ children, hideSidebar = false }) => {
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [className, setClassName] = useState<string>("");
@@ -96,10 +97,4 @@ const AdminLayoutContent: React.FC<AdminLayoutProps> = ({ children, hideSidebar 
       </SidebarInset>
     </SidebarProvider>
   );
-};
-
-const RootLayout: React.FC<AdminLayoutProps> = ({ children, hideSidebar }) => {
-  return <AdminLayoutContent hideSidebar={hideSidebar}>{children}</AdminLayoutContent>;
-};
-
-export default RootLayout;
+}
