@@ -193,7 +193,7 @@ function UbahMataPelajaranContent() {
             setSiswa([]);
             customToast.warning(
               "Tidak ada siswa", 
-              `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`
+              `Tidak ada siswa tanpa mata pelajaran untuk angkatan ${selectedAngkatan}`
             );            
           }
         } else {
