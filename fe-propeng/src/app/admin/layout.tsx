@@ -11,11 +11,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@radix-ui/react-separator";
+import { Separator } from "@/components/ui/separator"; // Changed from @radix-ui/react-separator
 
 export default function AdminLayout({
   children,
-  hideSidebar,
+  hideSidebar = false, // Add default value to make it explicitly optional
 }: {
   children: React.ReactNode;
   hideSidebar?: boolean;
@@ -24,6 +24,7 @@ export default function AdminLayout({
   const router = useRouter();
   const [className, setClassName] = useState<string>("");
   const [loading, setLoading] = useState(false);
+
 
   // Extract class ID from pathname if we're on a detail page
   const classId = pathname.includes("/admin/kelas/detail/")
