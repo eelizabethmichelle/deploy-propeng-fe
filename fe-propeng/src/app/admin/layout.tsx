@@ -13,83 +13,18 @@ import {
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator"; // Changed from @radix-ui/react-separator
 
-export default function AdminLayout({
-  children,
-  hideSidebar = false, // Add default value to make it explicitly optional
-}: {
+// Define a type for the layout props
+type AdminLayoutProps = {
   children: React.ReactNode;
   hideSidebar?: boolean;
-}) {
+};
+
+// Create a separate Layout component
+function AdminLayoutContent({ children, hideSidebar = false }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [className, setClassName] = useState<string>("");
   const [loading, setLoading] = useState(false);
-
-
-  // Extract class ID from pathname if we're on a detail page
-  const classId = pathname.includes("/admin/kelas/detail/")
-    ? pathname.split("/").pop()
-    : null;
-
-  // Fetch class name if we're on a detail page
-  useEffect(() => {
-    if (!classId) return;
-
-    const fetchClassName = async () => {
-      try {
-        setLoading(true);
-
-        // Get auth token
-        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
-
-        // Check if token exists
-        if (!token) {
-          console.error("No authentication token found");
-          router.push("/login");
-          return;
-        }
-
-        // Make API request with proper error handling
-        const response = await fetch(`http://203.194.113.127/api/kelas/${classId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // Handle HTTP errors
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Handle unauthorized access
-            localStorage.removeItem("accessToken");
-            sessionStorage.removeItem("accessToken");
-            router.push("/login");
-            return;
-          }
-          throw new Error(`Server responded with status: ${response.status}`);
-        }
-
-        // Parse JSON response
-        const data = await response.json();
-
-        // Check API response status
-        if (data.status === 201) {
-          setClassName(data.namaKelas || "");
-        } else {
-          console.warn("API returned non-success status:", data.status);
-          setClassName(""); // Set empty class name on error
-        }
-      } catch (error) {
-        console.error("Error fetching class name:", error);
-        setClassName(""); // Set empty class name on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClassName();
-  }, [classId, router]);
 
   // Custom handler for breadcrumb navigation
   const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
