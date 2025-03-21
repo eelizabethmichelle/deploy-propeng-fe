@@ -86,7 +86,7 @@ export const columns: ColumnDef<Schema>[] = [
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") === true;
       return (
-         <div className="flex w-[100px] items-center">
+        <div className="flex w-[100px] items-center gap-2">
           {isActive ? (
             <>
               <CheckCircle size={20} className="text-green-600" />
@@ -100,7 +100,7 @@ export const columns: ColumnDef<Schema>[] = [
           )}
         </div>
       );
-    },
+    },    
     filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },  
   {

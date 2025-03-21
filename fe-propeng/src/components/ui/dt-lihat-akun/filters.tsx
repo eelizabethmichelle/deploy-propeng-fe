@@ -107,6 +107,8 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       setLoading(false);
       setProgress(0);
     }
+
+    table.resetRowSelection();
   };
 
   return (

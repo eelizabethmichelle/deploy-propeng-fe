@@ -91,7 +91,7 @@ export default function AddAccountForm() {
 
         customToast.success(
           "Berhasil Ditambahkan!", 
-          `Akun ${responseData.detail.original_data.name} berhasil ditambahkan`
+          `Akun ${responseData.user_name} berhasil ditambahkan`
         );
         
         router.push("/admin/akun");
