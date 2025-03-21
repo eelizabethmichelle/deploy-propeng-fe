@@ -26,12 +26,12 @@ export default function AdminLayout({
   const router = useRouter();
   const [className, setClassName] = useState<string>("");
   const [loading, setLoading] = useState(false);
-
+  
   // Extract class ID from pathname if we're on a detail page
-  const classId = pathname.includes("/admin/kelas/detail-kelas/")
-    ? pathname.split("/").pop()
+  const classId = pathname.includes("/admin/kelas/detail-kelas/") 
+    ? pathname.split("/").pop() 
     : null;
-
+  
   // Fetch class name if we're on a detail page
   useEffect(() => {
     if (!classId) return;
@@ -39,17 +39,17 @@ export default function AdminLayout({
     const fetchClassName = async () => {
       try {
         setLoading(true);
-
+        
         // Get auth token
         const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
-
+        
         // Check if token exists
         if (!token) {
           console.error("No authentication token found");
           router.push("/login");
           return;
         }
-
+        
         // Make API request with proper error handling
         const response = await fetch(`http://203.194.113.127/api/kelas/${classId}`, {
           method: "GET",
@@ -58,7 +58,7 @@ export default function AdminLayout({
             "Authorization": `Bearer ${token}`
           }
         });
-
+        
         // Handle HTTP errors
         if (!response.ok) {
           if (response.status === 401) {
@@ -70,10 +70,10 @@ export default function AdminLayout({
           }
           throw new Error(`Server responded with status: ${response.status}`);
         }
-
+        
         // Parse JSON response
         const data = await response.json();
-
+        
         // Check API response status
         if (data.status === 201) {
           setClassName(data.namaKelas || "");
@@ -88,49 +88,57 @@ export default function AdminLayout({
         setLoading(false);
       }
     };
-
+    
     fetchClassName();
   }, [classId, router]);
-
-  const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
-    if (!href) return;
+  
+  // Custom handler for breadcrumb navigation
+  const handleBreadcrumbClick = (href: string, e: React.MouseEvent) => {
     e.preventDefault();
-    if (href === "/admin/kelas" && pathname.includes("/admin/kelas/detail")) {
-      localStorage.setItem("kelas_data_refresh", "true");
+    
+    // If navigating to class list from detail page, signal refresh
+    if (href === "/admin/lihat-kelas" && pathname.includes("/admin/kelas/detail-kelas/")) {
+      localStorage.setItem('kelas_data_refresh', 'true');
     }
+    
     router.push(href);
   };
-
-  const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/admin/kelas": [{ label: "Manajemen Kelas" }],
-    "/admin/kelas/tambah": [
-      { label: "Manajemen Kelas", href: "/admin/kelas" },
-      { label: "Tambah Kelas" },
-    ],
-    "/admin/akun": [{ label: "Manajemen Akun" }],
-    "/admin/akun/tambah": [
-      { label: "Manajemen Akun", href: "/admin/akun" },
-      { label: "Tambah Akun" },
-    ],
-    "/admin/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/admin/mata-pelajaran/tambah": [
-      { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
-      { label: "Tambah Mata Pelajaran" },
-    ],
-  };
-
-  let breadcrumbs = breadcrumbMap[pathname] || [];
-  if (pathname.includes("/admin/kelas/detail")) {
+  
+  // Determine breadcrumbs based on pathname
+  let breadcrumbs: any[] = [];
+  
+  if (pathname.includes("/admin/kelas/lihat-kelas")) {
     breadcrumbs = [
-      { label: "Manajemen Kelas", href: "/admin/kelas" },
-      { label: loading ? "Loading..." : `Detail Kelas ${className || ""}` },
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas", current: true },
     ];
-  }
-
-  if (pathname.includes("/admin/akun/detil")) {
+  } else if (pathname.includes("/admin/kelas/tambah-kelas")) {
+    breadcrumbs = [
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas" },
+      { label: "Tambah Kelas", current: true },
+    ];
+  } else if (pathname.includes("/admin/kelas/detail-kelas/")) {
+    breadcrumbs = [
+      { label: "Kelas", href: "/admin/kelas/lihat-kelas" },
+      { label: loading ? "Loading..." : (className ? `Detail Kelas ${className}` : "Detail Kelas"), current: true },
+    ];
+  } else if (pathname.includes("/admin/akun")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/detil")) {
     breadcrumbs = [
       { label: "Manajemen Akun", href: "/admin/akun" },
-      { label: "Detail Akun" },
+      { label: loading ? "Loading..." : "Detail Akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/tambah")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun" },
+      { label: loading ? "Loading..." : "Tambah Akun", current: true },
+    ];
+  } else if (pathname.includes("/admin/akun/ubah")) {
+    breadcrumbs = [
+      { label: "Manajemen Akun", href: "/admin/akun" },
+      { label: loading ? "Loading..." : "Ubah Detil Akun", current: true },
     ];
   }
 
@@ -149,20 +157,19 @@ export default function AdminLayout({
                   {breadcrumbs.map((breadcrumb, index) => (
                     <React.Fragment key={index}>
                       {index > 0 && <BreadcrumbSeparator />}
-                      <BreadcrumbItem>
-                        {breadcrumb.href ? (
-                          <a
-                            href={breadcrumb.href}
+                      <BreadcrumbItem className="md:block">
+                        {breadcrumb.current ? (
+                          <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                        ) : (
+                          <a 
+                            href={breadcrumb.href || "#"} 
                             onClick={(e) => handleBreadcrumbClick(breadcrumb.href, e)}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                            className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground"
                           >
                             {breadcrumb.label}
                           </a>
-                        ) : (
-                          <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
                         )}
                       </BreadcrumbItem>
-
                     </React.Fragment>
                   ))}
                 </BreadcrumbList>
