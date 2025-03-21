@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator"; // Changed from @radix-ui/react-separator
+import { Separator } from "@/components/ui/separator";
 
 // Define a type for the layout props
 type AdminLayoutProps = {
@@ -121,9 +121,20 @@ function AdminLayoutContent({ children, hideSidebar = false }: AdminLayoutProps)
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children} {/* This is the only place where page content should be rendered */}
+          {children}
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+// Add the missing default export function
+export default function RootLayout({
+  children,
+  hideSidebar,
+}: {
+  children: React.ReactNode;
+  hideSidebar?: boolean;
+}) {
+  return <AdminLayoutContent children={children} hideSidebar={hideSidebar} />;
 }
