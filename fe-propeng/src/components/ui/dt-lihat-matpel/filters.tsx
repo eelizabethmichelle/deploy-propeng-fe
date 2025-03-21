@@ -78,6 +78,10 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           });
 
           if (!res.ok) {
+            const errorData = await res.json();
+            if (errorData.error === "Has associated grades") {
+              return "has_grades";
+            }
             throw new Error(`Failed to delete mata pelajaran with ID ${id}`);
           }
 
@@ -89,6 +93,13 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       });
   
       const deleteResponses = await Promise.all(deleteRequests);
+      
+      // Check if any of the responses indicate associated grades
+      if (deleteResponses.includes("has_grades")) {
+        toast.error("Tidak dapat menghapus mata pelajaran karena masih memiliki nilai terkait.");
+        return;
+      }
+
       const successCount = deleteResponses.filter((res) => res === "Deleted").length;
   
       if (successCount > 0) {
