@@ -13,6 +13,24 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const customToast = {
+    success: (title: string, description: string) => {
+      toast.success(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    error: (title: string, description: string) => {
+      toast.error(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    warning: (title: string, description: string) => {
+      toast.warning(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -83,9 +101,7 @@ export default function Page() {
       setData([]);
 
       // Show error toast
-      toast.error("Gagal memuat data", {
-        description: error.message || "Terjadi kesalahan saat mengambil data kelas"
-      });
+      customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data kelas");
     } finally {
       setLoading(false);
     }
@@ -136,7 +152,6 @@ export default function Page() {
           <Button
             variant="default"
             onClick={() => router.push("/admin/kelas/tambah")}
-            className="bg-blue-800 hover:bg-blue-900"
           >
             Tambah Kelas
             <Plus className="h-5 w-5 ml-2" />

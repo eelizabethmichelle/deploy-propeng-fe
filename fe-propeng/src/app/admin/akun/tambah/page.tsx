@@ -29,6 +29,24 @@ const roles = [
   { id: "student", label: "Siswa" },
 ];
 
+const customToast = {
+  success: (title: string, description: string) => {
+    toast.success(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  error: (title: string, description: string) => {
+    toast.error(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  warning: (title: string, description: string) => {
+    toast.warning(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  }
+};
+
 export default function AddAccountForm() {
     const router = useRouter();
     const currentYear = new Date().getFullYear();
@@ -71,13 +89,17 @@ export default function AddAccountForm() {
           throw new Error(responseData.message || "Gagal menambahkan akun.");
         }
 
-        toast.success("Akun " + responseData.user_name + " berhasil dibuat");
+        customToast.success(
+          "Berhasil Ditambahkan!", 
+          `Akun ${responseData.detail.original_data.name} berhasil ditambahkan`
+        );
+        
         router.push("/admin/akun");
       } catch (error) {
         console.error("Error creating user:", error);
 
         const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat membuat akun.";
-        toast.error(errorMessage);
+        customToast.error("Gagal Menambahkan Akun", errorMessage);
       }
     }; 
 

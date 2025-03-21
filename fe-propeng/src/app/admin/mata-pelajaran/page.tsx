@@ -126,7 +126,6 @@ export default function MataPelajaranPage() {
         <Button
           variant="default"
           onClick={() => router.push("/admin/mata-pelajaran/tambah")}
-          className="bg-blue-800 hover:bg-blue-900"
         >
           Tambah Mata Pelajaran
           <Plus className="h-5 w-5 ml-2" />

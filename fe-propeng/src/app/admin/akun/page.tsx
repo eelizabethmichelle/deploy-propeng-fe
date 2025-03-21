@@ -62,7 +62,6 @@ export default function Page() {
         <Button
           variant="default"
           onClick={() => router.push("/admin/akun/tambah")}
-          className="bg-blue-800 hover:bg-blue-900"
         >
           Tambah Akun
           <Plus className="h-5 w-5 ml-2" />

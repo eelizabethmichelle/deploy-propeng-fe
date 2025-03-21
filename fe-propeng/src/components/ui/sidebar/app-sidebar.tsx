@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
-
+import Image from 'next/image';
 
 import type * as React from "react"
 import {
@@ -29,6 +29,32 @@ import { NavUser } from "@/components/ui/sidebar/nav-user"
 import { TeamSwitcher } from "@/components/ui/sidebar/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
 
+interface ProfileData {
+  user_id: number;
+  username: string;
+  email: string;
+  role: string;
+  name: string;
+  nisp: string;
+  angkatan: number;
+  isActive: boolean;
+}
+
+// Custom logo component
+// Custom logo component (updated)
+const Logo = () => (
+  <div className="flex items-center justify-center">
+    <Image 
+      src="/logo.svg" 
+      alt="SIMAK SMA Kristen Anglo" 
+      width={50} 
+      height={72} 
+      className="w-auto h-auto"
+    />
+  </div>
+);
+
+
 // This is sample data.
 const data = {
   user: {
@@ -38,19 +64,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "SMAK Anglo",
+      logo: Logo,
+      plan: "Sistem Manajemen Akademik",
     },
   ],
   navMain: {
@@ -80,7 +96,7 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "/admin/kelas",
+            url: "/admin/kelas/",
           },
           {
             title: "Tambah",
@@ -146,23 +162,41 @@ const data = {
     other: [
     ],
   },
-
-  // projects: [
-  //   {
-  //     name: "Design Engineering",
-  //     url: "#",
-  //     icon: Frame,
-  //   },
-  // ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [role, setRole] = useState<string | null>(null);
+  const [user_id, setUserId] = useState<number | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+
+  const fetchProfile = async (userId: number) => {
+      try {
+        const accessToken =
+          localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        const response = await fetch(`/api/profile`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken} Id ${userId}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch profile");
+
+        const data = await response.json();
+        console.log("Fetched profile:", data.data);
+        setProfile(data.data);
+      } catch (error) {
+        console.error(error);
+      }
+  };
 
   useEffect(() => {
     setRole(localStorage.getItem("role") || sessionStorage.getItem("role"));
-  }, []);
-
+    setUserId(Number(localStorage.getItem("user_id")) || Number(sessionStorage.getItem("user_id")));
+    if (user_id !== null) fetchProfile(user_id);
+  }, [user_id]);
+  
   const { user, isLoading } = useAuth();
 
   // Show loading state
@@ -188,7 +222,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return null; // Or a fallback sidebar
   }
 
-
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -200,10 +233,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {user.role === "student" && <NavMain items={data.navMain.other} />}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {profile && <NavUser user={{ name: profile.username, email: profile.email, avatar: data.user.avatar }} />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
-

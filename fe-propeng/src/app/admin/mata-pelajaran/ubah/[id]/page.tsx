@@ -94,6 +94,23 @@ function UbahMataPelajaranContent() {
       status: "active",
     },
   });
+  const customToast = {
+    success: (title: string, description: string) => {
+        toast.success(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    error: (title: string, description: string) => {
+        toast.error(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    warning: (title: string, description: string) => {
+        toast.warning(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    }
+  };
 
   useEffect(() => {
     const fetchAvailableTeachers = async () => {
@@ -118,7 +135,8 @@ function UbahMataPelajaranContent() {
         const data = await response.json();
         if (data.status === 200) setDaftarGuru(data.data);
       } catch (err) {
-        toast.error("Gagal mengambil data guru");
+        console.error("Error fetching teachers:", err);
+        customToast.error("Gagal mengambil data guru", (err as Error).message);
       }
     };
 
@@ -173,14 +191,17 @@ function UbahMataPelajaranContent() {
             form.setValue("siswa", []);
           } else {
             setSiswa([]);
-            toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`);
+            customToast.warning(
+              "Tidak ada siswa", 
+              `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`
+            );            
           }
         } else {
           throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
         }
       } catch (err: any) {
         console.error("Error fetching students:", err);
-        toast.error("Gagal mengambil data siswa", { description: err.message });
+        customToast.error("Gagal mengambil data siswa", err.message);
       } finally {
         setLoadingStudents(false);
       }
@@ -193,7 +214,7 @@ function UbahMataPelajaranContent() {
 
   useEffect(() => {
     if (!matpelId) {
-      toast.error("Data mata pelajaran tidak ditemukan");
+      customToast.error("Data mata pelajaran tidak ditemukan", "Mata pelajaran tidak ditemukan");
       router.push("/admin/mata-pelajaran");
       return;
     }
@@ -246,11 +267,11 @@ function UbahMataPelajaranContent() {
           form.setValue("angkatan", newAngkatan);
           setSelectedAngkatan(newAngkatan);
         } else {
-          toast.error("Gagal memuat data mata pelajaran");
+          customToast.error("Gagal memuat data mata pelajaran", result.errorMessage || "Gagal memuat data mata pelajaran");
         }
       } catch (error) {
         console.error("Error fetching mata pelajaran:", error);
-        toast.error("Terjadi kesalahan saat memuat data");
+        customToast.error("Gagal memuat data mata pelajaran", "Terjadi kesalahan saat memuat data mata pelajaran");
       } finally {
         setLoading(false);
       }
@@ -330,15 +351,15 @@ function UbahMataPelajaranContent() {
 
       if (response.ok) {
         localStorage.removeItem("selectedMatpelId"); // Clean up after successful update
-        toast.success("Mata Pelajaran berhasil diperbarui!");
+        customToast.success("Mata Pelajaran berhasil diperbarui!", "Mata Pelajaran berhasil diperbarui!");
         router.push("/admin/mata-pelajaran");
       } else {
         const responseData = await response.json();
-        toast.error(responseData.message || "Gagal memperbarui mata pelajaran");
+        customToast.error("Gagal memperbarui mata pelajaran", responseData.message || "Gagal memperbarui mata pelajaran");
       }
     } catch (error) {
       console.error("Error updating mata pelajaran:", error);
-      toast.error("Terjadi kesalahan saat memperbarui mata pelajaran");
+      customToast.error("Gagal memperbarui mata pelajaran", "Terjadi kesalahan saat memperbarui mata pelajaran");
     }
   };
 
@@ -564,7 +585,7 @@ function UbahMataPelajaranContent() {
                   Kembali
                 </Button>
                 <Button
-                  className="bg-blue-800 hover:bg-blue-900 text-white transition px-6 py-2 text-base"
+                  variant="default"
                   type="submit"
                   disabled={loading}
                 >

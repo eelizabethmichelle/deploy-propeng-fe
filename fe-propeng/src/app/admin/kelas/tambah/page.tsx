@@ -31,6 +31,7 @@ import {
     SelectItem,
 } from "@/components/ui/select";
 import { SelectPills } from "@/components/ui/multiple-select";
+import { Plus } from "lucide-react";
 
 // Define interfaces for API responses
 interface TeacherData {
@@ -60,7 +61,12 @@ const formSchema = z.object({
             /^(X|XI|XII)([A-Za-z]+)$/,
             { message: "Format kelas harus diawali dengan angka Romawi (X, XI, XII) dan diakhiri dengan huruf (A, B, C, dst)" }
         ),
-    tahunAjaran: z.string().min(1, { message: "Tahun ajaran wajib diisi" }),
+    tahunAjaran: z.string()
+        .min(1, { message: "Tahun ajaran wajib diisi" })
+        .refine((val) => {
+            const year = parseInt(val);
+            return year >= 2000 && year <= 2100;
+        }, { message: "Tahun ajaran harus antara 2000-2100" }),
     angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
     waliKelas: z.string().min(1, { message: "Wali kelas wajib dipilih" }),
     siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
@@ -70,6 +76,25 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function TambahKelas() {
+    // Custom toast functions with white description text
+    const customToast = {
+        success: (title: string, description: string) => {
+            toast.success(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        },
+        error: (title: string, description: string) => {
+            toast.error(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        },
+        warning: (title: string, description: string) => {
+            toast.warning(title, {
+                description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+            });
+        }
+    };
+
     const router = useRouter();
     const [availableTeachers, setAvailableTeachers] = useState<TeacherData[]>([]);
     const [availableStudents, setAvailableStudents] = useState<StudentData[]>([]);
@@ -167,15 +192,13 @@ export default function TambahKelas() {
                     setError(null);
                 } else if (data.status === 404) {
                     setAvailableTeachers([]);
-                    toast.error("Tidak ada guru yang tersedia", {
-                        description: "Semua guru sudah menjadi wali kelas",
-                    });
+                    customToast.error("Tidak ada guru yang tersedia", "Semua guru sudah menjadi wali kelas");
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar guru");
                 }
             } catch (err: any) {
                 console.error("Error fetching available teachers:", err);
-                toast.error("Gagal mengambil data guru", { description: err.message });
+                customToast.error("Gagal mengambil data guru", err.message);
                 setError("Gagal mengambil data guru: " + err.message);
             } finally {
                 setLoadingTeachers(false);
@@ -226,22 +249,13 @@ export default function TambahKelas() {
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
                     // Replace the existing toast.warning with this version that has a black description text
-                    toast.warning("Tidak ada siswa", {
-                        description: (
-                            <span style={{
-                                color: "#000000",       // Black text for maximum visibility
-                                fontWeight: "500",      // Medium font weight for better readability
-                            }}>
-                                Tidak ada siswa tanpa kelas untuk angkatan {normalizedAngkatan}
-                            </span>
-                        ),
-                    });
+                    customToast.warning("Tidak ada siswa", `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
             } catch (err: any) {
                 console.error("Error fetching available students:", err);
-                toast.error("Gagal mengambil data siswa", { description: err.message });
+                customToast.error("Gagal mengambil data siswa", err.message);
             } finally {
                 setLoadingStudents(false);
             }
@@ -309,20 +323,16 @@ export default function TambahKelas() {
             console.log("Response data:", responseData);
 
             if (responseData.status === 201) {
-                toast.success("Kelas Berhasil Ditambahkan!", {
-                    description: responseData.message || "Kelas baru telah berhasil dibuat.",
-                });
+                customToast.success("Kelas Berhasil Ditambahkan!", "Kelas baru telah berhasil dibuat");
                 setTimeout(() => {
-                    router.push("/admin/kelas");
+                    router.push("/admin/kelas/");
                 }, 1500);
             } else {
                 throw new Error(responseData.errorMessage || "Gagal menambahkan kelas");
             }
         } catch (err: any) {
             console.error("Error creating class:", err);
-            toast.error("Gagal Menambahkan Kelas", {
-                description: err.message || "Terjadi kesalahan saat menambahkan kelas",
-            });
+            customToast.error("Gagal Menambahkan Kelas", "Terjadi kesalahan saat menambahkan kelas");
         } finally {
             setIsSubmitting(false);
             setIsExplicitSubmit(false); // Reset the flag after submission
@@ -389,18 +399,28 @@ export default function TambahKelas() {
                                 name="tahunAjaran"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Tahun Ajaran</FormLabel>
+                                        <FormLabel>Tahun Ajaran (TA {field.value}/{field.value ? parseInt(field.value) + 1 : ""})*</FormLabel>
                                         <FormControl>
                                             <div className="flex items-center space-x-2">
                                                 <span className="text-sm font-medium">TA</span>
                                                 <Input
                                                     type="number"
                                                     placeholder="Contoh: 2024"
-                                                    className="flex-1"
+                                                    className={`flex-1 ${field.value && (parseInt(field.value) < 2000 || parseInt(field.value) > 2100) ? 'text-red-500' : ''}`}
+                                                    min="2000"
+                                                    max="2100"
                                                     {...field}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
                                                         field.onChange(value);
+                                                        if (value && (parseInt(value) < 2000 || parseInt(value) > 2100)) {
+                                                            form.setError('tahunAjaran', {
+                                                                type: 'manual',
+                                                                message: 'Tahun ajaran harus antara 2000-2100'
+                                                            });
+                                                        } else {
+                                                            form.clearErrors('tahunAjaran');
+                                                        }
                                                     }}
                                                     onKeyDown={preventEnterKeySubmission}
                                                 />
@@ -591,14 +611,22 @@ export default function TambahKelas() {
                             />
 
                             {/* Submit Button */}
-                            <div className="pt-2">
+                            <div className="pt-2 flex justify-between">
                                 <Button
-                                    className="w-full"
+                                    variant="secondary"
+                                    type="button"
+                                    onClick={() => router.back()} // Kembali ke halaman sebelumnya
+                                >
+                                    Kembali
+                                </Button>
+                                <Button
+                                    variant="default"
                                     type="submit"
                                     disabled={isSubmitting}
                                     onClick={() => setIsExplicitSubmit(true)}
                                 >
-                                    {isSubmitting ? "Menyimpan..." : "Tambah"}
+                                    {isSubmitting ? "Menyimpan..." : "Tambah Kelas"}
+                                    <Plus className="h-5 w-5 ml-2" />
                                 </Button>
                             </div>
                         </form>

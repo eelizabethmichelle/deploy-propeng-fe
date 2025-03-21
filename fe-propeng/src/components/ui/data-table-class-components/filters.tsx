@@ -29,6 +29,24 @@ export function DataTableToolbar<TData extends BaseData>({
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const customToast = {
+    success: (title: string, description: string) => {
+      toast.success(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    error: (title: string, description: string) => {
+      toast.error(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    },
+    warning: (title: string, description: string) => {
+      toast.warning(title, {
+        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     try {
       setIsDeleting(true);
@@ -36,6 +54,12 @@ export function DataTableToolbar<TData extends BaseData>({
       // Get selected row IDs
       const selectedRows = table.getFilteredSelectedRowModel().rows;
       const selectedIds = selectedRows.map(row => row.original.id);
+
+      // Get selected row names for better error messages
+      const selectedNames = selectedRows.map(row => {
+        const data = row.original as any;
+        return data.namaKelas || `ID: ${data.id}`;
+      });
 
       // Get auth token
       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
@@ -50,40 +74,54 @@ export function DataTableToolbar<TData extends BaseData>({
         body: JSON.stringify({ class_ids: selectedIds })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.errorMessage || `Server responded with status: ${response.status}`);
-      }
-
       const result = await response.json();
 
       // Close dialog
       setDeleteDialogOpen(false);
 
-      // Show success toast
-      toast("", {
-        description: (
-          <div className="flex items-start gap-3">
-            <div className="w-7 h-7 flex items-center justify-center rounded-md border border-primary bg-primary">
-              <Check className="text-background w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-foreground font-sans">Kelas Dihapus!</p>
-              <p className="text-sm text-muted-foreground font-sans">
-                {selectedIds.length} kelas berhasil dihapus
-              </p>
-            </div>
-          </div>
-        ),
-        action: {
-          label: (
-            <span className="font-sans px-3 py-1 text-sm font-medium border rounded-md border-border text-foreground">
-              Tutup
-            </span>
-          ),
-          onClick: () => console.log("Tutup"),
-        },
-      });
+      // Check if there were any undeleted classes due to absensi
+      if (result.message && result.message.includes("terkecuali kelas")) {
+        // Parse the message to extract undeleted classes
+        const messagePattern = /(\d+) kelas berhasil dihapus terkecuali kelas \[(.*?)\]/;
+        const matches = result.message.match(messagePattern) || [];
+
+        const deletedCount = parseInt(matches[1] || "0");
+        const undeletedClassesStr = matches[2] || "";
+
+        // Extract class names from the message
+        const undeletedClasses = undeletedClassesStr
+          .split(',')
+          .map((cls: string) => cls.trim().replace(/'/g, ''))
+          .filter(Boolean);
+
+        const undeletedCount = undeletedClasses.length;
+
+        if (deletedCount > 0 && undeletedCount > 0) {
+          // Mixed case: Some classes were deleted, others weren't
+          customToast.warning(
+            "Penghapusan Sebagian Berhasil",
+            `${deletedCount} kelas berhasil dihapus, ${undeletedCount} kelas tidak berhasil dihapus karena memiliki data absensi.`
+          );
+        } else if (deletedCount > 0) {
+          // All selected classes were deleted
+          customToast.success(
+            "Kelas Dihapus!",
+            `${deletedCount} kelas berhasil dihapus`
+          );
+        } else {
+          // No classes were deleted
+          customToast.error(
+            "Gagal Menghapus Kelas",
+            `${undeletedCount} kelas tidak dapat dihapus karena memiliki data absensi.`
+          );
+        }
+      } else {
+        // All classes were successfully deleted
+        customToast.success(
+          "Kelas Dihapus!",
+          `${result.deletedCount || selectedIds.length} kelas berhasil dihapus`
+        );
+      }
 
       // Set flag to refresh data
       localStorage.setItem('kelas_data_refresh', 'true');
@@ -95,9 +133,10 @@ export function DataTableToolbar<TData extends BaseData>({
       console.error("Error deleting classes:", error);
 
       // Show error toast
-      toast.error("Gagal menghapus kelas", {
-        description: error.message || "Terjadi kesalahan saat menghapus kelas"
-      });
+      customToast.error(
+        "Gagal menghapus kelas",
+        error.message || "Terjadi kesalahan saat menghapus kelas"
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -130,7 +169,7 @@ export function DataTableToolbar<TData extends BaseData>({
             <DialogTrigger asChild>
               <Button variant="destructive">
                 <TrashIcon className="mr-2 size-4" aria-hidden="true" />
-                Delete ({selectedRowsCount})
+                Hapus ({selectedRowsCount})
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">

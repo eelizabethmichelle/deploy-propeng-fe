@@ -6,13 +6,12 @@ import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@radix-ui/react-separator";
 
 export default function AdminLayout({
   children,
@@ -27,7 +26,7 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(false);
 
   // Extract class ID from pathname if we're on a detail page
-  const classId = pathname.includes("/admin/kelas/detail-kelas/")
+  const classId = pathname.includes("/admin/kelas/detail/")
     ? pathname.split("/").pop()
     : null;
 
@@ -97,7 +96,7 @@ export default function AdminLayout({
     e.preventDefault();
 
     // If navigating to class list from detail page, signal refresh
-    if (href === "/admin/kelas" && pathname.includes("/admin/kelas/detil")) {
+    if (href === "/admin/kelas" && pathname.includes("/admin/kelas/detail")) {
       localStorage.setItem("kelas_data_refresh", "true");
     }
 
@@ -107,26 +106,26 @@ export default function AdminLayout({
   // Determine breadcrumbs based on pathname
   let breadcrumbs: { label: string; href?: string; current?: boolean }[] = [];
 
-  if (pathname.includes("/admin/kelas")) {
-    breadcrumbs = [{ label: "Kelas", href: "/admin/kelas", current: true }];
-  } else if (pathname.includes("/admin/kelas/tambah")) {
+  if (pathname === "/admin/kelas") {
+    breadcrumbs = [{ label: "Manajemen Kelas", current: true }];
+  } else if (pathname === "/admin/kelas/tambah") {
     breadcrumbs = [
-      { label: "Kelas", href: "/admin/kelas" },
+      { label: "Manajemen Kelas", href: "/admin/kelas" },
       { label: "Tambah Kelas", current: true },
     ];
-  } else if (pathname.includes("/admin/kelas/detil")) {
+  } else if (pathname.includes("/admin/kelas/detail")) {
     breadcrumbs = [
-      { label: "Kelas", href: "/admin/kelas" },
+      { label: "Manajemen Kelas", href: "/admin/kelas" },
       { label: loading ? "Loading..." : `Detail Kelas ${className || ""}`, current: true },
     ];
-  } else if (pathname.includes("/admin/akun")) {
-    breadcrumbs = [{ label: "Manajemen Akun", href: "/admin/akun", current: true }];
+  } else if (pathname === "/admin/akun") {
+    breadcrumbs = [{ label: "Manajemen Akun", current: true }];
   } else if (pathname.includes("/admin/akun/detil")) {
     breadcrumbs = [
       { label: "Manajemen Akun", href: "/admin/akun" },
       { label: "Detail Akun", current: true },
     ];
-  } else if (pathname.includes("/admin/akun/tambah")) {
+  } else if (pathname === "/admin/akun/tambah") {
     breadcrumbs = [
       { label: "Manajemen Akun", href: "/admin/akun" },
       { label: "Tambah Akun", current: true },
@@ -135,6 +134,18 @@ export default function AdminLayout({
     breadcrumbs = [
       { label: "Manajemen Akun", href: "/admin/akun" },
       { label: "Ubah Detil Akun", current: true },
+    ];
+  } else if (pathname === "/admin/mata-pelajaran") {
+    breadcrumbs = [{ label: "Mata Pelajaran", current: true }];
+  } else if (pathname === "/admin/mata-pelajaran/tambah") {
+    breadcrumbs = [
+      { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
+      { label: "Tambah Mata Pelajaran", current: true },
+    ];
+  } else if (pathname.includes("/admin/mata-pelajaran/ubah")) {
+    breadcrumbs = [
+      { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
+      { label: "Ubah Mata Pelajaran", current: true },
     ];
   }
 

@@ -70,6 +70,24 @@ const formSchema = z.object({
   // status: z.enum(["active", "inactive"]),
 });
 
+const customToast = {
+  success: (title: string, description: string) => {
+      toast.success(title, {
+          description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+  },
+  error: (title: string, description: string) => {
+      toast.error(title, {
+          description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+  },
+  warning: (title: string, description: string) => {
+      toast.warning(title, {
+          description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+      });
+  }
+};
+
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -151,15 +169,13 @@ export default function TambahMataPelajaran() {
           setError(null);
         } else if (data.status === 404) {
           setDaftarGuru([]);
-          toast.error("Tidak ada guru yang tersedia", {
-            description: "Tambahkan guru terlebih dahulu.",
-          });
+          customToast.warning("Tidak ada guru yang tersedia", "Tambahkan guru terlebih dahulu.");
         } else {
           throw new Error(data.errorMessage || "Gagal mendapatkan daftar guru");
         }
       } catch (err: any) {
         console.error("Error fetching available teachers:", err);
-        toast.error("Gagal mengambil data guru", { description: err.message });
+        customToast.error("Gagal mengambil data guru", err.message);
         setError("Gagal mengambil data guru: " + err.message);
       } finally {
         setLoadingTeachers(false);
@@ -266,14 +282,17 @@ export default function TambahMataPelajaran() {
             form.setValue("siswa", []);
           } else {
             setSiswa([]);
-            toast.warning(`Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`);
+            customToast.warning(
+              "Tidak ada siswa", 
+              `Tidak ada siswa tanpa kelas untuk angkatan ${selectedAngkatan}`
+            );            
           }
         } else {
           throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
         }
       } catch (err: any) {
         console.error("Error fetching students:", err);
-        toast.error("Gagal mengambil data siswa", { description: err.message });
+        customToast.error("Gagal mengambil data siswa", err.message);
       } finally {
         setLoadingStudents(false);
       }
@@ -321,7 +340,7 @@ export default function TambahMataPelajaran() {
 
     // Jika ada error, hentikan pengiriman
     if (Object.values(newErrors).some((error) => error)) {
-      toast.error("Mohon isi semua field yang wajib!");
+      customToast.error("Gagal Menambahkan Mata Pelajaran", "Mohon isi semua field yang wajib!");
       setIsSubmitting(false);
       return;
     }
@@ -364,7 +383,7 @@ export default function TambahMataPelajaran() {
       console.log("Response data:", responseData);
 
       if (response.ok) {
-        toast.success("Mata Pelajaran Berhasil Ditambahkan!");
+        customToast.success("Berhasil Menambahkan Mata Pelajaran", "Mata pelajaran berhasil ditambahkan");
         setTimeout(() => {
           router.push("/admin/mata-pelajaran");
         }, 1500);
@@ -599,7 +618,7 @@ export default function TambahMataPelajaran() {
 
                 {/* Tombol Tambah - Lebih Besar */}
                 <Button
-                  className="bg-blue-800 hover:bg-blue-900"
+                  variant="default"
                   type="submit"
                   disabled={isSubmitting}
                   onClick={() => setIsExplicitSubmit(true)}
