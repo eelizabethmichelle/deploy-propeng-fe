@@ -236,8 +236,8 @@ export default function AddAccountForm() {
               name="angkatan"
               rules={{
                 required: "Angkatan wajib diisi",
-                min: { value: 2000, message: "Angkatan tidak boleh kurang dari 2000" },
-                max: { value: 2100, message: "Angkatan tidak boleh lebih dari 2100" },
+                min: { value: 2000, message: isStudent? "Angkatan tidak boleh kurang dari 2000" : "Tahun Masuk tidak boleh kurang dari 2000"},
+                max: { value: 2100, message: isStudent? "Angkatan tidak boleh lebih dari 2100" : "Tahun Masuk tidak boleh kurang dari 2000"},
               }}
               render={({ field }) => (
                 <FormItem>
