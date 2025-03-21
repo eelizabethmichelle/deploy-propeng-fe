@@ -235,9 +235,14 @@ export default function AddAccountForm() {
               control={form.control}
               name="angkatan"
               rules={{
-                required: "Angkatan wajib diisi",
-                min: { value: 2000, message: isStudent? "Angkatan tidak boleh kurang dari 2000" : "Tahun Masuk tidak boleh kurang dari 2000"},
-                max: { value: 2100, message: isStudent? "Angkatan tidak boleh lebih dari 2100" : "Tahun Masuk tidak boleh kurang dari 2000"},
+                required: isStudent? "Angkatan wajib diisi" : "Tahun Masuk wajib diisi",
+                validate: (value) => {
+                  const angkatan = Number(value);
+                  if (isNaN(angkatan)) return "Angkatan harus berupa angka";
+                  if (angkatan < 2000) return isStudent ? "Angkatan tidak boleh kurang dari 2000" : "Tahun Masuk tidak boleh kurang dari 2000";
+                  if (angkatan > 2100) return isStudent ? "Angkatan tidak boleh lebih dari 2100" : "Tahun Masuk tidak boleh lebih dari 2100";
+                  return true;
+                },
               }}
               render={({ field }) => (
                 <FormItem>
