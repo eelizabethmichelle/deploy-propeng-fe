@@ -46,7 +46,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const uniqueRole = [...new Set(allRows.map((row) => row.original.role))].map((role) => ({
     value: role,
-    label: role.charAt(0).toUpperCase() + role.slice(1),
+    label: role === "teacher" ? "Guru" : role === "student" ? "Murid" : role.charAt(0).toUpperCase() + role.slice(1),
   }));
 
   const isFiltered = table.getState().columnFilters.length > 0;
