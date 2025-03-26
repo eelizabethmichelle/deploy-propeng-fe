@@ -102,6 +102,7 @@ export const columns: ColumnDef<Class>[] = [
         </div>
       );
     },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     id: "actions",

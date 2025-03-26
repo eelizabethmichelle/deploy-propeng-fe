@@ -380,7 +380,7 @@ function UbahMataPelajaranContent() {
                 name="namaPelajaran"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nama Mata Pelajaran*</FormLabel>
+                    <FormLabel>Nama Mata Pelajaran *</FormLabel>
                     <FormControl>
                       <Input placeholder="Contoh: Matematika" {...field} />
                     </FormControl>
@@ -395,7 +395,7 @@ function UbahMataPelajaranContent() {
                 name="kategoriMatpel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kategori Mata Pelajaran*</FormLabel>
+                    <FormLabel>Kategori Mata Pelajaran *</FormLabel>
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
@@ -403,10 +403,10 @@ function UbahMataPelajaranContent() {
                     >
                       <FormControl>
                         <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
                             <RadioGroupItem value="Wajib" /> Wajib
                           </label>
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
                             <RadioGroupItem value="Peminatan" /> Peminatan
                           </label>
                         </div>
@@ -423,7 +423,7 @@ function UbahMataPelajaranContent() {
                 name="tahunAjaran"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tahun Ajaran (TA 2023/2024)*</FormLabel>
+                    <FormLabel>Tahun Ajaran (TA 2023/2024) *</FormLabel>
                     <FormControl>
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium">TA</span>
@@ -472,7 +472,7 @@ function UbahMataPelajaranContent() {
                 name="angkatan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Angkatan*</FormLabel>
+                    <FormLabel>Angkatan *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -499,7 +499,7 @@ function UbahMataPelajaranContent() {
                 name="guru"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Guru Pengajar*</FormLabel>
+                    <FormLabel>Guru Pengajar *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -524,7 +524,7 @@ function UbahMataPelajaranContent() {
                 name="siswa"
                 render={({ field }) => (
                   <FormItem>
-                  <FormLabel>Siswa*</FormLabel>
+                  <FormLabel>Siswa *</FormLabel>
                   <FormControl onClick={(e) => e.preventDefault()} onKeyDown={(e) => e.preventDefault()}> 
                     {loadingStudents ? (
                     <p>Loading...</p>
@@ -558,7 +558,7 @@ function UbahMataPelajaranContent() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status*</FormLabel>
+                    <FormLabel>Status *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -566,8 +566,8 @@ function UbahMataPelajaranContent() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="active">Aktif</SelectItem>
+                        <SelectItem value="inactive">Tidak Aktif</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

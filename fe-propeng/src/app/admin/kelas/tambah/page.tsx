@@ -625,8 +625,8 @@ export default function TambahKelas() {
                                     disabled={isSubmitting}
                                     onClick={() => setIsExplicitSubmit(true)}
                                 >
-                                    {isSubmitting ? "Menyimpan..." : "Tambah Kelas"}
                                     <Plus className="h-5 w-5 ml-2" />
+                                    {isSubmitting ? "Menyimpan..." : "Tambah Kelas"}
                                 </Button>
                             </div>
                         </form>

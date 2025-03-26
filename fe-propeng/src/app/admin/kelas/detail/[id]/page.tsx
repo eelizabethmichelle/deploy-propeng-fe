@@ -968,8 +968,8 @@ export default function ClassDetailPage() {
                     <Dialog open={isAddStudentsOpen} onOpenChange={setIsAddStudentsOpen}>
                         <DialogTrigger asChild>
                             <Button variant="default">
-                                Tambah Siswa
                                 <Plus className="h-5 w-5 ml-2"/>
+                                Tambah Siswa
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">

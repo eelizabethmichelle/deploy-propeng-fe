@@ -330,7 +330,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
             </div>
             <div>
               <p className="text-gray-500">Status</p>
-              <p className="text-blue-900">{user.isActive ? "Status" : "Tidak Aktif"}</p>
+              <p className="text-blue-900">{user.isActive ? "Aktif" : "Tidak Aktif"}</p>
             </div>
             <div>
               <p className="text-gray-500">Dibuat Pada Tanggal</p>

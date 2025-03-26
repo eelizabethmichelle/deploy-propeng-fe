@@ -115,7 +115,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Belum ada akun pengguna yang terdaftar! Silahkan menambahkan akun pengguna baru
                 </TableCell>
               </TableRow>
             )}

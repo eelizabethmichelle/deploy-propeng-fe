@@ -1,27 +1,28 @@
 // components/ui/data-table-class-components/filters.tsx
 "use client";
-import { Cross2Icon } from "@radix-ui/react-icons";
+import { Cross2Icon, ArrowDownIcon, ArrowUpIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { DataTableViewOptions } from "@/components/ui/data-table-class-components/actions-menu";
+import { DataTableFacetedFilter } from "@/components/ui/data-table-class-components/filters-clear";
 import { TrashIcon, Check } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner"
 
-// Define a base interface for your data that includes the id property
-interface BaseData {
-  id: string;
+interface RowData {
+  id: number;
+  isActive: string;
 }
 
 // Update the DataTableToolbarProps to constrain TData to extend BaseData
-interface DataTableToolbarProps<TData extends BaseData> {
+interface DataTableToolbarProps<TData extends RowData> {
   table: Table<TData>;
 }
 
-export function DataTableToolbar<TData extends BaseData>({
+export function DataTableToolbar<TData extends RowData>({
   table
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -46,6 +47,16 @@ export function DataTableToolbar<TData extends BaseData>({
       });
     }
   };
+
+  const allRows = table.getCoreRowModel().rows;
+  const uniqueStatus = [...new Set(allRows.map((row) => row.original.isActive))].map(
+    (isActive) => ({
+      value: isActive,  
+      label: isActive ? "Aktif" : "Tidak Aktif",
+    })
+  );  
+
+  console.log(uniqueStatus)
 
   const handleDeleteConfirm = async () => {
     try {
@@ -152,12 +163,11 @@ export function DataTableToolbar<TData extends BaseData>({
           onChange={(event) => table.setGlobalFilter(event.target.value)}
           className="h-8 w-[150px] lg:w-[250px]"
         />
+        {table.getColumn("isActive") && (
+          <DataTableFacetedFilter column={table.getColumn("isActive")} title="Status" options={uniqueStatus} />
+        )}
         {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
-          >
+          <Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-8 px-2 lg:px-3">
             Reset
             <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>

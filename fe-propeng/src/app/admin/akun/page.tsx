@@ -63,8 +63,8 @@ export default function Page() {
           variant="default"
           onClick={() => router.push("/admin/akun/tambah")}
         >
-          Tambah Akun
           <Plus className="h-5 w-5 ml-2" />
+          Tambah Akun
         </Button>
       </div>
 

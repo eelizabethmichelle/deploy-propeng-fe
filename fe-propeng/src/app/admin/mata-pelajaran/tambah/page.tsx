@@ -425,7 +425,7 @@ export default function TambahMataPelajaran() {
                 name="namaPelajaran"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nama Mata Pelajaran*</FormLabel>
+                    <FormLabel>Nama Mata Pelajaran *</FormLabel>
                     <FormControl>
                       <Input placeholder="Contoh: Matematika" {...field} />
                     </FormControl>
@@ -440,7 +440,7 @@ export default function TambahMataPelajaran() {
                 name="kategoriMatpel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Kategori Mata Pelajaran*</FormLabel>
+                    <FormLabel>Kategori Mata Pelajaran *</FormLabel>
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
@@ -448,10 +448,10 @@ export default function TambahMataPelajaran() {
                     >
                       <FormControl>
                         <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
                             <RadioGroupItem value="Wajib" /> Wajib
                           </label>
-                          <label className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 text-sm font-medium">
                             <RadioGroupItem value="Peminatan" /> Peminatan
                           </label>
                         </div>
@@ -468,7 +468,7 @@ export default function TambahMataPelajaran() {
                 name="tahunAjaran"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tahun Ajaran (TA 2023/2024)*</FormLabel>
+                    <FormLabel>Tahun Ajaran (TA 2023/2024) *</FormLabel>
                     <FormControl>
                       <div className="flex items-center space-x-2">
                         <span className="text-sm font-medium">TA</span>
@@ -513,7 +513,7 @@ export default function TambahMataPelajaran() {
                 name="angkatan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Angkatan*</FormLabel>
+                    <FormLabel>Angkatan *</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -544,7 +544,7 @@ export default function TambahMataPelajaran() {
   name="guru"
   render={({ field }) => (
     <FormItem>
-      <FormLabel>Guru Pengajar*</FormLabel>
+      <FormLabel>Guru Pengajar *</FormLabel>
       <Select onValueChange={field.onChange} value={field.value}>
         <FormControl>
           <SelectTrigger>
@@ -585,7 +585,7 @@ export default function TambahMataPelajaran() {
                   name="siswa"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Siswa*</FormLabel>
+                      <FormLabel>Siswa *</FormLabel>
                       <FormControl>
                         {loadingStudents ? (
                           <p>Loading...</p>
@@ -623,8 +623,8 @@ export default function TambahMataPelajaran() {
                   disabled={isSubmitting}
                   onClick={() => setIsExplicitSubmit(true)}
                 >
-                  {isSubmitting ? "Menyimpan..." : "Tambah Mata Pelajaran"}
                   <Plus className="h-5 w-5 ml-2" />
+                  {isSubmitting ? "Menyimpan..." : "Tambah Mata Pelajaran"}
                 </Button>
               </div>
 

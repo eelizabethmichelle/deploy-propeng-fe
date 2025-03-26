@@ -143,18 +143,20 @@ export default function Page() {
     <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
-          <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+          <h2 className="text-3xl font-semibold tracking-tight">
             Daftar Kelas
           </h2>
-          <p className="text-muted-foreground">Kelola semua kelas yang tersedia</p>
+          <p className="text-muted-foreground">
+            Kelola semua kelas yang tersedia
+          </p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="default"
             onClick={() => router.push("/admin/kelas/tambah")}
           >
-            Tambah Kelas
             <Plus className="h-5 w-5 ml-2" />
+            Tambah Kelas
           </Button>
         </div>
       </div>

@@ -31,7 +31,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     ...new Set(allRows.map((row) => String(row.original.status)))
   ].map((status) => ({
     value: status,
-    label: status.charAt(0).toUpperCase() + status.slice(1),
+    label: status === "Active" ? "Aktif" : "Tidak Aktif",
     icon: status === "Active" ? ArrowUpIcon : ArrowDownIcon
   }));
 
