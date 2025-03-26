@@ -127,8 +127,8 @@ export default function MataPelajaranPage() {
           variant="default"
           onClick={() => router.push("/admin/mata-pelajaran/tambah")}
         >
-          Tambah Mata Pelajaran
           <Plus className="h-5 w-5 ml-2" />
+          Tambah Mata Pelajaran
         </Button>
       </div>
 
