@@ -82,7 +82,7 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
       localStorage.getItem("accessToken") ||
       sessionStorage.getItem("accessToken");
     const { currentPassword, newPassword } = data;
-
+  
     try {
       const response = await fetch("/api/auth/change-password", {
         method: "PUT",
@@ -92,36 +92,35 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
         },
         body: JSON.stringify({ old_password: currentPassword, new_password: newPassword }),
       });
-
-      // Ambil JSON dari respons, meskipun statusnya error
+  
       const responseData = await response.json();
-
+  
       if (!response.ok) {
         console.log("Response:", responseData);
         console.log("Status:", response.status);
-
-        // Tampilkan pesan error dari Django
         handleError(responseData.message)
         throw new Error(responseData.message || "Gagal mengubah password!");
       }
-
+  
       handleSuccess(responseData.message);
-      console.log("Success:", responseData.message);
+      form.reset();
+      setTimeout(() => {
+        const dialogClose = document.getElementById("dialog-close-button");
+        if (dialogClose instanceof HTMLButtonElement) {
+          dialogClose.click();
+        }
+      }, 500);
     } catch (error: any) {
       console.error("Error:", error.message);
     }
   };
-
-
-  /* Toast success */
+  
   const handleSuccess = (message: string) => {
-    const handleSuccess = (message: string) => {
-      customToast.success(
-        "Berhasil Diubah",
-        message !== "" ? message : "Password kamu berhasil diubah"
-      );
-    };    
-  }
+    customToast.success(
+      "Berhasil Diubah",
+      message !== "" ? message : "Password berhasil diubah"
+    );
+  };
 
 
   /* Toast error */
@@ -267,9 +266,9 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
                     <div className="flex gap-4 w-full">
 
                       <div className="flex gap-4 w-full mt-2">
-                        <DialogClose asChild>
-                          <Button variant="secondary">Kembali</Button>
-                        </DialogClose>
+                      <DialogClose asChild>
+                        <Button id="dialog-close-button" variant="secondary">Kembali</Button>
+                      </DialogClose>
                         <Button type="submit" className="ml-auto">
                           Ubah
                         </Button>

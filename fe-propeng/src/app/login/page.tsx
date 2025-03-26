@@ -83,8 +83,8 @@ export default function LoginPage() {
             customToast.success("Berhasil masuk ke dalam sistem", "Selamat datang di SIMAK SMA Kristen Anglo");
 
             if (role === "admin") router.push("/profil");
-            else if (role === "student") router.push("/siswa");
-            else if (role === "teacher") router.push("/guru");
+            else if (role === "student") router.push("/profil");
+            else if (role === "teacher") router.push("/profil");
             else router.push("/unauthorized");
 
         } catch (error) {
