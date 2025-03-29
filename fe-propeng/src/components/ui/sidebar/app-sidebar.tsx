@@ -127,18 +127,17 @@ const data = {
     teacher: [
       {
         title: "Manajemen Kelas",
-        url: "#",
+        url: "/teacher/kelas",
         icon: School,
         isActive: true,
         items: [
           {
-            title: "Lihat Semua",
-            url: "#",
+            title: "Lihat kelas",
+            url: "/teacher/kelas/",
           },
           {
-            title: "Tambah",
-            icon: PlusCircle,
-            url: "#",
+            title: "Absensi",
+            url: "/teacher/kelas/absensi/",
           }
         ],
       },

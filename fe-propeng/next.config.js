@@ -7,7 +7,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*", // Semua request ke /api/...
-        destination: "http://203.194.113.127/api/:path*", // Diteruskan ke backend HTTP
+        destination: "http://127.0.0.1:8000/api/:path*", // Diteruskan ke backend HTTP
       },
     ];
   },

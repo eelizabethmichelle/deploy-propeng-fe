@@ -5,12 +5,8 @@ export async function GET(request: Request) {
     // Extract JWT token from headers
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
-    const userId = authHeader?.split(" ")[3];
+    const kelasId = authHeader?.split(" ")[3];
 
-    if (!userId) {
-        return NextResponse.json({ message: "User ID is required" }, { status: 400 });
-    }
-    
     if (!token) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -20,7 +16,7 @@ export async function GET(request: Request) {
         
         
         // Fetch user profile
-        const profileRes = await fetch(`http://127.0.0.1:8000/api/auth/profile/${userId}`, {
+        const profileRes = await fetch(`http://127.0.0.1:8000/api/absen/kelas/${kelasId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -28,7 +24,7 @@ export async function GET(request: Request) {
         });
 
         if (!profileRes.ok) {
-            return NextResponse.json({ message: "Failed to fetch user profile" }, { status: profileRes.status });
+            return NextResponse.json({ message: "Gagal mengambil data kehadiran" }, { status: profileRes.status });
         }
 
         const profileData = await profileRes.json();

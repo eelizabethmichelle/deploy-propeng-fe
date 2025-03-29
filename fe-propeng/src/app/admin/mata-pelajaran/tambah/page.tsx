@@ -197,7 +197,7 @@ export default function TambahMataPelajaran() {
   //         return;
   //       }
 
-  //       const response = await fetch("http://203.194.113.127/api/tahunajaran/list_angkatan/", {
+  //       const response = await fetch("http://127.0.0.1:8000/api/tahunajaran/list_angkatan/", {
   //         method: "GET",
   //         headers: {
   //           "Authorization": `Bearer ${token}`,

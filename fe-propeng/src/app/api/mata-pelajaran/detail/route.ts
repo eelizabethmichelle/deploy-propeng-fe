@@ -14,7 +14,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     
-    const res = await fetch(`http://203.194.113.127/api/matpel/${id}/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/matpel/${id}/`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

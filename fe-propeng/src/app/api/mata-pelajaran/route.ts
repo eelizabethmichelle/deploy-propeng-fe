@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
+    const authCheck = await fetch("http://127.0.0.1:8000/api/auth/protected/", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized access" }, { status: authCheck.status });
     }
 
-    const res = await fetch("http://203.194.113.127/api/matpel/", {
+    const res = await fetch("http://127.0.0.1:8000/api/matpel/", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,

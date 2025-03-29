@@ -13,7 +13,7 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const res = await fetch(`http://203.194.113.127/api/matpel/delete/${id}/`, {
+    const res = await fetch(`http://127.0.0.1:8000/api/matpel/delete/${id}/`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",

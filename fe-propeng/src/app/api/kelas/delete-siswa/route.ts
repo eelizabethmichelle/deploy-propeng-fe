@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Hardcoded backend API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+const BASE_API_URL = "http://127.0.0.1:8000/api";
 
 export async function DELETE(request: NextRequest) {
   try {
