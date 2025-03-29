@@ -10,7 +10,7 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const authCheck = await fetch("http://127.0.0.1:8000/api/auth/protected/", {
+        const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -33,7 +33,7 @@ export async function PUT(request: Request) {
         }
 
         // Lakukan request ke Django backend
-        const res = await fetch(`http://127.0.0.1:8000/api/auth/edit/${id}/`, {
+        const res = await fetch(`http://203.194.113.127/api/auth/edit/${id}/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,

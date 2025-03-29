@@ -20,7 +20,7 @@ export async function PUT(req: Request) {
     teacher,
   };
   
-  const res = await fetch(`http://127.0.0.1:8000/api/matpel/update/${id}/`, {
+  const res = await fetch(`http://203.194.113.127/api/matpel/update/${id}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
