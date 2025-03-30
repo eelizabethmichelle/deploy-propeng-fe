@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -68,6 +68,13 @@ interface CellSelection {
   date: string;
 }
 
+interface ContextMenuPosition {
+  x: number;
+  y: number;
+  studentId: number;
+  date: string;
+}
+
 export default function Page() {
   const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
@@ -88,6 +95,8 @@ export default function Page() {
   const [attendanceDates, setAttendanceDates] = useState<string[]>([]);
   const [selectedCells, setSelectedCells] = useState<CellSelection[]>([]);
   const [students, setStudents] = useState<StudentAttendance[]>([]);
+  const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
   const customToast = {
     success: (title: string, description: string) => {
@@ -366,7 +375,122 @@ export default function Page() {
     setSelectedCells([]);
   };
 
-  // Update getAttendanceCell to use the new selection mechanism
+  // Handle updating attendance status for a single or multiple cells
+  const updateAttendanceStatus = async (studentId: number, date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alfa', updateAll: boolean = false) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      
+      // If updateAll is true, update all selected cells
+      const cellsToUpdate = updateAll && selectedCells.length > 0 
+        ? selectedCells 
+        : [{ studentId, date }];
+      
+      // Track success and failure counts
+      let successCount = 0;
+      let failureCount = 0;
+      
+      // Process all updates
+      for (const cell of cellsToUpdate) {
+        try {
+          // API call to update attendance status
+          const response = await fetch(`/api/absensi/update`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken} Id ${cell.studentId} date ${cell.date} status ${status}`,
+            },
+            body: JSON.stringify({
+              id: cell.studentId,
+              status: status,
+              absensiDate: cell.date,
+            }),
+          });
+          
+          // Handle response
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`Error updating cell ${cell.studentId}/${cell.date}:`, errorData);
+            failureCount++;
+          } else {
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Error updating cell ${cell.studentId}/${cell.date}:`, error);
+          failureCount++;
+        }
+      }
+      
+      // Optimistically update UI for all updated cells
+      if (successCount > 0) {
+        setStudents(students.map(student => {
+          const updatedAttendance = { ...student.attendanceByDate };
+          
+          // Update attendance for each cell that matches this student
+          cellsToUpdate.forEach(cell => {
+            if (cell.studentId === student.id) {
+              updatedAttendance[cell.date] = status;
+            }
+          });
+          
+          return {
+            ...student,
+            attendanceByDate: updatedAttendance
+          };
+        }));
+        
+        // Success toast with count
+        if (cellsToUpdate.length > 1) {
+          customToast.success(
+            "Berhasil",
+            `${successCount} status kehadiran berhasil diubah menjadi ${status}`
+          );
+        } else {
+          customToast.success(
+            "Berhasil",
+            `Status kehadiran berhasil diubah menjadi ${status}`
+          );
+        }
+        
+        // Clear selections after successful update
+        if (updateAll && selectedCells.length > 0) {
+          setSelectedCells([]);
+        }
+      }
+      
+      // Show failure toast if any
+      if (failureCount > 0) {
+        customToast.error(
+          "Gagal",
+          `${failureCount} status kehadiran gagal diubah`
+        );
+      }
+      
+      // Close context menu
+      setContextMenu(null);
+    } catch (error: any) {
+      console.error("Error updating attendance:", error);
+      customToast.error(
+        "Gagal",
+        error.message || "Gagal mengubah status kehadiran"
+      );
+    }
+  };
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Update getAttendanceCell to handle right-click
   const getAttendanceCell = (status: 'Hadir' | 'Sakit' | 'Izin' | 'Alfa' | null, date: string, studentId: number) => {
     const isSelected = isCellSelected(studentId, date);
     const baseClasses = "flex items-center justify-center w-10 h-10 rounded-md text-sm cursor-pointer";
@@ -381,6 +505,15 @@ export default function Page() {
           onClick={(e) => {
             e.stopPropagation();
             toggleCellSelection(studentId, date);
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu({
+              x: e.clientX,
+              y: e.clientY,
+              studentId,
+              date
+            });
           }}
         >
           {displayDate}
@@ -416,6 +549,15 @@ export default function Page() {
         onClick={(e) => {
           e.stopPropagation();
           toggleCellSelection(studentId, date);
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            studentId,
+            date
+          });
         }}
       >
         {icon && <span className="mr-1">{icon}</span>}
@@ -736,6 +878,80 @@ export default function Page() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div 
+          ref={contextMenuRef}
+          className="fixed z-50 bg-white rounded-md shadow-md border border-[#E6E9F4]"
+          style={{ 
+            top: `${contextMenu.y}px`, 
+            left: `${contextMenu.x}px`,
+            transform: 'translateY(-50%)' 
+          }}
+        >
+          <div className="flex flex-col p-1">
+            {/* Update to show count of selected cells */}
+            {selectedCells.length > 1 && (
+              <div className="px-2 py-1 text-xs text-[#68686B] border-b border-[#E6E9F4] mb-1">
+                {selectedCells.length} sel dipilih
+              </div>
+            )}
+            
+            <button 
+              className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md transition-colors"
+              onClick={() => updateAttendanceStatus(
+                contextMenu.studentId, 
+                contextMenu.date, 
+                'Hadir', 
+                selectedCells.length > 0
+              )}
+            >
+              <CheckCircle size={16} className="text-[#586AB3]" />
+              <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Hadir</span>
+            </button>
+            
+            <button 
+              className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md transition-colors"
+              onClick={() => updateAttendanceStatus(
+                contextMenu.studentId, 
+                contextMenu.date, 
+                'Izin', 
+                selectedCells.length > 0
+              )}
+            >
+              <Clock size={16} className="text-[#FFC804]" />
+              <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Izin</span>
+            </button>
+            
+            <button 
+              className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md transition-colors"
+              onClick={() => updateAttendanceStatus(
+                contextMenu.studentId, 
+                contextMenu.date, 
+                'Sakit', 
+                selectedCells.length > 0
+              )}
+            >
+              <XCircle size={16} className="text-[#EA2F32]" />
+              <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Sakit</span>
+            </button>
+            
+            <button 
+              className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md transition-colors"
+              onClick={() => updateAttendanceStatus(
+                contextMenu.studentId, 
+                contextMenu.date, 
+                'Alfa', 
+                selectedCells.length > 0
+              )}
+            >
+              <X size={16} className="text-[#F06480]" />
+              <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Tidak hadir</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,9 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
     const userId = authHeader?.split(" ")[3];
+    console.log(userId);
+    console.log(token);
+    console.log(authHeader);
 
     if (!userId) {
         return NextResponse.json({ message: "User ID is required" }, { status: 400 });
@@ -18,7 +21,7 @@ export async function GET(request: Request) {
     try {
         // return NextResponse.json({ message: {url: url, pathSegments: pathSegments, userId: userId, fetchUrl: `http://203.194.113.127/api/auth/profile/${userId}`} }, { status: 401 });
         
-        
+        console.log(`http://203.194.113.127/api/auth/profile/${userId}`);
         // Fetch user profile
         const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
             method: "GET",
@@ -26,7 +29,7 @@ export async function GET(request: Request) {
                 "Authorization": `Bearer ${token}`,
             },
         });
-
+        console.log(profileRes);
         if (!profileRes.ok) {
             return NextResponse.json({ message: "Failed to fetch user profile" }, { status: profileRes.status });
         }

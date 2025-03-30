@@ -134,10 +134,6 @@ const data = {
           {
             title: "Lihat kelas",
             url: "/teacher/kelas/",
-          },
-          {
-            title: "Absensi",
-            url: "/teacher/kelas/absensi/",
           }
         ],
       },
