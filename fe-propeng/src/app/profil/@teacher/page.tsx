@@ -39,6 +39,16 @@ interface UserProfile {
   createdAt: string;
   updatedAt: string;
   homeroomId: number;
+  email: string;
+  role: string;
+  namaHomeroomClass: string;
+  totalSiswa: number;
+  absensiStats: {
+    totalHadir: number;
+    totalSakit: number;
+    totalIzin: number;
+    totalAlfa: number;
+  };
 }
 
 const passwordSchema = z.object({
@@ -381,17 +391,12 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
       <h3 className="text-lg font-semibold mb-4">Profil Saya</h3>
       <div className="flex justify-center">
         <Card className="w-full">
-          {/* Blue Header Section */}
           <div className="h-32 bg-blue-900 rounded-t-lg"></div>
-
-          {/* Profile Info Section */}
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="font-bold text-blue-900">{user.username}</p>
               <p className="text-gray-500">Teacher</p>
             </div>
-              
-            {/* Logout Button (Aligned with Username) */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">Logout</Button>
@@ -499,8 +504,10 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
               </DialogContent>
             </Dialog>
 
-            {/* Lihat Kehadiran Siswa Card */}
-            <div className={styles.cardBase}>
+            <div 
+              className={`${styles.cardBase} cursor-pointer hover:bg-gray-50 transition-colors`}
+              onClick={() => router.push('/teacher/kelas')}
+            >
               <div className={styles.iconWrapperYellow}>
                 <CalendarCheck className="w-6 h-6 text-[#FFCB04]" />
               </div>
@@ -510,29 +517,27 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
                 </div>
                 <div className={styles.statsWrapper}>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>112</span>
+                    <span className={styles.statNumber}>{user.absensiStats?.totalHadir || 0}</span>
                     <span className={styles.statLabel}> Hadir</span>
                     <div className={styles.statDot} />
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>2</span>
+                    <span className={styles.statNumber}>{user.absensiStats?.totalSakit || 0}</span>
                     <span className={styles.statLabel}> Sakit</span>
                     <div className={styles.statDot} />
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>3</span>
+                    <span className={styles.statNumber}>{user.absensiStats?.totalIzin || 0}</span>
                     <span className={styles.statLabel}> Izin</span>
                     <div className={styles.statDot} />
                   </div>
                   <div className={styles.statItem}>
-                    <span className={styles.statNumber}>0</span>
+                    <span className={styles.statNumber}>{user.absensiStats?.totalAlfa || 0}</span>
                     <span className={styles.statLabel}> Alpa</span>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Lihat Grafik Nilai Siswa Card */}
             <div className={styles.cardBase}>
               <div className={styles.iconWrapperYellow}>
                 <GraduationCap className="w-6 h-6 text-[#FFCB04]" />
@@ -554,7 +559,6 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
 
 
       <Card className="w-full mt-5">
-        {/* Header */}
         <CardHeader className="flex flex-row items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-2">
             <User className="w-5 h-5 text-gray-500" />
@@ -617,10 +621,6 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
             </DialogContent>
           </Dialog>
         </CardHeader>
-
-        {/* User Details */}
-
-        {/* User Details */}
         <CardContent className="p-6">
           <div className="grid gap-3 text-sm">
             <div>

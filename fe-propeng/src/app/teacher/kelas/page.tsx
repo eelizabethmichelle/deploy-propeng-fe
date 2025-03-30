@@ -32,8 +32,6 @@ interface ClassData {
 }
 
 interface AttendanceStats {
-  maleCount: number;
-  femaleCount: number;
   presentCount: number;
   sickCount: number;
   permissionCount: number;
@@ -79,8 +77,6 @@ export default function Page() {
   const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [attendanceStats, setAttendanceStats] = useState<AttendanceStats>({
-    maleCount: 0,
-    femaleCount: 0,
     presentCount: 0,
     sickCount: 0,
     permissionCount: 0,
@@ -121,17 +117,14 @@ export default function Page() {
       setLoading(true);
       setError(null);
 
-      // Get auth token
       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
 
-      // Check if token exists
       if (!token) {
         console.error("No authentication token found");
         router.push("/login");
         return;
       }
 
-      // Make API request to fetch teacher's class
       const response = await fetch(`/api/kelas/saya`, {
         method: "GET",
         headers: {
@@ -140,17 +133,17 @@ export default function Page() {
         },
       });
 
-      // Handle HTTP errors
+
       if (!response.ok) {
         if (response.status === 401) {
-          // Handle unauthorized access
+
           localStorage.removeItem("accessToken");
           sessionStorage.removeItem("accessToken");
           router.push("/login");
           return;
         }
 
-        // For 400 or 404 status, we'll treat it as empty data
+
         if (response.status === 400 || response.status === 404) {
           setClassData(null);
           setLoading(false);
@@ -160,22 +153,20 @@ export default function Page() {
         throw new Error(`Server responded with status: ${response.status}`);
       }
 
-      // Parse JSON response
+
       const jsonData = await response.json();
 
-      // Check API response status
+
       if (jsonData.status === 200) {
         if (!jsonData.data || jsonData.data.length === 0) {
           setClassData(null);
         } else {
-          // Set the data from the response - assuming the first class is the main one
+
           setClassData(jsonData.data[0]);
           
-          // Set attendance stats using the data from the API
+
           const classInfo = jsonData.data[0];
           const stats: AttendanceStats = {
-            maleCount: 12, // Placeholder (would need gender data)
-            femaleCount: 5, // Placeholder (would need gender data)
             presentCount: classInfo.absensiStats?.totalHadir || 0,
             sickCount: classInfo.absensiStats?.totalSakit || 0,
             permissionCount: classInfo.absensiStats?.totalIzin || 0,
@@ -185,10 +176,10 @@ export default function Page() {
           setAttendanceStats(stats);
         }
       } else if (jsonData.status === 400 || jsonData.status === 404 || jsonData.status === 500) {
-        // Handle empty data case
+
+        
         setClassData(null);
         
-        // Show notification if teacher is not assigned to any class
         if (jsonData.message) {
           customToast.warning("Tidak ada kelas", jsonData.message);
         }
@@ -200,7 +191,6 @@ export default function Page() {
       setError(error.message || "Failed to fetch data");
       setClassData(null);
 
-      // Show error toast
       customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data kelas");
     } finally {
       setLoading(false);
@@ -246,7 +236,6 @@ export default function Page() {
     }
   };
 
-  // Count down timer for attendance code
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (expiryTime > 0) {
@@ -263,7 +252,7 @@ export default function Page() {
     return () => clearInterval(timer);
   }, [expiryTime]);
 
-  // Fetch attendance data
+
   const fetchAttendanceData = async () => {
     if (!classData) return;
     
@@ -294,10 +283,10 @@ export default function Page() {
         throw new Error(data.message || "Failed to fetch attendance data");
       }
       
-      // Set dates
+
       setAttendanceDates(data.dates || []);
       
-      // Format student data
+
       const formattedStudents: StudentAttendance[] = Object.entries(data.students || {}).map(([name, studentData]: [string, any]) => ({
         id: studentData.id,
         name: name,
@@ -320,48 +309,46 @@ export default function Page() {
     }
   };
 
-  // Fetch data on initial load
+
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Fetch attendance data after class data is loaded
   useEffect(() => {
     if (classData) {
       fetchAttendanceData();
     }
   }, [classData]);
 
-  // Updated selection functions
+
   const isCellSelected = (studentId: number, date: string): boolean => {
     return selectedCells.some(cell => cell.studentId === studentId && cell.date === date);
   };
 
   const toggleCellSelection = (studentId: number, date: string) => {
     if (isCellSelected(studentId, date)) {
-      // Deselect this cell
       setSelectedCells(selectedCells.filter(cell => 
         !(cell.studentId === studentId && cell.date === date)
       ));
     } else {
-      // Select this cell
+
       setSelectedCells([...selectedCells, { studentId, date }]);
     }
   };
   
-  // Toggle selection for just the date in the header
+
   const toggleDateSelection = (date: string) => {
-    // Get all studentIds
+
     const studentIds = students.map(student => student.id);
     
-    // Check if all cells for this date are already selected
+
     const allSelected = studentIds.every(studentId => isCellSelected(studentId, date));
     
     if (allSelected) {
-      // Deselect all cells for this date
+
       setSelectedCells(selectedCells.filter(cell => cell.date !== date));
     } else {
-      // Select all cells for this date that aren't already selected
+
       const newCells = studentIds
         .filter(studentId => !isCellSelected(studentId, date))
         .map(studentId => ({ studentId, date }));
@@ -370,29 +357,29 @@ export default function Page() {
     }
   };
   
-  // Clear all selections
+
   const clearSelections = () => {
     setSelectedCells([]);
   };
 
-  // Handle updating attendance status for a single or multiple cells
+  
   const updateAttendanceStatus = async (studentId: number, date: string, status: 'Hadir' | 'Sakit' | 'Izin' | 'Alfa', updateAll: boolean = false) => {
     try {
       const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
       
-      // If updateAll is true, update all selected cells
+
       const cellsToUpdate = updateAll && selectedCells.length > 0 
         ? selectedCells 
         : [{ studentId, date }];
       
-      // Track success and failure counts
+
       let successCount = 0;
       let failureCount = 0;
       
-      // Process all updates
+
       for (const cell of cellsToUpdate) {
         try {
-          // API call to update attendance status
+
           const response = await fetch(`/api/absensi/update`, {
             method: "POST",
             headers: {
@@ -405,8 +392,7 @@ export default function Page() {
               absensiDate: cell.date,
             }),
           });
-          
-          // Handle response
+
           if (!response.ok) {
             const errorData = await response.json();
             console.error(`Error updating cell ${cell.studentId}/${cell.date}:`, errorData);
@@ -419,13 +405,11 @@ export default function Page() {
           failureCount++;
         }
       }
-      
-      // Optimistically update UI for all updated cells
+
       if (successCount > 0) {
         setStudents(students.map(student => {
           const updatedAttendance = { ...student.attendanceByDate };
-          
-          // Update attendance for each cell that matches this student
+
           cellsToUpdate.forEach(cell => {
             if (cell.studentId === student.id) {
               updatedAttendance[cell.date] = status;
@@ -438,7 +422,7 @@ export default function Page() {
           };
         }));
         
-        // Success toast with count
+
         if (cellsToUpdate.length > 1) {
           customToast.success(
             "Berhasil",
@@ -451,13 +435,13 @@ export default function Page() {
           );
         }
         
-        // Clear selections after successful update
+       
         if (updateAll && selectedCells.length > 0) {
           setSelectedCells([]);
         }
       }
       
-      // Show failure toast if any
+
       if (failureCount > 0) {
         customToast.error(
           "Gagal",
@@ -465,7 +449,7 @@ export default function Page() {
         );
       }
       
-      // Close context menu
+
       setContextMenu(null);
     } catch (error: any) {
       console.error("Error updating attendance:", error);
@@ -476,7 +460,7 @@ export default function Page() {
     }
   };
 
-  // Close context menu when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
@@ -490,12 +474,11 @@ export default function Page() {
     };
   }, []);
 
-  // Update getAttendanceCell to handle right-click
   const getAttendanceCell = (status: 'Hadir' | 'Sakit' | 'Izin' | 'Alfa' | null, date: string, studentId: number) => {
     const isSelected = isCellSelected(studentId, date);
     const baseClasses = "flex items-center justify-center w-10 h-10 rounded-md text-sm cursor-pointer";
     
-    // Format date for display - extract day from YYYY-MM-DD
+
     const displayDate = new Date(date).getDate().toString().padStart(2, '0');
     
     if (!status) {
@@ -566,7 +549,6 @@ export default function Page() {
     );
   };
 
-  // Format date for display
   const formatDateHeader = (dateString: string) => {
     const date = new Date(dateString);
     return date.getDate().toString().padStart(2, '0');
@@ -596,13 +578,11 @@ export default function Page() {
   return (
     <div className="p-6">
       <div className="flex flex-col gap-6">
-        {/* Class Header */}
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-normal text-[#041765]">{classData.namaKelas}</h2>
           <p className="text-sm text-[#88888C]">TA {classData.tahunAjaran}</p>
         </div>
 
-        {/* Navigation Menu */}
         <Tabs defaultValue="attendance" className="w-full">
           <TabsList className="bg-white border border-[#E6E9F4] rounded-lg p-1">
             <TabsTrigger value="todo" className="data-[state=active]:bg-[#F7F8FF] rounded-md">To Do</TabsTrigger>
@@ -613,7 +593,6 @@ export default function Page() {
           <TabsContent value="todo" className="mt-6">
             <Card className="border-[#E1E2E8]">
               <CardContent className="p-0">
-                {/* Card Header */}
                 <div className="flex items-center gap-3 p-6 border-b border-[#E6E9F4]">
                   <div className="bg-[#8C99CB] p-3 rounded-full">
                     <CalendarCheck className="w-6 h-6 text-[#586AB3]" />
@@ -621,7 +600,7 @@ export default function Page() {
                   <h3 className="text-base font-bold text-[#041765]">Presensi</h3>
                 </div>
 
-                {/* Card Content - Code Generation or Display */}
+
                 {!isCodeGenerated ? (
                   <div className="flex flex-col p-6 border-b border-[#E6E9F4]">
                     <div className="border border-[#E6E9F4] rounded-lg p-6 flex flex-col items-center gap-2 max-w-xl">
@@ -656,9 +635,7 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* Student Stats */}
                 <div className="p-6 flex flex-col gap-4">
-                  {/* Student Count */}
                   <div className="flex flex-col gap-2">
                     <h4 className="text-[#051E81] text-base">Jumlah Murid</h4>
                     <div className="flex items-center gap-2">
@@ -668,8 +645,6 @@ export default function Page() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Attendance Count */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <h4 className="text-[#051E81] text-base">Kehadiran Hari Ini</h4>
@@ -710,7 +685,6 @@ export default function Page() {
                 <CardContent className="p-6">
                   <div className="overflow-x-auto">
                     <div className="min-w-max">
-                      {/* Attendance Legend */}
                       <div className="flex flex-wrap items-center gap-4 mb-6">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 bg-[#586AB3] rounded"></div>
@@ -734,15 +708,12 @@ export default function Page() {
                         </div>
                       </div>
                     
-                      {/* Attendance Table */}
                       <div className="border border-[#E6E9F4] rounded-lg">
-                        {/* Table Header */}
                         <div className="flex border-b border-[#041765] bg-[#F7F8FF]">
                           <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
                             Nama
                           </div>
                           <div className="flex flex-col">
-                            {/* Month Headers */}
                             {attendanceDates.length > 0 && (
                               <div className="flex border-b border-[#E6E9F4]">
                                 <div className="p-2 font-medium text-[#041765] text-center w-full">
@@ -751,13 +722,12 @@ export default function Page() {
                               </div>
                             )}
                             
-                            {/* Date Headers */}
                             <div className="flex">
                               {attendanceDates.map((date, i) => (
                                 <div key={i} className="flex-shrink-0 p-1">
                                   <div 
                                     className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border border-[#041765] cursor-pointer ${
-                                      // Only show selected if ALL cells for this date are selected
+                        
                                       students.length > 0 && students.every(student => 
                                         selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
                                       ) ? "bg-[#F7F8FF] ring-2 ring-blue-500" : "hover:bg-gray-100"}`}
@@ -770,8 +740,6 @@ export default function Page() {
                             </div>
                           </div>
                         </div>
-                        
-                        {/* Student Rows */}
                         {students.map((student) => (
                           <div key={student.id} className="flex border-b border-[#E6E9F4]">
                             <div className="w-40 p-3 border-r border-[#E6E9F4] truncate">
@@ -787,14 +755,13 @@ export default function Page() {
                           </div>
                         ))}
                         
-                        {/* Daily Attendance Summary */}
                         <div className="flex border-b border-[#E6E9F4]">
                           <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
                             Kehadiran Harian
                           </div>
                           <div className="flex gap-1 p-1">
                             {attendanceDates.map((date, i) => {
-                              // Calculate attendance counts for this date
+                        
                               let present = 0, absent = 0, sick = 0, permission = 0;
                               students.forEach(student => {
                                 const status = student.attendanceByDate[date];
@@ -817,7 +784,6 @@ export default function Page() {
                         </div>
       </div>
 
-                      {/* Controls */}
                       <div className="flex justify-between mt-4">
                         <p className="text-sm text-[#041765]">
                           {selectedCells.length} sel dari {attendanceDates.length * students.length} dipilih.
@@ -839,8 +805,6 @@ export default function Page() {
                           </button>
                         </div>
                       </div>
-
-                      {/* Actions for Selected Dates */}
                       {selectedCells.length > 0 && (
                         <div className="mt-4 border border-[#E6E9F4] rounded-lg p-4">
                           <div className="font-medium text-sm mb-2">Ubah status kehadiran untuk {selectedCells.length} tanggal yang dipilih:</div>
@@ -879,7 +843,6 @@ export default function Page() {
         </Tabs>
       </div>
 
-      {/* Context Menu */}
       {contextMenu && (
         <div 
           ref={contextMenuRef}
@@ -891,7 +854,6 @@ export default function Page() {
           }}
         >
           <div className="flex flex-col p-1">
-            {/* Update to show count of selected cells */}
             {selectedCells.length > 1 && (
               <div className="px-2 py-1 text-xs text-[#68686B] border-b border-[#E6E9F4] mb-1">
                 {selectedCells.length} sel dipilih

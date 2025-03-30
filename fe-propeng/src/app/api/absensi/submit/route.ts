@@ -10,7 +10,6 @@ export async function POST(request: Request) {
     }
 
     try {
-        // Verify authorization with Django backend
         const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
             method: "GET",
             headers: {
@@ -22,7 +21,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Unauthorized access" }, { status: authCheck.status });
         }
 
-        // Extract user data from request
         const { idKelas, idSiswa, kodeAbsen } = await request.json();
 
         const res = await fetch("http://203.194.113.127/api/absen/absen-submit/", {
