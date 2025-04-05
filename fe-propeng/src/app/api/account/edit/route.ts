@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function PUT(request: Request) {
     // Extract the JWT token from the Authorization header
@@ -10,7 +11,7 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
+        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -33,7 +34,7 @@ export async function PUT(request: Request) {
         }
 
         // Lakukan request ke Django backend
-        const res = await fetch(`http://203.194.113.127/api/auth/edit/${id}/`, {
+        const res = await fetch(`http://${API_BASE_URL}/api/auth/edit/${id}/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,

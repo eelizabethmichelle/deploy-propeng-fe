@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function PUT(request: Request) {
     try {
@@ -14,7 +15,7 @@ export async function PUT(request: Request) {
         }
 
         // Kirim request ke Django
-        const response = await fetch("http://203.194.113.127/api/auth/change-password/", {
+        const response = await fetch(`http://${API_BASE_URL}/api/auth/change-password/`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

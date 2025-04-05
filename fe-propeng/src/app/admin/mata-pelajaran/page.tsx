@@ -58,8 +58,6 @@ export default function MataPelajaranPage() {
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const mataPelajaranResponse = await response.json();
-
-        console.log ("dududuud")
       
         if (!mataPelajaranResponse.data || !Array.isArray(mataPelajaranResponse.data)) {
           console.error("Error: Response bukan array!", mataPelajaranResponse);
@@ -68,28 +66,8 @@ export default function MataPelajaranPage() {
           return;
         }
 
-        // Pastikan array yang diambil adalah `data`, bukan response utama
         const mataPelajaran: MataPelajaran[] = mataPelajaranResponse.data;
-        console.log("Final mataPelajaran array:", mataPelajaran); // Debug untuk memastikan array
 
-        // ✅ Fetch Data Guru untuk Mendapatkan Nama
-        const teacherResponse = await fetch("/api/mata-pelajaran/list_teacher/", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-
-        if (!teacherResponse.ok) throw new Error(`HTTP error! Status: ${teacherResponse.status}`);
-
-        const teacherData = await teacherResponse.json();
-        const teacherMap = teacherData.data.reduce((acc: Record<number, string>, guru: any) => {
-          acc[guru.id] = guru.name;
-          return acc;
-        }, {});
-
-        // ✅ Format Data untuk Table
         const formattedData: FormattedMataPelajaran[] = mataPelajaran.map((matpel) => ({
           id: matpel.id,
           name: matpel.nama || "", 

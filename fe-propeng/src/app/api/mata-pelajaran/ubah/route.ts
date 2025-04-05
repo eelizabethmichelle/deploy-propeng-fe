@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function PUT(req: Request) {
-  const url = new URL(req.url);
-
   const authHeader = req.headers.get("Authorization");
   const token = authHeader?.split(" ")[1];
 
@@ -10,17 +9,14 @@ export async function PUT(req: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const { id, nama, kode, kategoriMatpel, angkatan, tahunAjaran, teacher } = await req.json();
-  const payload = {
-    nama,
-    kode,
-    kategoriMatpel,
-    angkatan,
-    tahunAjaran,
-    teacher,
-  };
-  
-  const res = await fetch(`http://203.194.113.127/api/matpel/update/${id}/`, {
+  const { id, nama, teacher, siswa_terdaftar } = await req.json();
+
+  const payload: Record<string, any> = {};
+  if (nama !== undefined) payload.nama = nama;
+  if (teacher !== undefined) payload.teacher = teacher;
+  if (siswa_terdaftar !== undefined) payload.siswa_terdaftar = siswa_terdaftar;
+
+  const res = await fetch(`http://${API_BASE_URL}/api/matpel/update/${id}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function POST(request: NextRequest) {
   const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  const res = await fetch("http://203.194.113.127/api/matpel/create/", {
+  const res = await fetch(`http://${API_BASE_URL}/api/matpel/create/`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${token}`,

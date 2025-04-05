@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   const token = request.headers.get("Authorization")?.split(" ")[1];
@@ -8,14 +9,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch("http://203.194.113.127/api/auth/list_student/", {
+    const response = await fetch(`http://${API_BASE_URL}/api/auth/list_teacher/`, {
       headers: { "Authorization": `Bearer ${token}` },
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json({ message: data.message || "Failed to fetch students" }, { status: response.status });
+      return NextResponse.json({ message: data.message || "Failed to fetch teachers" }, { status: response.status });
     }
 
     return NextResponse.json(data, { status: 200 });

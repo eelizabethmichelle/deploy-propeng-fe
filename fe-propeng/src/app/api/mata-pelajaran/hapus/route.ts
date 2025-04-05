@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { API_BASE_URL } from "@/lib/api";
 
 export async function DELETE(req: Request) {
     const url = new URL(req.url);
@@ -13,7 +13,7 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const res = await fetch(`http://203.194.113.127/api/matpel/delete/${id}/`, {
+    const res = await fetch(`http://${API_BASE_URL}/api/matpel/delete/${id}/`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
