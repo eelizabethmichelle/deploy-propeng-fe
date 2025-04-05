@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("Authorization");
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
+    const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized access" }, { status: authCheck.status });
     }
 
-    const res = await fetch("http://203.194.113.127/api/matpel/", {
+    const res = await fetch(`http://${API_BASE_URL}/api/matpel/`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,

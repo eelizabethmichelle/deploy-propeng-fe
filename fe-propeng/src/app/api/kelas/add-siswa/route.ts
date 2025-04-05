@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Hardcoded backend API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`${BASE_API_URL}/kelas/add_siswa_to_kelas/${classId}/`, {
+    const response = await fetch(`http://${API_BASE_URL}/api/kelas/add_siswa_to_kelas/${classId}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

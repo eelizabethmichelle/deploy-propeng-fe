@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(req: Request) {
-
-    const url = new URL(req.url);
-    // const id = url.pathname.split("/").pop();
-
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
     const id = authHeader?.split(" ")[3];
@@ -14,7 +11,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     
-    const res = await fetch(`http://203.194.113.127/api/matpel/${id}/`, {
+    const res = await fetch(`http://${API_BASE_URL}/api/matpel/${id}/`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -22,7 +19,6 @@ export async function GET(req: Request) {
         },
     });
 
-    console.log(res);
     const data = await res.json();
 
     if (!res.ok) {

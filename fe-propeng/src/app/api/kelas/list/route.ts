@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Hardcoded backend API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +12,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader.split(" ")[1];
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`${BASE_API_URL}/kelas/`, {
+    const response = await fetch(`http://${API_BASE_URL}/api/kelas/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Hardcoded backend API URL
-const BASE_API_URL = "http://203.194.113.127/api";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -31,7 +29,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`${BASE_API_URL}/kelas/update_nama_kelas/${classId}/`, {
+    const response = await fetch(`http://${API_BASE_URL}/api/kelas/update_nama_kelas/${classId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
