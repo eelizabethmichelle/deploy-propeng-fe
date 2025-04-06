@@ -2,16 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(request: NextRequest) {
-  const token = request.headers.get("Authorization")?.split(" ")[1];
+  const authHeader = request.headers.get("Authorization");
+  const token = authHeader?.split(" ")[1];
+  const angkatan = authHeader?.split(" ")[3];
 
   if (!token) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const { searchParams } = new URL(request.url);
-    const angkatan = searchParams.get("angkatan");
-    
+  try {    
     if (!angkatan) {
       return NextResponse.json(
         { error: "Angkatan is required" },
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`http://${API_BASE_URL}/api/auth/list_student/`, {
+    const response = await fetch(`http://${API_BASE_URL}/api/auth/student/${angkatan}`, {
       headers: { "Authorization": `Bearer ${token}` },
     });
 
