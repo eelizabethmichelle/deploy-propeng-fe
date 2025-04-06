@@ -14,12 +14,10 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
 
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<{ username: string } | null>(null);
-    const [loading, setLoading] = useState(true);
 
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
@@ -36,36 +34,25 @@ export default function DashboardPage() {
                 </h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {/* Tambah Akun Pengguna */}
+                    {/* Kelas */}
                     <div className="p-6 bg-white shadow rounded-lg text-center">
                         <p className="mb-4 text-gray-700">
-                            Tambahkan akun siswa dan guru yang terdaftar dalam kegiatan belajar mengajar melalui fitur
-                            <strong> Tambah Akun Pengguna</strong>
+                        Lihat daftar kelas yang telah ditugaskan kepada Anda sebagai wali kelas
+                            <strong> Lihat Kelas</strong>
                         </p>
-                        <Button variant="default" onClick={() => router.push("/admin/akun/tambah")}>
-                            Tambah Akun Pengguna
+                        <Button variant="default" onClick={() => router.push("/guru/kelas")}>
+                            Lihat Kelas
                         </Button>
                     </div>
 
-                    {/* Tambah Kelas */}
+                    {/* Mata Pelajaran */}
                     <div className="p-6 bg-white shadow rounded-lg text-center">
                         <p className="mb-4 text-gray-700">
-                            Tambahkan kelas sesuai kebutuhan serta tetapkan guru sebagai wali kelas dan siswa ke dalamnya melalui fitur
-                            <strong> Tambah Kelas</strong>
+                        Lihat daftar mata pelajaran yang telah ditugaskan kepada Anda untuk diampu
+                            <strong> Lihat Mata Pelajaran</strong>
                         </p>
-                        <Button variant="default" onClick={() => router.push("/admin/kelas/tambah")}>
-                            Tambah Kelas
-                        </Button>
-                    </div>
-
-                    {/* Tambah Mata Pelajaran */}
-                    <div className="p-6 bg-white shadow rounded-lg text-center">
-                        <p className="mb-4 text-gray-700">
-                            Tambahkan mata pelajaran sesuai kebutuhan serta tetapkan guru dan siswa ke dalamnya melalui fitur
-                            <strong> Tambah Mata Pelajaran</strong>
-                        </p>
-                        <Button variant="default" onClick={() => router.push("/admin/mata-pelajaran/tambah")}>
-                            Tambah Mata Pelajaran
+                        <Button variant="default" onClick={() => router.push("/guru/mata-peljaaran")}>
+                            Lihat Mata Pelajaran
                         </Button>
                     </div>
                 </div>

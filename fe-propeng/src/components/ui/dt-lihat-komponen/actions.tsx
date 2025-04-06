@@ -15,8 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Progress } from "@/components/ui/progress";
-
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
@@ -41,15 +39,6 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem 
-          onClick={() => { 
-            router.push(`/admin/akun/detil/${data.id}`);
-            setDropdownOpen(false);
-          }}
-          disabled={loading}
-        >
-          Lihat Detail
-        </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => { 
             router.push(`/admin/akun/ubah/${data.id}`);

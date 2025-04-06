@@ -141,7 +141,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
             <DialogTrigger asChild>
               <Button variant="destructive">
                 <TrashIcon className="mr-2 size-4" aria-hidden="true" />
-                Delete ({selectedRowsCount})
+                Hapus ({selectedRowsCount})
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
