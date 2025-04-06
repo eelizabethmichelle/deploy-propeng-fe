@@ -140,7 +140,7 @@ export default function TambahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("/api/mata-pelajaran/list_teacher/", {
+        const response = await fetch("/api/mata-pelajaran/list-teacher/", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -185,52 +185,6 @@ export default function TambahMataPelajaran() {
     fetchAvailableTeachers();
   }, [router]);
 
-  // // Fetch Data Angkatan
-  // useEffect(() => {
-  //   const fetchAngkatan = async () => {
-  //     try {
-  //       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-  //       if (!token) {
-  //         console.error("Token tidak tersedia.");
-  //         router.push("/login");
-  //         return;
-  //       }
-
-  //       const response = await fetch("http://203.194.113.127/api/tahunajaran/list_angkatan/", {
-  //         method: "GET",
-  //         headers: {
-  //           "Authorization": `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       });
-
-  //       if (response.status === 401) {
-  //         localStorage.removeItem("accessToken");
-  //         sessionStorage.removeItem("accessToken");
-  //         router.push("/login");
-  //         return;
-  //       }
-
-  //       const data = await response.json();
-
-  //       if (data.status === 200) {
-  //         setDaftarAngkatan(data.data.map((angkatan: any) => angkatan.angkatan.toString())); // ✅ Ambil value angkatan
-  //       } else if (data.status === 404) {
-  //         setDaftarAngkatan([]);
-  //         toast.warning("Tidak ada angkatan", { description: "Data angkatan tidak tersedia" });
-  //       } else {
-  //         throw new Error(data.message || "Gagal mendapatkan daftar angkatan");
-  //       }
-  //     } catch (err: any) {
-  //       console.error("Error fetching angkatan:", err);
-  //       toast.error("Gagal mengambil data angkatan", { description: err.message });
-  //     }
-  //   };
-
-  //   fetchAngkatan();
-  // }, [router]);
-
   useEffect(() => {
     const fetchStudents = async () => {
       setLoadingStudents(true);
@@ -245,10 +199,10 @@ export default function TambahMataPelajaran() {
           return;
         }
 
-        const response = await fetch("/api/mata-pelajaran/list_student/", {
+        const response = await fetch("/api/mata-pelajaran/list-student/", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${token} Angkatan ${selectedAngkatan}`,
             "Content-Type": "application/json",
           },
         });
@@ -263,19 +217,7 @@ export default function TambahMataPelajaran() {
         const data = await response.json();
 
         if (data.status === 200) {
-          console.log("All students data:", data.data);
-
-          // ✅ Pastikan selectedAngkatan dikonversi ke number
-          const angkatanTerpilih = parseInt(selectedAngkatan);
-          console.log(angkatanTerpilih);
-
-
-          // ✅ Filter siswa berdasarkan angkatan dan status isAssignedToClass
-          const filteredStudents = data.data.filter(
-            (siswa: any) => siswa.angkatan === angkatanTerpilih
-          );
-
-          console.log(filteredStudents)
+          const filteredStudents = data.data;
 
           if (filteredStudents.length > 0) {
             setSiswa(filteredStudents);

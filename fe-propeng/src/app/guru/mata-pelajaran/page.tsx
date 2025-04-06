@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DataTable } from "@/components/ui/dt-lihat-matpel/data-table";
-import { mataPelajaranColumns } from "@/components/ui/dt-lihat-matpel/columns";
+import { DataTable } from "@/components/ui/dt-lihat-matpel-guru/data-table";
+import { mataPelajaranColumns } from "@/components/ui/dt-lihat-matpel-guru/columns";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -47,7 +47,7 @@ export default function MataPelajaranPage() {
           return;
         }
 
-        const response = await fetch("/api/mata-pelajaran/view-all", {
+        const response = await fetch("/api/mata-pelajaran/view-guru", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

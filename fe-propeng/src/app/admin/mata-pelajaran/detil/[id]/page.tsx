@@ -66,7 +66,7 @@ const customToast = {
     }
 };
 
-export default function ClassDetailPage() {
+export default function MatpelDetailPage() {
     const params = useParams();
     const router = useRouter();
     const matpelId = params.id;
