@@ -826,6 +826,10 @@ export default function ClassDetailPage() {
                 </Dialog>
             </div>
 
+            <p className="text-sm text-muted-foreground mt-1">
+                Tahun Ajaran: {classData?.tahunAjaran}/{parseInt(classData?.tahunAjaran || 0) + 1} · Angkatan: {classData?.angkatan}
+            </p>
+
             {/* Wali Kelas Card */}
             <Card className="w-full max-w-sm">
                 <CardContent className="p-4">

@@ -46,7 +46,6 @@ const guruMatpelSchema = z.object({
 
 // Schema for adding students
 const addStudentsSchema = z.object({
-    angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
     siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
 });
 const customToast = {
@@ -139,7 +138,6 @@ export default function ClassDetailPage() {
     const addStudentsForm = useForm<z.infer<typeof addStudentsSchema>>({
         resolver: zodResolver(addStudentsSchema),
         defaultValues: {
-            angkatan: "",
             siswa: [],
         },
     });
@@ -231,13 +229,11 @@ export default function ClassDetailPage() {
                         totalSiswa: data.data.jumlah_siswa,
                         statusMatpel: data.data.status, 
                         angkatan: data.data.angkatan,
+                        siswa_terdaftar: data.data.siswa_terdaftar
                     })
 
                     matpelNameForm.setValue("namaMatpel", data.data.nama);
-
-                    console.log("Students data from API:", data.data.siswa_terdaftar);
                     setStudents(data.data.siswa_terdaftar || []);
-                    console.log("Students state after setting:", data.siswa || []);
 
                 } else {
                     throw new Error(data.errorMessage || "Failed to fetch class details");
@@ -250,7 +246,7 @@ export default function ClassDetailPage() {
                     setError("An error occurred while fetching data");
                 }
 
-                customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data kelas");
+                customToast.error("Gagal memuat data", "Terjadi kesalahan saat mengambil data Mata Pelajaran");
             } finally {
                 setLoading(false);
             }
@@ -315,9 +311,8 @@ export default function ClassDetailPage() {
         }
     }, [isEditGuruMatpelOpen, router, guruMatpelForm]);
 
-    const selectedAngkatan = addStudentsForm.watch("angkatan");
     useEffect(() => {
-        if (!selectedAngkatan || !isAddStudentsOpen) return;
+        if (!isAddStudentsOpen) return;
 
         const fetchAvailableStudents = async () => {
             setLoadingStudents(true);
@@ -330,13 +325,11 @@ export default function ClassDetailPage() {
                     return;
                 }
 
-                const normalizedAngkatan = parseInt(selectedAngkatan);
-
-                const response = await fetch(`/api/kelas/list-student?angkatan=${normalizedAngkatan}`, {
+                const response = await fetch(`/api/mata-pelajaran/list-student`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
+                        "Authorization": `Bearer ${token} Angkatan ${matpelData.angkatan}`,
                     },
                 });
 
@@ -350,11 +343,16 @@ export default function ClassDetailPage() {
                 const data = await response.json();
 
                 if (data.status === 200) {
-                    setAvailableStudents(data.data);
+                    const registeredIds = matpelData?.siswa_terdaftar?.map((s: any) => s.id) ?? [];
+                    const available = data.data.filter((student: any) => {
+                        return !registeredIds.includes(student.id);
+                    });
+
+                    setAvailableStudents(available);
                     addStudentsForm.setValue("siswa", []);
                 } else if (data.status === 404) {
                     setAvailableStudents([]);
-                    customToast.warning("Tidak ada siswa", `Tidak ada siswa tanpa kelas untuk angkatan ${normalizedAngkatan}`);
+                    customToast.warning("Tidak ada siswa", `Tidak ada siswa untuk angkatan ${matpelData.angkatan}`);
                 } else {
                     throw new Error(data.errorMessage || "Gagal mendapatkan daftar siswa");
                 }
@@ -369,21 +367,11 @@ export default function ClassDetailPage() {
             }
         };
 
-        fetchAvailableStudents();
-    }, [selectedAngkatan, isAddStudentsOpen, router, addStudentsForm]);
+        if (matpelData && Array.isArray(matpelData.siswa_terdaftar)) {
+            fetchAvailableStudents();
+        }
 
-    // Generate angkatan options
-    const tahunAjaran = parseInt(matpelData?.tahunAjaran || new Date().getFullYear().toString());
-    const angkatanOptions = [
-        tahunAjaran - 2,
-        tahunAjaran - 1,
-        tahunAjaran,
-        tahunAjaran + 1,
-        tahunAjaran + 2,
-    ].map((year) => ({
-        value: year.toString(),
-        label: year.toString(),
-    }));
+    }, [isAddStudentsOpen, router, addStudentsForm, matpelData]);
 
     const onUpdateMatpelName = async (data: MatpelNameFormValues) => {
         try {
@@ -483,7 +471,8 @@ export default function ClassDetailPage() {
         }
     };
 
-    const onAddStudents = async (data: { siswa: any[]; angkatan: string; }) => {
+    const onAddStudents = async (data: { siswa: any[] }) => {
+        console.log("iya kepanggil kok heloahjshwbhjbwsjbhws")
         try {
             const token = getAuthToken();
             if (!token) {
@@ -495,6 +484,7 @@ export default function ClassDetailPage() {
                 .filter(id => id !== null && id !== undefined && id !== "")
                 .map(id => parseInt(id));
 
+            console.log(`student ids: ${studentIds}`)
             if (studentIds.length === 0) {
                 customToast.error("Tidak ada siswa yang dipilih", "Pilih minimal satu siswa untuk ditambahkan ke Mata Pelajaran");
                 return;
@@ -565,7 +555,7 @@ export default function ClassDetailPage() {
 
     const onRemoveStudents = async () => {
         if (selectedStudents.length === 0) {
-            customToast.error("Tidak ada siswa yang dipilih", "Pilih minimal satu siswa untuk dihapus dari kelas");
+            customToast.error("Tidak ada siswa yang dipilih", "Pilih minimal satu siswa untuk dihapus dari Mata Pelajaran");
             return;
         }
     
@@ -606,7 +596,7 @@ export default function ClassDetailPage() {
                     "Siswa berhasil dihapus",
                     `${selectedStudents.length} siswa berhasil dihapus dari Mata Pelajaran`
                 );
-    
+                
                 localStorage.setItem('mata_pelajaran_data_refresh', 'true');
     
                 setIsRemoveStudentsOpen(false);
@@ -660,9 +650,9 @@ export default function ClassDetailPage() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle>Edit Nama Kelas</DialogTitle>
+                            <DialogTitle>Edit Nama Mata Pelajaran</DialogTitle>
                             <DialogDescription>
-                                Masukkan nama kelas baru dengan format yang sesuai
+                                Masukkan nama Mata Pelajaran baru
                             </DialogDescription>
                         </DialogHeader>
                         <Form {...matpelNameForm}>
@@ -696,6 +686,10 @@ export default function ClassDetailPage() {
                 </Dialog>
             </div>
 
+            <p className="text-sm text-muted-foreground mt-1">
+                Tahun Ajaran: {matpelData?.tahunAjaran}/{parseInt(matpelData?.tahunAjaran || 0) + 1} · Angkatan: {matpelData?.angkatan}
+            </p>
+
             {/* Guru Card */}
             <Card className="w-full max-w-sm">
                 <CardContent className="p-4">
@@ -703,7 +697,7 @@ export default function ClassDetailPage() {
                         <span className="text-sm text-gray-500">Guru</span>
                         <div className="flex items-center justify-between">
                             <span className="font-semibold text-blue-800">
-                                {matpelData?.guruMatpel || "Belum ada wali kelas"}
+                                {matpelData?.guruMatpel || "Belum ada guru"}
                             </span>
                             <Dialog open={isEditGuruMatpelOpen} onOpenChange={setIsEditGuruMatpelOpen}>
                                 <DialogTrigger asChild>
@@ -751,7 +745,7 @@ export default function ClassDetailPage() {
                                                                         <div className="p-2 text-gray-500 text-center">Memuat...</div>
                                                                     ) : filteredTeachers.length === 0 ? (
                                                                         <div className="p-2 text-gray-500 text-center">
-                                                                            {teacherSearchQuery ? "Tidak ditemukan wali kelas" : "Tidak ada guru yang tersedia"}
+                                                                            {teacherSearchQuery ? "Tidak ditemukan guru" : "Tidak ada guru yang tersedia"}
                                                                         </div>
                                                                     ) : (
                                                                         filteredTeachers.map((teacher) => (
@@ -846,49 +840,16 @@ export default function ClassDetailPage() {
                             <DialogHeader>
                                 <DialogTitle>Tambah Siswa</DialogTitle>
                                 <DialogDescription>
-                                    Pilih siswa yang akan ditambahkan ke kelas
+                                    Pilih siswa yang akan ditambahkan ke Mata Pelajaran
                                 </DialogDescription>
                             </DialogHeader>
                             <Form {...addStudentsForm}>
-                                <form onSubmit={addStudentsForm.handleSubmit(onAddStudents)} className="space-y-4">
-                                    {/* Keep the angkatan dropdown */}
-                                    <FormField
-                                        control={addStudentsForm.control}
-                                        name="angkatan"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Angkatan</FormLabel>
-                                                <Select
-                                                    onValueChange={(value) => {
-                                                        field.onChange(value);
-                                                        // Reset selected students when angkatan changes
-                                                        addStudentsForm.setValue("siswa", []);
-                                                        setStudentSearchQuery("");
-                                                    }}
-                                                    value={field.value}
-                                                >
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Pilih angkatan" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {angkatanOptions.map((option) => (
-                                                            <SelectItem
-                                                                key={option.value}
-                                                                value={option.value}
-                                                            >
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    {/* Replace the siswa field with a searchable multi-select */}
+                                <form 
+                                onSubmit={(e) => {
+                                    const rawData = addStudentsForm.getValues();
+                                    onAddStudents(rawData);
+                                  }}                                
+                                className="space-y-4">
                                     <FormField
                                         control={addStudentsForm.control}
                                         name="siswa"
@@ -897,96 +858,90 @@ export default function ClassDetailPage() {
                                                 <FormLabel>Siswa</FormLabel>
                                                 <div ref={studentSelectRef} className="relative">
                                                     <FormControl>
-                                                        {selectedAngkatan ? (
-                                                            loadingStudents ? (
-                                                                <div className="border rounded p-2 text-gray-500 text-sm">
-                                                                    Memuat daftar siswa...
-                                                                </div>
-                                                            ) : availableStudents.length === 0 ? (
-                                                                <div className="border rounded p-2 text-gray-500 text-sm">
-                                                                    Tidak ada siswa yang tersedia untuk angkatan ini
-                                                                </div>
-                                                            ) : (
-                                                                <div>
-                                                                    {/* Selected Students Tags */}
-                                                                    <div className="flex flex-wrap gap-2 mb-2">
-                                                                        {field.value.map(studentId => {
-                                                                            const student = availableStudents.find(s => s.id.toString() === studentId);
-                                                                            return student ? (
-                                                                                <div
-                                                                                    key={student.id}
-                                                                                    className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
-                                                                                >
-                                                                                    <span className="mr-1">{student.name}</span>
-                                                                                    <button
-                                                                                        type="button"
-                                                                                        onClick={() => {
-                                                                                            field.onChange(field.value.filter(id => id !== studentId));
-                                                                                        }}
-                                                                                        className="text-gray-500 hover:text-gray-700"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                                                                        </svg>
-                                                                                    </button>
-                                                                                </div>
-                                                                            ) : null;
-                                                                        })}
-                                                                    </div>
-
-                                                                    {/* Student Search Input */}
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="text"
-                                                                            placeholder="Cari nama siswa"
-                                                                            value={studentSearchQuery}
-                                                                            onChange={(e) => setStudentSearchQuery(e.target.value)}
-                                                                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                            onFocus={() => setIsStudentSelectOpen(true)}
-                                                                        />
-                                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                                                                                <path d="M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path>
-                                                                                <path d="M21 21l-4.35-4.35"></path>
-                                                                            </svg>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Dropdown for search results */}
-                                                                    {isStudentSelectOpen && (
-                                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                                                            {filteredAvailableStudents.length === 0 ? (
-                                                                                <div className="p-2 text-gray-500 text-center">
-                                                                                    {studentSearchQuery ? "Tidak ditemukan siswa" : "Tidak ada siswa yang tersedia"}
-                                                                                </div>
-                                                                            ) : (
-                                                                                filteredAvailableStudents
-                                                                                    .filter(student => !field.value.includes(student.id.toString()))
-                                                                                    .map((student) => (
-                                                                                        <div
-                                                                                            key={student.id}
-                                                                                            className="p-2 cursor-pointer hover:bg-gray-100"
-                                                                                            onClick={() => {
-                                                                                                field.onChange([...field.value, student.id.toString()]);
-                                                                                                setStudentSearchQuery("");
-                                                                                            }}
-                                                                                        >
-                                                                                            <div className="font-medium">{student.name}</div>
-                                                                                        </div>
-                                                                                    ))
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div className="mt-2 text-sm text-gray-500">
-                                                                        {field.value.length} siswa dipilih dari {availableStudents.length} siswa yang tersedia
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        ) : (
+                                                        {loadingStudents ? (
                                                             <div className="border rounded p-2 text-gray-500 text-sm">
-                                                                Pilih angkatan terlebih dahulu
+                                                                Memuat daftar siswa...
+                                                            </div>
+                                                        ) : availableStudents.length === 0 ? (
+                                                            <div className="border rounded p-2 text-gray-500 text-sm">
+                                                                Tidak ada siswa yang tersedia untuk angkatan ini
+                                                            </div>
+                                                        ) : (
+                                                            <div>
+                                                                {/* Selected Students Tags */}
+                                                                <div className="flex flex-wrap gap-2 mb-2">
+                                                                    {field.value.map(studentId => {
+                                                                        const student = availableStudents.find(s => s.id.toString() === studentId);
+                                                                        return student ? (
+                                                                            <div
+                                                                                key={student.id}
+                                                                                className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+                                                                            >
+                                                                                <span className="mr-1">{student.name}</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        field.onChange(field.value.filter(id => id !== studentId));
+                                                                                    }}
+                                                                                    className="text-gray-500 hover:text-gray-700"
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                                                    </svg>
+                                                                                </button>
+                                                                            </div>
+                                                                        ) : null;
+                                                                    })}
+                                                                </div>
+
+                                                                {/* Student Search Input */}
+                                                                <div className="relative">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Cari nama siswa"
+                                                                        value={studentSearchQuery}
+                                                                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                                                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                        onFocus={() => setIsStudentSelectOpen(true)}
+                                                                    />
+                                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                                                                            <path d="M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"></path>
+                                                                            <path d="M21 21l-4.35-4.35"></path>
+                                                                        </svg>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Dropdown for search results */}
+                                                                {isStudentSelectOpen && (
+                                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                                                        {filteredAvailableStudents.length === 0 ? (
+                                                                            <div className="p-2 text-gray-500 text-center">
+                                                                                {studentSearchQuery ? "Tidak ditemukan siswa" : "Tidak ada siswa yang tersedia"}
+                                                                            </div>
+                                                                        ) : (
+                                                                            filteredAvailableStudents
+                                                                                .filter(student => !field.value.includes(student.id.toString()))
+                                                                                .map((student) => (
+                                                                                    <div
+                                                                                        key={student.id}
+                                                                                        className="p-2 cursor-pointer hover:bg-gray-100"
+                                                                                        onClick={() => {
+                                                                                            field.onChange([...field.value, student.id.toString()]);
+                                                                                            setStudentSearchQuery("");
+                                                                                        }}
+                                                                                    >
+                                                                                        <div className="font-medium">{student.name}</div>
+                                                                                    </div>
+                                                                                ))
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="mt-2 text-sm text-gray-500">
+                                                                    {field.value.length} siswa dipilih dari {availableStudents.length} siswa yang tersedia
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </FormControl>
@@ -1005,7 +960,7 @@ export default function ClassDetailPage() {
                                             </DialogClose>
                                             <Button
                                                 type="submit"
-                                                disabled={!selectedAngkatan || addStudentsForm.watch("siswa").length === 0 || loadingStudents}
+                                                disabled={addStudentsForm.watch("siswa").length === 0 || loadingStudents}
                                             >
                                                 Tambah
                                             </Button>
@@ -1018,7 +973,6 @@ export default function ClassDetailPage() {
                 </div>
             </div>
 
-
             <DataTable
                 columns={columns}
                 data={filteredStudents}
@@ -1028,7 +982,6 @@ export default function ClassDetailPage() {
                     handleRowSelectionChange(validSelectedRows);
                 }}
             />
-
         </div>
     );
 }
