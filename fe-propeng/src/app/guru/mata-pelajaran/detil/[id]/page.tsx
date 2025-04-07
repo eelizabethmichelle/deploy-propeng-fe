@@ -243,7 +243,10 @@ export default function MatpelDetailPage() {
             <div className="space-y-4">
                 <DataTableKomponen 
                     data={komponenList} 
-                    columns={komponenColumns} 
+                    columns={komponenColumns({
+                        reloadTrigger,
+                        triggerReload,
+                    })}
                     mataPelajaran={matpelId as String}
                     reloadTrigger={reloadTrigger}
                     triggerReload={triggerReload}

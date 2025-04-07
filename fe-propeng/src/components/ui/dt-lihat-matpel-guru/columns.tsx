@@ -22,6 +22,10 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
         </div>
       );
     },
+    filterFn: (row, id, value) => {
+      const rowValue = String(row.getValue(id));
+      return value.includes(rowValue);
+    },
   },  
   {
     accessorKey: "name",

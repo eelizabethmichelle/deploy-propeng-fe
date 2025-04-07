@@ -6,7 +6,15 @@ import { DataTableColumnHeader } from "@/components/ui/dt-lihat-komponen/sort";
 import { DataTableRowActions } from "@/components/ui/dt-lihat-komponen/actions";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export const komponenColumns: ColumnDef<Schema>[] = [
+interface KomponenColumnsProps {
+  reloadTrigger: number;
+  triggerReload: () => void;
+}
+
+export const komponenColumns = ({
+  reloadTrigger,
+  triggerReload,
+}: KomponenColumnsProps): ColumnDef<Schema>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -36,33 +44,35 @@ export const komponenColumns: ColumnDef<Schema>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Nama Komponen" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2">
-          <span className="max-w-[500px] truncate font-medium capitalize">
-            {row.getValue("namaKomponen")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <span className="max-w-[500px] truncate font-medium capitalize">
+          {row.getValue("namaKomponen")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "bobotKomponen",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Bobot Komponen (dalam %)" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2">
-          <span className="max-w-[500px] truncate font-medium capitalize">
-            {row.getValue("bobotKomponen")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <span className="max-w-[500px] truncate font-medium capitalize">
+          {row.getValue("bobotKomponen")}
+        </span>
+      </div>
+    ),
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => (
+      <DataTableRowActions
+        row={row}
+        reloadTrigger={reloadTrigger}
+        triggerReload={triggerReload}
+      />
+    ),
   },
 ];

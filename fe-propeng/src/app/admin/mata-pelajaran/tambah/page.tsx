@@ -59,7 +59,7 @@ const formSchema = z.object({
   namaPelajaran: z.string().min(1, { message: "Nama pelajaran wajib diisi" }),
   kategoriMatpel: z.enum(["Wajib", "Peminatan"]),
   angkatan: z.string().min(1, { message: "Angkatan wajib dipilih" }),
-  siswa: z.array(z.string()).min(1, { message: "Minimal satu siswa harus dipilih" }),
+  siswa: z.array(z.string()).min(0, { message: "Minimal satu siswa harus dipilih" }),
   tahunAjaran: z.string()
     .min(1, { message: "Tahun ajaran wajib diisi" })
     .refine((val) => {
@@ -276,7 +276,7 @@ export default function TambahMataPelajaran() {
       angkatan: !data.angkatan,
       kategoriMatpel: !data.kategoriMatpel,
       guru: !data.guru,
-      siswa: data.siswa.length === 0,
+      // siswa: data.siswa.length === 0,
       tahunAjaran: !data.tahunAjaran
     };
 
