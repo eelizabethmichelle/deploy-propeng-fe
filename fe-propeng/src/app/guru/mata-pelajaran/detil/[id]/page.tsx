@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Check, Search } from "lucide-react";
+import { Plus, Check, Search, AlertTriangle } from "lucide-react";
 import { DataTable } from "@/components/ui/dt-lihat-matpel-detil-guru/data-table";
 import { DataTableKomponen } from "@/components/ui/dt-lihat-komponen/data-table";
 import { columns } from "@/components/ui/dt-lihat-matpel-detil-guru/columns";
@@ -47,11 +47,11 @@ export default function MatpelDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [isAddKomponenOpen, setIsAddKomponenOpen] = useState(false);
     const [komponenList, setKomponenList] = useState<any[]>([]);
-    const [namaKomponen, setNamaKomponen] = useState("");
-    const [bobotKomponen, setBobotKomponen] = useState<number | "">("");
     const [reloadTrigger, setReloadTrigger] = useState(0);
+    const totalBobot = komponenList.reduce((sum, item) => sum + Number(item.bobotKomponen || 0), 0);
+    const isValidBobot = totalBobot === 100;
+
 
     const triggerReload = () => {
         setReloadTrigger(prev => prev + 1);
@@ -64,60 +64,6 @@ export default function MatpelDetailPage() {
             return null;
         }
         return token;
-    };
-
-    const handleAddKomponen = async () => {
-        if (!namaKomponen.trim()) {
-            customToast.warning("Nama komponen kosong", "Isi nama komponen terlebih dahulu");
-            return;
-        }
-        if (namaKomponen.length > 50) {
-            customToast.warning("Nama terlalu panjang", "Maksimum 50 karakter");
-            return;
-        }
-        if (bobotKomponen === "" || bobotKomponen < 1 || bobotKomponen > 100) {
-            customToast.warning("Bobot tidak valid", "Masukkan angka 1-100");
-            return;
-        }
-
-        try {
-            const token = getAuthToken();
-            if (!token) return;
-
-            const response = await fetch("/api/komponen/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    namaKomponen: namaKomponen.trim(),
-                    bobotKomponen,
-                    mataPelajaran: parseInt(matpelId as string),
-                }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || result.status !== 201) {
-                throw new Error(result.message || "Gagal menambahkan komponen");
-            }
-
-            const newKomponen = {
-                id: result.data?.id || komponenList.length + 1,
-                nama: namaKomponen.trim(),
-                bobot: bobotKomponen,
-            };
-
-            setKomponenList((prev) => [...prev, newKomponen]);
-            setNamaKomponen("");
-            setBobotKomponen("");
-            setIsAddKomponenOpen(false);
-            customToast.success("Berhasil", "Komponen berhasil ditambahkan");
-        } catch (err: any) {
-            console.error(err);
-            customToast.error("Gagal", err.message || "Terjadi kesalahan saat menambahkan komponen");
-        }
     };
 
     const filteredStudents = searchTerm
@@ -247,10 +193,32 @@ export default function MatpelDetailPage() {
                         reloadTrigger,
                         triggerReload,
                     })}
-                    mataPelajaran={matpelId as String}
+                    mataPelajaran={matpelId as string}
                     reloadTrigger={reloadTrigger}
                     triggerReload={triggerReload}
                 />
+                {/* TOTAL BOBOT KOMPONEN */}
+                <div
+                    className={`mt-2 inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium shadow-sm border ${
+                        totalBobot === 100
+                        ? "bg-green-100 text-green-700 border-green-300"
+                        : "bg-yellow-100 text-yellow-800 border-yellow-300"
+                    }`}
+                    >
+                    {totalBobot === 100 ? (
+                        <Check className="h-4 w-4" />
+                    ) : (
+                        <AlertTriangle className="h-4 w-4" />
+                    )}
+                    <div>
+                        Total Bobot Komponen: {totalBobot}%
+                        {totalBobot !== 100 && (
+                        <div className="text-sm font-normal italic">
+                            Pastikan jumlah bobot = 100%
+                        </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* SISWA */}

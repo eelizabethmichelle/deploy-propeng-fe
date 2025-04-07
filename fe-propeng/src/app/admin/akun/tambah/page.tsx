@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 const roles = [
   { id: "teacher", label: "Guru" },
@@ -266,6 +267,7 @@ export default function AddAccountForm() {
               Kembali
             </Button>
             <Button type="submit" disabled={!isFormValid}>
+              <Plus className="h-5 w-5 ml-2" />
               Tambah Akun
             </Button>
           </div>

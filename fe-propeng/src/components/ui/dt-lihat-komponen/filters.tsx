@@ -106,6 +106,7 @@ export function DataTableToolbar({ table, mataPelajaran, reloadTrigger, triggerR
   const handleAddKomponen = async () => {
     if (!accessToken) {
       toast.error("Gagal menambahkan komponen. Token tidak ditemukan");
+      router.push("/login")
       return;
     }
 
@@ -238,9 +239,12 @@ export function DataTableToolbar({ table, mataPelajaran, reloadTrigger, triggerR
               </div>
               <DialogFooter className="pt-4">
                 <Button variant="secondary" onClick={() => setAddDialogOpen(false)}>
-                  Batal
+                  Kembali
                 </Button>
-                <Button onClick={handleAddKomponen}>Simpan</Button>
+                <Button onClick={handleAddKomponen}>
+                  <Plus className="h-5 w-5 ml-2" />
+                  Tambah Komponen
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
