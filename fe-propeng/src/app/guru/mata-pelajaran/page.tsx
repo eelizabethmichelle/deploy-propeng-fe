@@ -101,13 +101,6 @@ export default function MataPelajaranPage() {
             Kelola semua mata pelajaran yang tersedia
           </p>
         </div>
-        <Button
-          variant="default"
-          onClick={() => router.push("/admin/mata-pelajaran/tambah")}
-        >
-          <Plus className="h-5 w-5 ml-2" />
-          Tambah Mata Pelajaran
-        </Button>
       </div>
 
       {loading && <p>Loading data...</p>}

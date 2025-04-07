@@ -14,6 +14,7 @@ interface RowData {
   id?: number; // Bisa undefined jika API tidak mengembalikan
   kode: string; // Pastikan kode ada jika id tidak tersedia
   status: string;
+  tahunAjaran: string;
 }
 
 interface DataTableToolbarProps {
@@ -22,6 +23,13 @@ interface DataTableToolbarProps {
 
 export function DataTableToolbar({ table }: DataTableToolbarProps) {
   const allRows = table.getCoreRowModel().rows;
+
+  const uniqueTahunAjaran = [
+    ...new Set(allRows.map((row) => String(row.original.tahunAjaran)))
+  ].map((tahunAjaran) => ({
+    value: tahunAjaran,
+    label: `TA ${tahunAjaran}/${Number(tahunAjaran)+1}`,
+  }));
 
   const uniqueStatus = [
     ...new Set(allRows.map((row) => String(row.original.status)))
@@ -43,6 +51,13 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           onChange={(event) => table.setGlobalFilter(event.target.value)}
           className="h-8 w-[150px] lg:w-[500px]"
         />
+        {table.getColumn("tahunAjaran") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("tahunAjaran")}
+            title="Tahun Ajaran"
+            options={uniqueTahunAjaran}
+          />
+        )}
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
