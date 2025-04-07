@@ -23,6 +23,7 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import router from "next/router";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -50,6 +51,32 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
   }, []);
 
   const handleEditSave = async () => {
+    if (!accessToken) {
+      toast.error("Gagal mengubah komponen. Token tidak ditemukan");
+      router.push("/login")
+      return;
+    }
+
+    if (!namaKomponen.trim()) {
+      toast.error("Nama komponen tidak boleh kosong");
+      return;
+    }
+  
+    if (namaKomponen.length > 50) {
+      toast.error("Nama komponen maksimal 50 karakter");
+      return;
+    }
+  
+    if (!bobotKomponen || isNaN(Number(bobotKomponen))) {
+      toast.error("Bobot komponen harus berupa angka");
+      return;
+    }
+  
+    if (Number(bobotKomponen) < 1 || (Number(bobotKomponen)) > 100) {
+      toast.error("Bobot komponen harus antara 1 hingga 100");
+      return;
+    }
+    
     setLoading(true);
     try {
       const response = await fetch("/api/komponen/edit", {
@@ -127,10 +154,10 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
               onClick={() => setEditDialogOpen(false)}
               disabled={loading}
             >
-              Batal
+              Kembali
             </Button>
             <Button onClick={handleEditSave} disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan"}
+              {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </Button>
           </DialogFooter>
         </DialogContent>
