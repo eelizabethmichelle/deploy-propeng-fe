@@ -10,6 +10,7 @@ import {
   BookCheck,
   BookOpen,
   Bot,
+  CalculatorIcon,
   Circle,
   Command,
   Frame,
@@ -19,6 +20,7 @@ import {
   PlusCircle,
   School,
   Settings2,
+  SquareDivide,
   SquareTerminal,
   User,
 } from "lucide-react"
@@ -152,6 +154,18 @@ const data = {
             icon: PlusCircle,
             url: "#",
           }
+        ],
+      },
+      {
+        title: "Manajemen Nilai",
+        url: "#",
+        icon: SquareDivide,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
+          },
         ],
       },
     ],

@@ -83,14 +83,29 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 225 100% 98%;
-    /* This is #05218E in HSL format */
-    --sidebar-foreground: 227 27% 28%;
-    /* White text */
+  /* Background utama sidebar - biru sangat muda, hampir putih */
+  --sidebar-background: 225 40% 98%;
 
-    --sidebar-primary: 0 0% 100%;
+  /* Teks utama sidebar - biru tua */
+  --sidebar-foreground: oklch(225 60% 98%;);
 
-    --sidebar-primary-foreground: 227 63% 95%;
+  /* Warna dasar primer sidebar (putih) */
+  --sidebar-primary: oklch(100% 0 0); /* Putih */
+
+  /* Warna teks di atas elemen primer (biru muda) */
+  --sidebar-primary-foreground: oklch(225 60% 98%;);
+
+  /* Warna aksen sidebar (gelap keabu-abuan) */
+  --sidebar-accent: oklch(225 60% 98%;);
+
+  /* Warna teks di atas aksen (biru tua terang) */
+  --sidebar-accent-foreground: oklch(225 60% 98%;); /* sedikit lebih terang dari foreground */
+
+  /* Border warna sidebar (sama dengan accent untuk kesan solid) */
+  --sidebar-border: oklch(225 60% 98%;);
+
+  /* Ring highlight atau fokus, biru terang menyala */
+  --sidebar-ring: oklch(225 60% 98%;); /* Highlight/fokus */
   }
 
   .dark {
