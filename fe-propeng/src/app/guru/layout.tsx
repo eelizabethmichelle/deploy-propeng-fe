@@ -24,6 +24,36 @@ export default function GuruLayout({
   const router = useRouter();
   const hideSidebar = false; // Set a default value or handle it differently
 
+
+  const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
+    "/guru/kelas": [{ label: "Manajemen Kelas" }],
+    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
+    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
+    "/guru/manajemennilai/inputnilai/[subjectId]": [
+      { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+      { label: "Input Data Nilai" },
+    ],
+  };
+
+  // Fungsi untuk membuat breadcrumbs dinamis berdasarkan pathname
+  const generateBreadcrumbs = (pathname: string): { label: string; href?: string }[] => {
+    if (pathname.startsWith("/guru/manajemennilai/inputnilai/")) {
+      const subjectId = pathname.split("/").pop(); // Ambil subjectId dari URL
+      return [
+        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+        { label: `Input Data Nilai` },
+      ];
+    } else if (pathname.includes("/guru/kelas/detail")) {
+      return [
+        { label: "Manajemen Kelas", href: "/guru/kelas" },
+        { label: "Detail Kelas" },
+      ];
+    } else {
+      return breadcrumbMap[pathname] || [];
+    }
+  };
+
+
   const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
     if (!href) return;
     e.preventDefault();
@@ -33,20 +63,7 @@ export default function GuruLayout({
     router.push(href);
   };
 
-  // Rest of your code remains the same
-  const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/guru/kelas": [{ label: "Manajemen Kelas" }],
-    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-  };
-
-  let breadcrumbs = breadcrumbMap[pathname] || [];
-  if (pathname.includes("/guru/kelas/detail")) {
-    breadcrumbs = [
-      { label: "Manajemen Kelas", href: "/guru/kelas" },
-      { label: "Detail Kelas" },
-    ];
-  }
+  const breadcrumbs = generateBreadcrumbs(pathname); // Menggunakan fungsi generateBreadcrumbs
 
   return (
     <SidebarProvider>

@@ -5,7 +5,7 @@ import { ColumnDef, CellContext, SortingFn, HeaderContext, FilterFn, Row } from 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban } from "lucide-react";
+import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban, LucideEdit } from "lucide-react";
 import { AssessmentComponent, GradeTableRowData, GradesState, GradeTableMeta } from "./schema"; // Impor tipe
 import { DataTableColumnHeader } from "./sort"; // Pastikan path ini benar
 import { toast } from "sonner";
@@ -234,13 +234,13 @@ export const generateGradeColumns = (
                             </div>
                         ) : (
                              // Tampilkan tombol Edit jika tidak sedang mengedit baris ini
-                             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-secondary"
+                             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-gray-200"
                                 // Disable jika: mode Edit All, ada baris lain diedit, atau baris ini TERPILIH
                                 disabled={meta.isEditingAll || (!!meta.editingRowId && meta.editingRowId !== row.original.id) || row.getIsSelected()}
                                 onClick={() => meta.handleEditRowTrigger(row.original.id)}
                                 aria-label={`Edit nilai ${row.original.name}`}
                              >
-                                 <Pencil className="h-4 w-4" />
+                                 <LucideEdit className="h-4 w-4" />
                              </Button>
                         )}
                     </div>

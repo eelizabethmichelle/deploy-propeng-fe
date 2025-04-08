@@ -508,7 +508,7 @@ export function GradeEntryDataTable({
             <div className="overflow-x-auto relative border rounded-md">
                 <Table>
                     {/* Header Tabel (Logika Sticky SAMA) */}
-                     <TableHeader className="sticky top-0 bg-muted/80 z-20 backdrop-blur-sm">
+                     <TableHeader className="sticky top-0 z-20 backdrop-blur-sm">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -518,7 +518,7 @@ export function GradeEntryDataTable({
                                     let stickyRightOffset = 0;
                                     if (header.id === 'actions') stickyRightOffset = 0;
                                     if (header.id === 'finalScore') { const actionsCol = table.getColumn('actions'); stickyRightOffset = actionsCol?.getIsVisible() ? actionsCol.getSize() : 0; }
-                                    return ( <TableHead key={header.id} colSpan={header.colSpan} style={{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined, minWidth: header.getSize() !== 150 ? `${header.getSize()}px` : '100px', left: isStickyLeft ? `${stickyLeftOffset}px` : undefined, right: isStickyRight ? `${stickyRightOffset}px` : undefined, position: (isStickyLeft || isStickyRight) ? 'sticky' : undefined, }} className={cn('px-2 py-2 text-sm h-auto whitespace-nowrap', (isStickyLeft || isStickyRight) && 'z-10', isStickyLeft && 'bg-muted/90', isStickyRight && 'bg-muted/90 text-center', header.id === 'finalScore' && 'text-center')} > {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())} </TableHead> );
+                                    return ( <TableHead key={header.id} colSpan={header.colSpan} style={{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined, minWidth: header.getSize() !== 150 ? `${header.getSize()}px` : '100px', left: isStickyLeft ? `${stickyLeftOffset}px` : undefined, right: isStickyRight ? `${stickyRightOffset}px` : undefined, position: (isStickyLeft || isStickyRight) ? 'sticky' : undefined, }} className={cn('px-2 py-2 text-xs h-auto whitespace-nowrap', (isStickyLeft || isStickyRight) && 'z-10', isStickyLeft && '', isStickyRight && ' text-center', header.id === 'finalScore' && 'text-center')} > {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())} </TableHead> );
                                 })}
                             </TableRow>
                         ))}
@@ -535,7 +535,7 @@ export function GradeEntryDataTable({
                                     <TableRow
                                         key={row.id}
                                         data-state={row.getIsSelected() && 'selected'}
-                                        className={cn("hover:bg-muted/50", editingRowId === row.original.id && 'bg-secondary/60 hover:bg-secondary/70')}
+                                        className={cn("hover:bg-muted/50", editingRowId === row.original.id && ' hover:bg-secondary/70')}
                                     >
                                         {row.getVisibleCells().map((cell) => {
                                             // Logika sticky tetap sama
