@@ -117,56 +117,51 @@ export function GradeEntryDataTable({
 
     // --- Kalkulasi Data Tabel (DENGAN PENGECEKAN) ---
     const tableData = React.useMemo<GradeTableRowData[]>(() => {
-        // --- TAMBAHKAN PENGECEKAN ---
-        if (!Array.isArray(students) || !Array.isArray(assessmentComponents)) {
-             // console.warn("tableData: students or assessmentComponents not ready.");
-            return []; // Kembalikan array kosong jika data belum siap
-        }
-        // --------------------------
-        // Pastikan assessmentComponents tidak null/undefined sebelum di-pass
-        const currentComponents = assessmentComponents || [];
+    if (!Array.isArray(students) || !Array.isArray(assessmentComponents)) {
+        return [];
+    }
 
-        return students.map((student: Student) => {
-            const studentGrades = grades[student.id] || {};
-            let calculatedFinalScore: number | null = null;
-            let scoreTimesWeightSum = 0;
-            let weightSum = 0;
+    const currentComponents = assessmentComponents || [];
 
-            currentComponents.forEach((comp: AssessmentComponent) => {
-                // Pastikan comp tidak null dan weight ada sebelum kalkulasi
-                if (comp && typeof comp.weight === 'number') {
-                    const score = studentGrades[comp.id];
-                    if (score !== null && score !== undefined && !isNaN(Number(score)) && comp.weight > 0) {
-                        scoreTimesWeightSum += (Number(score) * comp.weight);
-                        weightSum += comp.weight;
-                    }
+    return students.map((student: Student) => {
+        const studentGrades = grades[student.id] || {};
+        let calculatedFinalScore: number | null = null;
+        let scoreTimesWeightSum = 0;
+        let weightSum = 0;
+
+        currentComponents.forEach((comp: AssessmentComponent) => {
+            if (comp && typeof comp.weight === 'number') {
+                // Perubahan di sini: anggap null sebagai 0
+                const score = studentGrades[comp.id] ?? 0;
+
+                if (typeof score === 'number' && !isNaN(score) && comp.weight > 0) {
+                    scoreTimesWeightSum += (score * comp.weight);
+                    weightSum += comp.weight;
                 }
-            });
-
-            if (weightSum > 0) {
-                 // Pastikan tidak division by zero
-                calculatedFinalScore = scoreTimesWeightSum / weightSum;
             }
-
-            const componentScores: Record<string, number | null> = {};
-            currentComponents.forEach((comp: AssessmentComponent) => {
-                if (comp && comp.id) { // Pastikan comp dan comp.id ada
-                    componentScores[comp.id] = studentGrades[comp.id] ?? null;
-                }
-            });
-
-            return {
-                id: student.id,
-                name: student.name,
-                class: student.class,
-                ...componentScores, // Sebar skor komponen
-                finalScore: calculatedFinalScore
-            };
         });
-    // Tambahkan assessmentComponents ke dependensi useMemo tableData
-    }, [students, assessmentComponents, grades]);
-    // -------------------------------------------
 
+        if (weightSum > 0) {
+            calculatedFinalScore = scoreTimesWeightSum / weightSum;
+        }
+
+        const componentScores: Record<string, number | null> = {};
+        currentComponents.forEach((comp: AssessmentComponent) => {
+            if (comp && comp.id) {
+                componentScores[comp.id] = studentGrades[comp.id] ?? null;
+            }
+        });
+
+        return {
+            id: student.id,
+            name: student.name,
+            class: student.class,
+            ...componentScores,
+            finalScore: calculatedFinalScore
+        };
+    });
+    }, [students, assessmentComponents, grades]);
+    
     // --- Handlers (Edit, Save, Cancel, Reset - SAMA seperti versi terakhir) ---
     const handleGradeChange = useCallback((studentId: string, componentId: string, value: string) => {
         const numericValue = value === '' ? null : Number(value);
