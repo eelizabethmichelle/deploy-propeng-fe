@@ -530,7 +530,10 @@ export function GradeEntryDataTable({
                                     <TableRow
                                         key={row.id}
                                         data-state={row.getIsSelected() && 'selected'}
-                                        className={cn("hover:bg-muted/50", editingRowId === row.original.id && ' hover:bg-secondary/70')}
+                                        className={cn(
+                                            "hover:bg-muted/50",
+                                            editingRowId === row.original.id && 'outline outline-2 outline-primary outline-offset-2'
+                                        )}
                                     >
                                         {row.getVisibleCells().map((cell) => {
                                             // Logika sticky tetap sama
@@ -554,8 +557,6 @@ export function GradeEntryDataTable({
                                                     className={cn(
                                                         'px-2 py-1 h-11 align-middle',
                                                         (isStickyLeft || isStickyRight) && 'z-10',
-                                                        isStickyLeft && (editingRowId === row.original.id ? 'bg-secondary/70' : 'bg-card'),
-                                                        isStickyRight && (editingRowId === row.original.id ? 'bg-secondary/70' : 'bg-card'),
                                                         cell.column.id === 'finalScore' && 'text-center',
                                                         cell.column.id === 'actions' && 'text-center'
                                                     )}

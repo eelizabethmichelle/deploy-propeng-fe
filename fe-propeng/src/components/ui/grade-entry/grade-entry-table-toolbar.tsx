@@ -129,7 +129,7 @@ export function GradeDataTableToolbar({
                         <Button variant="outline" size="sm" className="h-8" onClick={onCancelAll} disabled={isSavingAll || isResetting}>
                             <Ban className="mr-2 h-4 w-4" /> Batal Semua
                         </Button>
-                        <Button size="sm" className="h-8" onClick={onSaveAll} disabled={isSavingAll || isResetting}>
+                        <Button size="sm" variant={"secondary"} className="h-8" onClick={onSaveAll} disabled={isSavingAll || isResetting}>
                             {isSavingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Simpan Semua
                         </Button>
                     </>
