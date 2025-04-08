@@ -81,7 +81,7 @@ export default function DaftarMataPelajaranPage() {
              <Card className='border-0 shadow-none p-0 m-0'>
                  <CardHeader className='p-0'>
                      <CardTitle>Ringkasan Mata Pelajaran</CardTitle>
-                     <CardDescription>Pilih mata pelajaran untuk melihat detail atau mengelola nilai.</CardDescription>
+                     <CardDescription className='pb-4'>Pilih mata pelajaran untuk melihat detail atau mengelola nilai.</CardDescription>
                  </CardHeader>
                  <CardContent className='p-0'>
                     {isLoading && (

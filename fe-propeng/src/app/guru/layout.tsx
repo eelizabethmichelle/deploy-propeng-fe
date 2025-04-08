@@ -37,6 +37,7 @@ export default function GuruLayout({
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
     "/guru/kelas": [{ label: "Manajemen Kelas" }],
     "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
+    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
   };
 
   let breadcrumbs = breadcrumbMap[pathname] || [];

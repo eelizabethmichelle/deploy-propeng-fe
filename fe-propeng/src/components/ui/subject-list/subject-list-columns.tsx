@@ -4,7 +4,7 @@
 import { ColumnDef, FilterFn, Row } from "@tanstack/react-table";
 import Link from "next/link"; // Untuk link ke halaman input nilai
 import { Badge } from "@/components/ui/badge"; // Untuk status
-import { CheckCircle, Activity, XCircle } from "lucide-react"; // Ikon status
+import { CheckCircle, Activity, XCircle, LoaderIcon } from "lucide-react"; // Ikon status
 import { cn } from "@/lib/utils";
 // Pastikan path schema benar dan tipenya sesuai (SubjectSummary punya academicYear)
 import { ComponentSummary, SubjectSummary } from "./schema";
@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../too
 // Opsi untuk filter status
 export const statusOptions = [
     { value: 'Terisi Penuh', label: 'Terisi Penuh', icon: CheckCircle },
-    { value: 'Dalam Proses', label: 'Dalam Proses', icon: Activity },
+    { value: 'Dalam Proses', label: 'Dalam Proses', icon: LoaderIcon },
     { value: 'Belum Dimulai', label: 'Belum Dimulai', icon: XCircle },
 ];
 
@@ -90,11 +90,12 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
             const option = statusOptions.find(option => option.value === status);
             if (!option) return null;
             let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "secondary";
-            if (status === 'Terisi Penuh') badgeVariant = 'default';
-            if (status === 'Belum Dimulai') badgeVariant = 'destructive';
+            if (status === 'Terisi Penuh') badgeVariant = 'outline';
+            if (status === 'Belum Dimulai') badgeVariant = 'outline';
+            if (status === 'Dalam Proses') badgeVariant = 'outline';
             return (
-                 <Badge variant={badgeVariant} className="text-xs whitespace-nowrap">
-                     <option.icon className="mr-1 h-3 w-3" />
+                 <Badge variant={badgeVariant} className="bg-white text-xs whitespace-nowrap">
+                     <option.icon className={`mr-1 h-3 w-3 ${(status === 'Terisi Penuh' ? "text-primary" : status === 'Belum Dimulai' ? "text-red-500" : "text-green-500") }`} />
                     {option.label}
                  </Badge>
             );
@@ -119,12 +120,12 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
             const allComponentNames = components.map(c => c.name).join(", ");
             return (
                 <div className="flex items-center gap-1 flex-wrap">
-                    {firstComponent?.name && ( <Badge variant="outline" className="text-xs whitespace-nowrap">{firstComponent.name}</Badge> )}
+                    {firstComponent?.name && ( <Badge variant="outline" className="bg-white text-xs whitespace-nowrap">{firstComponent.name}</Badge> )}
                     {remainingCount > 0 && (
                         <TooltipProvider delayDuration={100}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Badge variant="secondary" className="text-xs cursor-default">+{remainingCount} lainnya</Badge>
+                                    <Badge variant="outline" className="bg-white text-xs cursor-default">+{remainingCount} lainnya</Badge>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs"><p className="text-xs">{allComponentNames}</p></TooltipContent>
                             </Tooltip>
@@ -143,7 +144,7 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
     // Kolom Aksi
     {
         id: 'actions',
-        header: () => <div className="text-right">Aksi</div>, // Rata kanan header
+        header: () => <div className="text- pl-1">Aksi</div>, // Rata kanan header
         cell: ({ row }) => <div className="text-center"><SubjectListRowActions row={row} /></div>, // Rata tengah isi cell
         enableSorting: false,
         enableHiding: false,

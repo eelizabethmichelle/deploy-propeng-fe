@@ -39,6 +39,7 @@ export default function TeacherLayout({
       { label: "Absensi" },
     ],
     "/teacher/mata-pelajaran": [{ label: "Mata Pelajaran" }],
+    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
     "/teacher/raport": [{ label: "Raport Siswa" }],
   };
 
