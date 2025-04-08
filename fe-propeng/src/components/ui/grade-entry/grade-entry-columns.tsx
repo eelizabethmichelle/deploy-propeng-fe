@@ -1,55 +1,65 @@
-// app/components/grade-entry-columns.tsx
+// Lokasi: app/components/grade-entry-columns.tsx
 'use client';
 
 import { ColumnDef, CellContext, SortingFn, HeaderContext, FilterFn, Row } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban, LucideEdit } from "lucide-react";
+// Impor ikon yang benar-benar dipakai
+import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban, LucideEdit, ArrowUpDown } from "lucide-react";
 import { AssessmentComponent, GradeTableRowData, GradesState, GradeTableMeta } from "./schema"; // Impor tipe
 import { DataTableColumnHeader } from "./sort"; // Pastikan path ini benar
 import { toast } from "sonner";
 
-// --- Komponen Cell Nilai ---
+
+// --- TAMBAHKAN DEFINISI HELPER FUNCTION DI SINI ---
+const formatNumberOrDash = (value: number | null | undefined, decimals: number = 0): string => {
+    // Pastikan value adalah angka dan bukan NaN sebelum formatting
+    if (typeof value === 'number' && !isNaN(value)) {
+        // Gunakan toFixed jika decimals > 0, atau Math.round jika decimals = 0 untuk integer
+        return decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+    }
+    return '-'; // Kembalikan strip jika null, undefined, atau NaN
+};
+// ------------------------------------------------
+
+// --- Komponen Cell Nilai (menggunakan formatNumberOrDash) ---
 const GradeCell = ({ row, column, table }: CellContext<GradeTableRowData, unknown>) => {
     const meta = table.options.meta as GradeTableMeta;
     const studentId = row.original.id;
     const componentId = column.id;
     const isEditable = meta.isEditingAll || meta.editingRowId === studentId;
     const isSaving = meta.isSavingRow === studentId || meta.isSavingAll;
-    // Ambil nilai DARI STATE 'grades' yang ada di meta untuk tampilan
     const currentValue = meta.grades?.[studentId]?.[componentId];
-    const displayValue = currentValue === null || currentValue === undefined ? '' : currentValue.toString();
+    const displayValueForInput = currentValue === null || currentValue === undefined ? '' : currentValue.toString();
+    // Gunakan formatNumberOrDash untuk tampilan read-only
+    const displayValueReadonly = formatNumberOrDash(currentValue as number | null | undefined, 0); // Tampilkan tanpa desimal di tabel
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        const numericValue = value === '' ? null : Number(value);
-        if (value !== '' && (isNaN(numericValue!) || numericValue! < 0 || numericValue! > 100)) {
-             toast.warning("Nilai harus antara 0 dan 100.");
-             return;
-        }
-        // Panggil handler dari meta untuk update state 'grades'
-        meta.handleGradeChange(studentId, componentId, value);
+        meta.handleGradeChange(studentId, componentId, value); // Validasi ada di handleGradeChange di DataTable
     };
+
 
     return (
         <div className="text-center min-w-[70px]">
             {isEditable ? (
                 <Input
                     type="number"
-                    step="any" // Atau "1" jika hanya integer
+                    step="any" // Atau "1", "0.5"
                     min="0"
                     max="100"
                     placeholder="-" // Placeholder jika kosong
-                    value={displayValue} // Tampilkan nilai dari state 'grades'
+                    value={displayValueForInput} // Nilai untuk input
                     onChange={handleChange}
+                    onFocus={(e) => e.target.select()}
                     className="max-w-[70px] mx-auto text-center h-8 text-sm p-1"
                     disabled={isSaving} // Disable saat saving
                     aria-label={`Nilai ${column.id} untuk ${row.original.name}`}
                 />
             ) : (
                 // Tampilkan nilai (atau '-') jika tidak dalam mode edit
-                <span className="text-sm px-2">{displayValue === '' ? '-' : displayValue}</span>
+                <span className="text-sm px-2">{displayValueReadonly}</span>
             )}
         </div>
     );
@@ -59,78 +69,91 @@ const GradeCell = ({ row, column, table }: CellContext<GradeTableRowData, unknow
 const finalScoreRangeFilter: FilterFn<GradeTableRowData> = (
     row: Row<GradeTableRowData>,
     columnId: string,
-    filterValue: any
+    filterValue: any // Bisa string 'lt50', '50to75', 'gt75' atau array davon
 ) => {
-    if (!filterValue || !Array.isArray(filterValue) || filterValue.length === 0) {
-        return true;
+    // Handle jika filterValue bukan array (misalnya dari select biasa)
+    const filterRanges = Array.isArray(filterValue) ? filterValue : (filterValue ? [filterValue] : []);
+
+    if (filterRanges.length === 0) {
+        return true; // Tampilkan semua jika tidak ada filter range dipilih
     }
     const score = row.getValue(columnId) as number | null | undefined;
     if (score === null || score === undefined || isNaN(score)) {
-        return false;
+        return false; // Jangan tampilkan jika nilai tidak valid atau kosong
     }
-    return filterValue.some(range => {
+    // Cek apakah skor cocok dengan *salah satu* range yang dipilih
+    return filterRanges.some(range => {
         switch (range) {
             case 'lt50': return score < 50;
             case '50to75': return score >= 50 && score <= 75;
             case 'gt75': return score > 75;
-            default: return false;
+            default: return false; // Abaikan nilai filter yang tidak dikenal
         }
     });
 };
 
-// --- Fungsi Generate Kolom ---
-export const generateGradeColumns = (
-    assessmentComponents: AssessmentComponent[] | undefined | null,
-    grades: GradesState, // State grades terbaru untuk sorting (jika diperlukan)
-    onEditHeader: (component: AssessmentComponent) => void,
-    onDeleteComponent: (componentId: string, componentName: string) => void,
+// --- Fungsi Generate Kolom (SIGNATURE DIPERBAIKI) ---
+export function generateGradeColumns(
+    assessmentComponents: AssessmentComponent[],
+    // Catatan: Prop 'gradesPropFromParent' mungkin tidak perlu jika meta.grades selalu up-to-date
+    // dan dipakai di cell/sorting. Kita pertahankan agar sesuai pemanggilan.
+    gradesPropFromParent: GradesState,
+    startHeaderEdit: (component: AssessmentComponent) => void,
+    handleDeleteComponent: (id: string, name: string) => void,
     editingHeaderId: string | null,
     editingHeaderValues: { name: string; weight: string },
     handleHeaderEditChange: (field: 'name' | 'weight', value: string) => void,
     saveHeaderEdit: () => Promise<void>,
     cancelHeaderEdit: () => void,
     isHeaderEditingLoading: boolean,
-    isAnyValueEditing: boolean // Status apakah ada baris/semua yang diedit
-): ColumnDef<GradeTableRowData>[] => {
+    isAnyRowEditing: boolean,
+    scoreType: 'pengetahuan' | 'keterampilan' // <-- PARAMETER KE-12 SUDAH ADA
+): ColumnDef<GradeTableRowData>[] {
+
+    console.log(`[Columns ${scoreType}] Generating columns...`); // Konfirmasi tipe
 
     const currentComponents = Array.isArray(assessmentComponents) ? assessmentComponents : [];
 
-    // Fungsi sorting kustom untuk kolom nilai komponen (opsional, jika perlu)
+    // Fungsi sorting kustom (akses nilai via meta jika memungkinkan)
     const componentColumnSortingFn: SortingFn<GradeTableRowData> = (rowA, rowB, columnId) => {
-        // Ambil nilai dari state 'grades' yang ada di meta tabel saat sorting
-        // (Perlu akses ke meta tabel di sini, atau state grades diteruskan)
-        // Contoh jika grades diteruskan:
-         const gradeA = grades[rowA.original.id]?.[columnId];
-         const gradeB = grades[rowB.original.id]?.[columnId];
-         const valA = gradeA === null || gradeA === undefined ? -Infinity : Number(gradeA);
+         // Cara akses meta saat sorting mungkin perlu trik, ini contoh dasar
+         // Jika tidak bisa akses meta, perlu state 'grades' diteruskan ke sini
+         // atau sorting dilakukan pada data sebelum masuk ke tabel.
+         // Untuk sementara, kita pakai `gradesPropFromParent` (meski kurang ideal).
+         const gradeA = gradesPropFromParent[rowA.original.id]?.[columnId];
+         const gradeB = gradesPropFromParent[rowB.original.id]?.[columnId];
+         const valA = gradeA === null || gradeA === undefined ? -Infinity : Number(gradeA); // Null/undefined jadi paling kecil
          const valB = gradeB === null || gradeB === undefined ? -Infinity : Number(gradeB);
          return valA - valB;
-         // Alternatif: const meta = header.getContext().table.options.meta as GradeTableMeta;
-         // jika Anda melakukan sorting dari header context
     };
 
     const columns: ColumnDef<GradeTableRowData>[] = [
         // Kolom Checkbox
         {
             id: 'select',
-            header: ({ table }) => (
-                <Checkbox
-                    checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Pilih semua baris"
-                    // Disable checkbox jika sedang dalam mode edit apapun
-                    disabled={isAnyValueEditing}
-                />
-            ),
+            header: ({ table }) => {
+                 const meta = table.options.meta as GradeTableMeta; // Akses meta
+                return (
+                    <Checkbox
+                        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                        aria-label="Pilih semua baris"
+                        // Disable checkbox jika sedang dalam mode edit apapun
+                        disabled={meta?.isEditingAll || !!meta?.editingRowId} // Akses dari meta
+                        className="translate-y-[2px]"
+                    />
+                );
+            },
             cell: ({ row, table }) => {
-                 const meta = table.options.meta as GradeTableMeta;
+                 const meta = table.options.meta as GradeTableMeta; // Akses meta
                 return (
                     <Checkbox
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => row.toggleSelected(!!value)}
                         aria-label="Pilih baris"
                         // Disable checkbox jika sedang dalam mode edit apapun
-                        disabled={meta.isEditingAll || !!meta.editingRowId}
+                        disabled={meta?.isEditingAll || !!meta?.editingRowId} // Akses dari meta
+                        className="translate-y-[2px]"
                     />
                 );
             },
@@ -142,37 +165,35 @@ export const generateGradeColumns = (
         {
             accessorKey: 'name',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Nama Siswa" />,
-            cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
+            cell: ({ row }) => <div className="font-medium text-xs">{row.getValue('name')}</div>,
             enableSorting: true,
-            size: 180,
+            size: 180, // Sesuaikan lebar
+            minSize: 120,
             enableColumnFilter: true,
-            // Eksplisit gunakan filter yang sesuai untuk array (dari faceted)
-            filterFn: 'arrIncludesSome',
+            filterFn: 'arrIncludesSome', // Untuk faceted filter
         },
         // Kolom Kelas
         {
-            id: 'class', // Eksplisit ID
+            id: 'class', // Eksplisit ID agar filter toolbar bisa target
             accessorKey: 'class',
             header: ({ column }) => <DataTableColumnHeader column={column} title="Kelas" />,
-            cell: ({ row }) => <div>{row.getValue('class')}</div>,
+            cell: ({ row }) => <div className="text-xs">{row.getValue('class')}</div>,
             enableSorting: true,
-            enableHiding: true,
+            enableHiding: true, // Bisa disembunyikan
             enableColumnFilter: true,
-             // Eksplisit gunakan filter yang sesuai untuk array (dari faceted)
-             filterFn: 'arrIncludesSome',
-            size: 100,
+            filterFn: 'arrIncludesSome', // Untuk faceted filter
+            size: 100, // Sesuaikan lebar
         },
         // Kolom Komponen Penilaian Dinamis
         ...currentComponents.map<ColumnDef<GradeTableRowData>>(component => ({
-            accessorKey: component.id, // Penting: accessorKey = component.id
+            accessorKey: component.id,
             header: ({ header }: HeaderContext<GradeTableRowData, unknown>) => {
                  const isEditingThisHeader = editingHeaderId === component.id;
                 return isEditingThisHeader ? (
-                     <div className='space-y-1 py-1'>
-                         <Input value={editingHeaderValues.name} onChange={(e) => handleHeaderEditChange('name', e.target.value)} className="h-7 text-xs" placeholder='Nama' disabled={isHeaderEditingLoading}/>
+                     <div className='space-y-1 py-1 px-1 max-w-[120px] mx-auto'>
+                         <Input value={editingHeaderValues.name} onChange={(e) => handleHeaderEditChange('name', e.target.value)} className="h-7 text-xs px-1 mb-0.5 w-full" placeholder='Nama' disabled={isHeaderEditingLoading}/>
                          <div className='flex items-center justify-center gap-1'>
-                             <span className="text-xs">Bobot:</span>
-                             <Input type="number" min="0.01" step="any" value={editingHeaderValues.weight} onChange={(e) => handleHeaderEditChange('weight', e.target.value)} className="h-6 w-14 text-right text-xs" placeholder='%' disabled={isHeaderEditingLoading}/>
+                             <Input type="number" min="0" step="any" value={editingHeaderValues.weight} onChange={(e) => handleHeaderEditChange('weight', e.target.value)} className="h-7 w-12 text-right text-xs px-1" placeholder='Bobot' disabled={isHeaderEditingLoading}/>
                              <span className="text-xs">%</span>
                              <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600" onClick={saveHeaderEdit} disabled={isHeaderEditingLoading} aria-label="Simpan Header">
                                  {isHeaderEditingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
@@ -183,49 +204,62 @@ export const generateGradeColumns = (
                          </div>
                      </div>
                  ) : (
-                     <div className="flex flex-col items-center space-y-1">
-                         <div className="flex items-center justify-center gap-1 flex-wrap">
-                             <span className='font-semibold'>{component.name}</span>
-                             {/* <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => onEditHeader(component)} aria-label={`Edit ${component.name}`} disabled={isAnyValueEditing}>
-                                <Pencil className="h-3 w-3" />
-                            </Button>
-                             <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive/90" onClick={() => onDeleteComponent(component.id, component.name)} aria-label={`Hapus ${component.name}`} disabled={isAnyValueEditing}>
-                                <Trash2 className="h-3 w-3" />
-                            </Button> */}
+                    <div className="text-center text-xs leading-tight flex flex-col items-center group relative py-1" style={{ minWidth: '80px' }}>
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                            <span className='font-semibold'>{component.name}</span>
+                            {/* Tombol Edit/Hapus Header (muncul saat hover jika tidak ada yg diedit) */}
+                            {!editingHeaderId && !isAnyRowEditing && (
+                                <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex bg-background border rounded shadow-sm p-0">
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-blue-600 hover:bg-blue-100" onClick={() => startHeaderEdit(component)} title={`Edit ${component.name}`}>
+                                        <Pencil className="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-5 w-5 text-red-600 hover:bg-red-100" onClick={() => handleDeleteComponent(component.id, component.name)} title={`Hapus ${component.name}`}>
+                                        <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            )}
                          </div>
-                         <span className="block text-xs text-muted-foreground font-normal">(Bobot: {component.weight}%)</span>
-                     </div>
+                        <span className="block text-muted-foreground font-normal mt-0.5">({component.weight}%)</span>
+                    </div>
                  );
             },
-            cell: GradeCell, // Gunakan komponen GradeCell
-            enableSorting: true,
+            cell: GradeCell, // Gunakan komponen GradeCell yang sudah didefinisikan
+            enableSorting: true, // Aktifkan sorting
             sortingFn: componentColumnSortingFn, // Gunakan fungsi sorting kustom
-            size: 110,
+            size: 90, // Lebar default kolom nilai komponen
+            minSize: 70, // Lebar minimum
         })),
         // Kolom Nilai Akhir
         {
             accessorKey: 'finalScore',
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Nilai Akhir" />,
-            cell: ({ row }) => { const finalScore = row.getValue('finalScore') as number | null | undefined; const displayScore = (finalScore === null || finalScore === undefined || isNaN(finalScore)) ? '-' : finalScore.toFixed(1); return <div className="text-center font-bold">{displayScore}</div>; },
+            header: ({ column }) => <DataTableColumnHeader column={column} title={`Nilai Akhir`} />, // Label NA sesuai tipe
+            cell: ({ row }) => {
+                const finalScore = row.getValue('finalScore') as number | null | undefined;
+                const displayScore = formatNumberOrDash(finalScore, 1); // 1 desimal
+                return <div className="text-center font-semibold text-sm">{displayScore}</div>; // Font sedikit lebih besar
+            },
             enableSorting: true,
-            enableColumnFilter: true, // Pastikan filter aktif
+            enableColumnFilter: true, // Aktifkan filter
             filterFn: finalScoreRangeFilter, // Terapkan fungsi filter kustom
-            size: 100,
+            size: 80, // Sesuaikan lebar
         },
         // Kolom Aksi Baris
         {
             id: 'actions',
-            header: () => <div className="text-center">Aksi</div>,
+            header: () => <div className="text-center px-1">Aksi</div>,
             cell: ({ row, table }) => {
                 const meta = table.options.meta as GradeTableMeta;
                 const isEditingThisRow = meta.editingRowId === row.original.id;
                 const isSavingThisRow = meta.isSavingRow === row.original.id;
 
+                // Jangan tampilkan aksi jika mode Edit Semua
+                if (meta.isEditingAll) { return <div className="w-[60px]"></div>; } // Placeholder lebar
+
                 return (
-                    <div className="text-center">
+                    <div className="text-center w-[60px]"> {/* Lebar tetap */}
                         {isEditingThisRow ? (
                             <div className='flex justify-center gap-0'>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600 hover:bg-green-100" onClick={() => meta.handleSaveRow(row.original.id)} disabled={isSavingThisRow} aria-label="Simpan perubahan baris">
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600 hover:bg-green-100" onClick={() => meta.handleSaveRow(row.original.id)} disabled={isSavingThisRow} aria-label="Simpan baris">
                                     {isSavingThisRow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                                 </Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-secondary" onClick={() => meta.handleCancelRow(row.original.id)} disabled={isSavingThisRow} aria-label="Batal edit baris">
@@ -233,9 +267,8 @@ export const generateGradeColumns = (
                                 </Button>
                             </div>
                         ) : (
-                             // Tampilkan tombol Edit jika tidak sedang mengedit baris ini
-                             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-gray-200"
-                                // Disable jika: mode Edit All, ada baris lain diedit, atau baris ini TERPILIH
+                             <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-secondary"
+                                // Disable jika: mode Edit All, ada baris lain diedit, atau baris ini TERPILIH (agar reset berfungsi)
                                 disabled={meta.isEditingAll || (!!meta.editingRowId && meta.editingRowId !== row.original.id) || row.getIsSelected()}
                                 onClick={() => meta.handleEditRowTrigger(row.original.id)}
                                 aria-label={`Edit nilai ${row.original.name}`}
@@ -246,7 +279,9 @@ export const generateGradeColumns = (
                     </div>
                 );
             },
-            size: 80,
+            size: 70, // Lebar kolom aksi
+            enableSorting: false,
+            enableHiding: false,
         },
     ];
     return columns;
