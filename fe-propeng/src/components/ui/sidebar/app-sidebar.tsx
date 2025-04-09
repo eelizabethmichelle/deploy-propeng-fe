@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 import type * as React from "react"
 import {
+  Newspaper,
   AudioWaveform,
   BookCheck,
   BookOpen,
@@ -122,6 +123,23 @@ const data = {
             title: "Tambah",
             icon: PlusCircle,
             url: "/admin/mata-pelajaran/tambah",
+          }
+        ],
+      },
+      {
+        title: "Manajemen Linimasa",
+        url: "#",
+        icon: Newspaper,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "/admin/linimasa",
+          },
+          {
+            title: "Tambah",
+            icon: PlusCircle,
+            url: "/admin/linimasa/tambah",
           }
         ],
       },

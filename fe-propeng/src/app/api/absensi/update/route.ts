@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { API_BASE_URL } from "@/lib/api";
 export async function POST(request: Request) {
     // Extract the JWT token from the Authorization header
     const authHeader = request.headers.get("Authorization");
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     try {
         // Verify authorization with Django backend
-        const authCheck = await fetch("http://203.194.113.127/api/auth/protected/", {
+        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Unauthorized access" }, { status: authCheck.status });
         }
 
-        const res = await fetch("http://203.194.113.127/api/absen/update-status/", {
+        const res = await fetch(`http://${API_BASE_URL}/api/absen/update-status/`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,

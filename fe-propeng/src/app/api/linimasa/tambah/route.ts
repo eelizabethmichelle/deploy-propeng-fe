@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Hardcoded backend API URL
 import { API_BASE_URL } from "@/lib/api";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // Get auth token from request headers
     const authHeader = request.headers.get("Authorization");
@@ -13,24 +11,28 @@ export async function GET(request: NextRequest) {
     
     const token = authHeader.split(" ")[1];
     
-    // Make API request to your backend using the kelas-saya endpoint
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/kelas-saya/`, {
-      method: "GET",
+    // Get request body
+    const requestData = await request.json();
+    
+    // Make API request to your backend using hardcoded URL
+    const response = await fetch(`http://${API_BASE_URL}/api/linimasa/create/`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
-      }
+      },
+      body: JSON.stringify(requestData)
     });
-    
+    console.log("requestData:", requestData);
     // Forward the response from your backend
     const data = await response.json();
     return NextResponse.json(data);
     
   } catch (error) {
-    console.error("Error fetching teacher's class:", error);
+    console.error("Gagal Membuat Kegiatan Seleksi   :", error);
     return NextResponse.json(
-      { error: "Failed to fetch teacher's class data" },
+      { error: "Gagal Membuat Kegiatan Seleksi" },
       { status: 500 }
     );
   }
-} 
+}
