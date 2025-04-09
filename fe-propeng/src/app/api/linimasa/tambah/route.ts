@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     
     // Get request body
     const requestData = await request.json();
+    console.log("requestData yang dikirim:", requestData);
     
     // Make API request to your backend using hardcoded URL
     const response = await fetch(`http://${API_BASE_URL}/api/linimasa/create/`, {
