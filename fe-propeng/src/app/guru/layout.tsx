@@ -1,4 +1,3 @@
-// src/app/admin/layout.tsx
 "use client";
 
 import React from "react";
@@ -12,9 +11,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
-// Change the export format to match Next.js layout requirements
 export default function GuruLayout({
   children,
 }: {
@@ -22,26 +24,27 @@ export default function GuruLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const hideSidebar = false; // Set a default value or handle it differently
+  const hideSidebar = false;
 
-
+  // Merged breadcrumb maps
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
     "/guru/kelas": [{ label: "Manajemen Kelas" }],
+    "/guru/kelas/absensi": [
+      { label: "Manajemen Kelas", href: "/guru/kelas" },
+      { label: "Absensi" },
+    ],
     "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
     "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/manajemennilai/inputnilai/[subjectId]": [
-      { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
-      { label: "Input Data Nilai" },
-    ],
+    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
+    "/guru/raport": [{ label: "Raport Siswa" }],
   };
 
-  // Fungsi untuk membuat breadcrumbs dinamis berdasarkan pathname
+  // Generate breadcrumbs based on current pathname
   const generateBreadcrumbs = (pathname: string): { label: string; href?: string }[] => {
     if (pathname.startsWith("/guru/manajemennilai/inputnilai/")) {
-      const subjectId = pathname.split("/").pop(); // Ambil subjectId dari URL
       return [
         { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
-        { label: `Input Data Nilai` },
+        { label: "Input Data Nilai" },
       ];
     } else if (pathname.includes("/guru/kelas/detail")) {
       return [
@@ -53,8 +56,10 @@ export default function GuruLayout({
     }
   };
 
-
-  const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
+  const handleBreadcrumbClick = (
+    href: string | undefined,
+    e: React.MouseEvent
+  ) => {
     if (!href) return;
     e.preventDefault();
     if (href === "/guru/kelas" && pathname.includes("/guru/kelas/detail")) {
@@ -63,7 +68,7 @@ export default function GuruLayout({
     router.push(href);
   };
 
-  const breadcrumbs = generateBreadcrumbs(pathname); // Menggunakan fungsi generateBreadcrumbs
+  const breadcrumbs = generateBreadcrumbs(pathname);
 
   return (
     <SidebarProvider>
@@ -73,7 +78,6 @@ export default function GuruLayout({
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            {/* Render breadcrumbs directly next to sidebar icon */}
             {breadcrumbs.length > 0 && (
               <Breadcrumb>
                 <BreadcrumbList>
@@ -84,7 +88,9 @@ export default function GuruLayout({
                         {breadcrumb.href ? (
                           <a
                             href={breadcrumb.href}
-                            onClick={(e) => handleBreadcrumbClick(breadcrumb.href, e)}
+                            onClick={(e) =>
+                              handleBreadcrumbClick(breadcrumb.href, e)
+                            }
                             className="text-sm font-medium text-muted-foreground hover:text-foreground"
                           >
                             {breadcrumb.label}
@@ -100,9 +106,7 @@ export default function GuruLayout({
             )}
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

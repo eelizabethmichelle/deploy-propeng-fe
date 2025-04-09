@@ -5,6 +5,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
@@ -40,9 +42,8 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
 
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [namaKomponen, setNamaKomponen] = useState(data?.namaKomponen ?? "");
-  const [bobotKomponen, setBobotKomponen] = useState(
-    data?.bobotKomponen?.toString() ?? ""
-  );
+  const [bobotKomponen, setBobotKomponen] = useState(data?.bobotKomponen?.toString() ?? "");
+  const [tipeKomponen, setTipeKomponen] = useState(data?.tipeKomponen?.toString() ?? "");
 
   useEffect(() => {
     setAccessToken(
@@ -131,31 +132,76 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
       </DropdownMenu>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Ubah Komponen</DialogTitle>
+            <DialogTitle>Ubah Komponen Penilaian</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
-              placeholder="Nama Komponen"
-              value={namaKomponen}
-              onChange={(e) => setNamaKomponen(e.target.value)}
-            />
-            <Input
-              type="number"
-              placeholder="Bobot Komponen (%)"
-              value={bobotKomponen}
-              onChange={(e) => setBobotKomponen(e.target.value)}
-            />
+            <div className="flex flex-col space-y-1">
+              <label htmlFor="nama-komponen" className="text-sm font-medium">
+                Nama Komponen
+              </label>
+              <Input
+                id="nama-komponen"
+                name="namaKomponen"
+                placeholder="Contoh: Ulangan Harian 1"
+                value={namaKomponen}
+                onChange={(e) => {
+                  const input = e.target.value;
+                  const formatted = input
+                    .toLowerCase()
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ");
+                  setNamaKomponen(formatted);
+                }}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-1">
+              <label htmlFor="bobot-komponen" className="text-sm font-medium">
+                Bobot Komponen (%)
+              </label>
+              <Input
+                id="bobot-komponen"
+                name="bobotKomponen"
+                type="number"
+                placeholder="Contoh: 15"
+                value={bobotKomponen}
+                onChange={(e) => setBobotKomponen(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col space-y-2 pt-2">
+              <label className="text-sm font-medium">Tipe Komponen</label>
+              <RadioGroup
+                name="jenisKomponen"
+                value={tipeKomponen}
+                className="flex space-x-4"
+                disabled
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Pengetahuan" id="pengetahuan" />
+                  <label htmlFor="pengetahuan" className="text-sm">
+                    Pengetahuan
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Keterampilan" id="keterampilan" />
+                  <label htmlFor="keterampilan" className="text-sm">
+                    Keterampilan
+                  </label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
+
           <DialogFooter className="pt-4">
-            <Button
-              variant="secondary"
-              onClick={() => setEditDialogOpen(false)}
-              disabled={loading}
-            >
-              Kembali
-            </Button>
+            <DialogClose asChild>
+              <Button variant="secondary" disabled={loading}>
+                Kembali
+              </Button>
+            </DialogClose>
             <Button onClick={handleEditSave} disabled={loading}>
               {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </Button>

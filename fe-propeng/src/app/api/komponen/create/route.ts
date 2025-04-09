@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { namaKomponen, bobotKomponen, mataPelajaran } = await request.json();
+        const { namaKomponen, bobotKomponen, tipeKomponen, mataPelajaran } = await request.json();
 
         const res = await fetch(`http://${API_BASE_URL}/api/komponen/create/`, {
             method: "POST",
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ namaKomponen, bobotKomponen, mataPelajaran }),
+            body: JSON.stringify({ namaKomponen, bobotKomponen, tipeKomponen, mataPelajaran }),
         });
 
         const data = await res.json();

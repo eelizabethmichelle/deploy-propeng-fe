@@ -506,7 +506,7 @@ export default function ProfilePageTeacher({ user_id }: { user_id: number }) {
 
             <div 
               className={`${styles.cardBase} cursor-pointer hover:bg-gray-50 transition-colors`}
-              onClick={() => router.push('/teacher/kelas')}
+              onClick={() => router.push('/guru/kelas')}
             >
               <div className={styles.iconWrapperYellow}>
                 <CalendarCheck className="w-6 h-6 text-[#FFCB04]" />
