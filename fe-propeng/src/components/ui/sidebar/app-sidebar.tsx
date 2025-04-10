@@ -147,13 +147,17 @@ const data = {
     teacher: [
       {
         title: "Manajemen Kelas",
-        url: "/teacher/kelas",
+        url: "/guru/kelas",
         icon: School,
         isActive: true,
         items: [
           {
             title: "Lihat kelas",
-            url: "/teacher/kelas/",
+            url: "/guru/kelas/absensi",
+          },
+          {
+            title: "Lihat Rekap Nilai",
+            url: "/guru/kelas/rekap-nilai",
           }
         ],
       },
@@ -165,12 +169,7 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "#",
-          },
-          {
-            title: "Tambah",
-            icon: PlusCircle,
-            url: "#",
+            url: "/guru/mata-pelajaran/",
           }
         ],
       },
