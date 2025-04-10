@@ -604,7 +604,7 @@ export default function Page() {
                         onClick={() => {
                           setIsCodeGenerated(false);
                           setExpiryTime(0);
-                          generateAttendanceCode(classData.id);
+                          generateAttendanceCode();
                         }}
                         className="w-full bg-[#05218E] hover:bg-[#041E75] text-white font-bold py-2 px-3 rounded-lg"
                         disabled={expiryTime > 0}
