@@ -33,6 +33,7 @@ interface DataTableProps<TData, TValue> {
   mataPelajaran: String;
   reloadTrigger: number;
   triggerReload: () => void;
+  title: String;
 }
 
 export function DataTableKomponen<TData, TValue>({
@@ -41,6 +42,7 @@ export function DataTableKomponen<TData, TValue>({
   mataPelajaran,
   reloadTrigger,
   triggerReload,
+  title,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -74,7 +76,7 @@ export function DataTableKomponen<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table as any} mataPelajaran={mataPelajaran} reloadTrigger={reloadTrigger} triggerReload={triggerReload}/>
+      <DataTableToolbar table={table as any} mataPelajaran={mataPelajaran} reloadTrigger={reloadTrigger} triggerReload={triggerReload} title={title}/>
       <div className="overflow-y-auto rounded-md border">
         <Table>
           <TableHeader>

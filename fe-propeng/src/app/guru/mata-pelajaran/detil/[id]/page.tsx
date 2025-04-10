@@ -11,14 +11,30 @@ import { columns } from "@/components/ui/dt-lihat-matpel-detil-guru/columns";
 import { komponenColumns } from "@/components/ui/dt-lihat-komponen/columns";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+
+const TotalBobotInfo = ({ totalBobot, tipe }: { totalBobot: number, tipe: String }) => (
+    <div
+      className={`mt-2 inline-flex items-start gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm border ${
+        totalBobot === 100
+          ? "bg-green-100 text-green-700 border-green-300"
+          : "bg-yellow-100 text-yellow-800 border-yellow-300"
+      }`}
+    >
+      {totalBobot === 100 ? (
+        <Check className="h-4 w-4 mt-0.5" />
+      ) : (
+        <AlertTriangle className="h-4 w-4 mt-0.5" />
+      )}
+      <div>
+        Total Bobot Komponen Penilaian {tipe}: {totalBobot}%
+        {totalBobot !== 100 && (
+          <div className="text-sm font-normal italic">
+            Pastikan jumlah bobot = 100%
+          </div>
+        )}
+      </div>
+    </div>
+  );  
 
 const customToast = {
     success: (title: string, description: string) => {
@@ -47,11 +63,11 @@ export default function MatpelDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [komponenList, setKomponenList] = useState<any[]>([]);
+    const [komponenPengetahuan, setKomponenPengetahuan] = useState<any[]>([]);
+    const [komponenKeterampilan, setKomponenKeterampilan] = useState<any[]>([]);
     const [reloadTrigger, setReloadTrigger] = useState(0);
-    const totalBobot = komponenList.reduce((sum, item) => sum + Number(item.bobotKomponen || 0), 0);
-    const isValidBobot = totalBobot === 100;
-
+    const totalBobotPengetahuan = komponenPengetahuan.reduce((sum, item) => sum + Number(item.bobotKomponen || 0), 0);
+    const totalBobotKeterampilan = komponenKeterampilan.reduce((sum, item) => sum + Number(item.bobotKomponen || 0), 0);
 
     const triggerReload = () => {
         setReloadTrigger(prev => prev + 1);
@@ -141,12 +157,25 @@ export default function MatpelDetailPage() {
                 const result = await response.json();
 
                 if (response.ok && result.status === 200) {
-                    const komponenMapped = result.data.map((item: any) => ({
-                        id: item.id,
-                        namaKomponen: item.namaKomponen,
-                        bobotKomponen: item.bobotKomponen,
+                    const komponenPengetahuanMapped = result.data
+                        .filter((item: any) => item.tipeKomponen === "Pengetahuan")
+                        .map((item: any) => ({
+                            id: item.id,
+                            namaKomponen: item.namaKomponen,
+                            bobotKomponen: item.bobotKomponen,
+                            tipeKomponen: item.tipeKomponen
                     }));
-                    setKomponenList(komponenMapped);
+                    setKomponenPengetahuan(komponenPengetahuanMapped);
+
+                    const komponenKeterampilanMapped = result.data
+                        .filter((item: any) => item.tipeKomponen === "Keterampilan")
+                        .map((item: any) => ({
+                            id: item.id,
+                            namaKomponen: item.namaKomponen,
+                            bobotKomponen: item.bobotKomponen,
+                            tipeKomponen: item.tipeKomponen
+                    }));
+                    setKomponenKeterampilan(komponenKeterampilanMapped);
                 } else {
                     throw new Error(result.message || "Gagal mengambil komponen penilaian");
                 }
@@ -186,41 +215,35 @@ export default function MatpelDetailPage() {
             </p>
 
             {/* KOMPONEN PENILAIAN */}
-            <div className="space-y-4">
-                <DataTableKomponen 
-                    data={komponenList} 
-                    columns={komponenColumns({
-                        reloadTrigger,
-                        triggerReload,
-                    })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Table 1 */}
+                <div className="space-y-4">
+                    <DataTableKomponen 
+                    data={komponenPengetahuan} 
+                    columns={komponenColumns({ reloadTrigger, triggerReload })}
                     mataPelajaran={matpelId as string}
                     reloadTrigger={reloadTrigger}
                     triggerReload={triggerReload}
-                />
-                {/* TOTAL BOBOT KOMPONEN */}
-                <div
-                    className={`mt-2 inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium shadow-sm border ${
-                        totalBobot === 100
-                        ? "bg-green-100 text-green-700 border-green-300"
-                        : "bg-yellow-100 text-yellow-800 border-yellow-300"
-                    }`}
-                    >
-                    {totalBobot === 100 ? (
-                        <Check className="h-4 w-4" />
-                    ) : (
-                        <AlertTriangle className="h-4 w-4" />
-                    )}
-                    <div>
-                        Total Bobot Komponen: {totalBobot}%
-                        {totalBobot !== 100 && (
-                        <div className="text-sm font-normal italic">
-                            Pastikan jumlah bobot = 100%
-                        </div>
-                        )}
-                    </div>
+                    title={"Pengetahuan"}
+                    />
+                    <TotalBobotInfo totalBobot={totalBobotPengetahuan} tipe={"Pengetahuan"}/>
+                </div>
+
+                {/* Table 2 */}
+                <div className="space-y-4">
+                    <DataTableKomponen 
+                    data={komponenKeterampilan} 
+                    columns={komponenColumns({ reloadTrigger, triggerReload })}
+                    mataPelajaran={matpelId as string}
+                    reloadTrigger={reloadTrigger}
+                    triggerReload={triggerReload}
+                    title={"Keterampilan"}
+                    />
+                    <TotalBobotInfo totalBobot={totalBobotKeterampilan} tipe={"Keterampilan"}/>
                 </div>
             </div>
 
+            <h2 className="text-xl font-semibold">Daftar Siswa</h2>
             {/* SISWA */}
             <div className="flex items-center justify-between">
                 <Input

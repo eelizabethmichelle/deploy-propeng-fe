@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from "next/navigation";
 import Image from 'next/image';
 
 import type * as React from "react"
@@ -195,6 +196,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [role, setRole] = useState<string | null>(null);
   const [user_id, setUserId] = useState<number | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const router = useRouter();
 
   const fetchProfile = async (userId: number) => {
       try {
@@ -208,7 +210,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch profile");
+        if (!response.ok) {
+          router.push("/login")
+          throw new Error("Failed to fetch profile");
+        }
 
         const data = await response.json();
         console.log("Fetched profile:", data.data);
