@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CalendarCheck, CheckSquare, GraduationCap, Info, Check, CheckCircle, Clock, X, XCircle, MousePointerClick } from "lucide-react";
+import { CalendarCheck, CheckSquare, GraduationCap, Info, Check, CheckCircle, Clock, X, XCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -112,45 +112,6 @@ export default function Page() {
     }
   };
 
-  const generateAttendanceCode = async () => {
-    if (!classData) {
-      customToast.error("Gagal", "Data kelas tidak ditemukan");
-      return;
-    }
-  
-    try {
-      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-      
-      const response = await fetch(`/api/kelas/kode`, { 
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken} Id ${classData.id}`,
-        },
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Gagal membuat kode absen");
-      }
-      
-      setAttendanceCode(data.data.kode);
-      setExpiryTime(300);
-      setIsCodeGenerated(true);
-      
-      customToast.success(
-        "Berhasil",
-        "Kode absen berhasil dibuat"
-      );
-    } catch (error: any) {
-      customToast.error(
-        "Gagal",
-        error.message || "Gagal membuat kode absen"
-      );
-    }
-  };
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -235,6 +196,62 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  const generateAttendanceCode = async () => {
+    if (!classData) {
+      customToast.error("Gagal", "Data kelas tidak ditemukan");
+      return;
+    }
+
+    try {
+      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      
+      const response = await fetch(`/api/kelas/kode`, { 
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken} Id ${classData.id}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal membuat kode absen");
+      }
+      
+      setAttendanceCode(data.data.kode);
+      setExpiryTime(29);
+      setIsCodeGenerated(true);
+      
+      customToast.success(
+        "Berhasil",
+        "Kode absen berhasil dibuat"
+      );
+    } catch (error: any) {
+      customToast.error(
+        "Gagal",
+        error.message || "Gagal membuat kode absen"
+      );
+    }
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (expiryTime > 0) {
+      timer = setInterval(() => {
+        setExpiryTime(prev => {
+          const newValue = prev - 1;
+          if (newValue <= 0) {
+            setIsCodeGenerated(false);
+          }
+          return newValue;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [expiryTime]);
+
 
   const fetchAttendanceData = async () => {
     if (!classData) return;
@@ -504,14 +521,14 @@ export default function Page() {
         icon = <Clock size={14} />;
         break;
       case 'Alfa':
-        bgColor = "bg-[#9B51E0] text-white";
+        bgColor = "bg-[#F06480] text-white";
         icon = <X size={14} />;
         break;
     }
     
     return (
       <div 
-        className={`${baseClasses} ${bgColor} ${isSelected ? "ring-2 ring-blue-500" : "hover:opacity-90"} flex items-center justify-center`}
+        className={`${baseClasses} ${bgColor} ${isSelected ? "ring-2 ring-blue-500" : "hover:opacity-90"}`}
         onClick={(e) => {
           e.stopPropagation();
           toggleCellSelection(studentId, date);
@@ -526,27 +543,15 @@ export default function Page() {
           });
         }}
       >
-        {icon && <span className="flex items-center justify-center">{icon}</span>}
+        {icon && <span className="mr-1">{icon}</span>}
+        {displayDate}
       </div>
     );
   };
 
   const formatDateHeader = (dateString: string) => {
     const date = new Date(dateString);
-    const displayDate = date.getDate().toString().padStart(2, '0');
-    const isAllSelected = students.length > 0 && students.every(student => 
-      selectedCells.some(cell => cell.studentId === student.id && cell.date === dateString)
-    );
-
-    return (
-      <div className="flex flex-col items-center gap-1 w-full h-full">
-        <div className="text-xs font-medium text-white bg-[#586FC0] py-0.5 px-1 rounded-md w-full text-center">{displayDate}</div>
-        <MousePointerClick 
-          size={16} 
-          className={`${isAllSelected ? "text-blue-500" : "text-gray-400"} transition-colors`}
-        />
-      </div>
-    );
+    return date.getDate().toString().padStart(2, '0');
   };
 
   if (loading) {
@@ -581,7 +586,7 @@ export default function Page() {
         <Tabs defaultValue="attendance" className="w-full">
           <TabsList className="bg-white border border-[#E6E9F4] rounded-lg p-1">
             <TabsTrigger value="todo" className="data-[state=active]:bg-[#F7F8FF] rounded-md">To Do</TabsTrigger>
-            {/* <TabsTrigger value="grades" className="data-[state=active]:bg-[#F7F8FF] rounded-md">Rekap Nilai</TabsTrigger> */}
+            <TabsTrigger value="grades" className="data-[state=active]:bg-[#F7F8FF] rounded-md">Rekap Nilai</TabsTrigger>
             <TabsTrigger value="attendance" className="data-[state=active]:bg-[#F7F8FF] rounded-md">Rekap Kehadiran Peserta</TabsTrigger>
           </TabsList>
 
@@ -601,13 +606,8 @@ export default function Page() {
                     <div className="border border-[#E6E9F4] rounded-lg p-6 flex flex-col items-center gap-2 max-w-xl">
                       <p className="text-[#051E81] text-base">Buat Kode Absen</p>
                       <Button 
-                        onClick={() => {
-                          setIsCodeGenerated(false);
-                          setExpiryTime(0);
-                          generateAttendanceCode(classData.id);
-                        }}
+                        onClick={generateAttendanceCode}
                         className="w-full bg-[#05218E] hover:bg-[#041E75] text-white font-bold py-2 px-3 rounded-lg"
-                        disabled={expiryTime > 0}
                       >
                         Generate
                       </Button>
@@ -620,6 +620,17 @@ export default function Page() {
                         <p className="text-[#374DA5] text-xl font-normal">{attendanceCode}</p>
                       </div>
                       <p className="text-sm text-[#88888C]">*expiring in {expiryTime}s</p>
+          <Button
+                        onClick={() => {
+                          setIsCodeGenerated(false);
+                          setExpiryTime(0);
+                          generateAttendanceCode();
+                        }}
+                        className="w-full bg-[#05218E] hover:bg-[#041E75] text-white font-bold py-2 px-3 rounded-lg"
+                        disabled={expiryTime > 0}
+                      >
+                        Buat kembali
+          </Button>
                     </div>
                   </div>
                 )}
@@ -688,7 +699,7 @@ export default function Page() {
                           <span className="text-sm">Sakit</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#9B51E0] rounded"></div>
+                          <div className="w-6 h-6 bg-[#F06480] rounded"></div>
                           <span className="text-sm">Alfa</span>
                         </div>
                         <div className="flex items-center gap-2">
