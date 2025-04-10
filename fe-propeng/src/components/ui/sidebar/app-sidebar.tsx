@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from "next/navigation";
 import Image from 'next/image';
 
 import type * as React from "react"
@@ -147,13 +148,13 @@ const data = {
     teacher: [
       {
         title: "Manajemen Kelas",
-        url: "/teacher/kelas",
+        url: "#",
         icon: School,
         isActive: true,
         items: [
           {
             title: "Lihat kelas",
-            url: "/teacher/kelas/",
+            url: "/guru/kelas",
           }
         ],
       },
@@ -165,12 +166,7 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "#",
-          },
-          {
-            title: "Tambah",
-            icon: PlusCircle,
-            url: "#",
+            url: "/guru/mata-pelajaran",
           }
         ],
       },
@@ -196,6 +192,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [role, setRole] = useState<string | null>(null);
   const [user_id, setUserId] = useState<number | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const router = useRouter();
 
   const fetchProfile = async (userId: number) => {
       try {
@@ -209,7 +206,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch profile");
+        if (!response.ok) {
+          router.push("/login")
+          throw new Error("Failed to fetch profile");
+        }
 
         const data = await response.json();
         console.log("Fetched profile:", data.data);
