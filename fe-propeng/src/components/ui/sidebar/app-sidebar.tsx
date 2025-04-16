@@ -153,7 +153,7 @@ const data = {
         isActive: true,
         items: [
           {
-            title: "Lihat kelas",
+            title: "Mengelola Absensi",
             url: "/guru/kelas/absensi",
           },
           {
