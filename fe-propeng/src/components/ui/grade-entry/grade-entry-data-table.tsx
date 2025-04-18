@@ -21,19 +21,19 @@ import { generateGradeColumns } from './grade-entry-columns'; // Sesuaikan path
 import { RotateCcw, Loader2 } from 'lucide-react';
 import { useCallback } from 'react'; // useCallback sudah diimpor oleh React by default
 
-// --- Interface Prop (Sudah Diperbaiki) ---
+// --- Interface Prop (scoreType DIHAPUS) ---
 interface GradeEntryDataTableProps {
     students: Student[] | undefined | null;
     assessmentComponents: AssessmentComponent[] | undefined | null;
     initialGrades: GradesState;
-    scoreType: 'pengetahuan' | 'keterampilan'; // Prop scoreType
+    // scoreType: 'pengetahuan' | 'keterampilan'; // <-- DIHAPUS
     subjectId: string;
     subjectName?: string;
-    onSaveSingleGrade: ( // Signature sudah benar
+    onSaveSingleGrade: ( // Signature onSaveSingleGrade DIUPDATE
         studentId: string,
         componentId: string,
-        score: number | null,
-        scoreType: 'pengetahuan' | 'keterampilan'
+        score: number | null
+        // Hapus scoreType dari sini
     ) => Promise<void>;
     onDeleteComponent?: (componentId: string, componentName: string) => void;
     onUpdateComponent?: (updatedComponent: AssessmentComponent) => Promise<void>;
@@ -43,13 +43,13 @@ export function GradeEntryDataTable({
     students,
     assessmentComponents,
     initialGrades = {},
-    scoreType, // Terima prop scoreType
+    // scoreType, // <-- DIHAPUS dari parameter
     subjectId,
     subjectName,
-    onSaveSingleGrade,
+    onSaveSingleGrade, // Callback diterima tanpa scoreType
     onDeleteComponent = () => { console.warn("onDeleteComponent not provided"); },
     onUpdateComponent = async () => { console.warn("onUpdateComponent not provided"); },
-}: GradeEntryDataTableProps) {
+}: GradeEntryDataTableProps) { // Hapus scoreType dari destructuring
 
     // State lokal (Sama)
     const [grades, setGrades] = React.useState<GradesState>(initialGrades);
@@ -67,14 +67,14 @@ export function GradeEntryDataTable({
     const [isHeaderEditingLoading, setIsHeaderEditingLoading] = React.useState(false);
     const [isResetting, setIsResetting] = React.useState(false);
 
-    // Effect sinkronisasi data dari props (Sama)
+    // Effect sinkronisasi data dari props (Hapus referensi scoreType)
     React.useEffect(() => {
-        console.log(`[DataTable ${scoreType}] Syncing state with initialGrades prop.`);
+        console.log(`[DataTable] Syncing state with initialGrades prop.`); // Hapus scoreType dari log
         const initialDataFromProp = initialGrades || {};
         setGrades(initialDataFromProp);
         setOriginalLoadedGrades(JSON.parse(JSON.stringify(initialDataFromProp)));
         setEditingRowId(null); setRowSelection({}); setIsEditingAll(false); setEditingHeaderId(null);
-    }, [initialGrades, students, assessmentComponents, scoreType]);
+    }, [initialGrades, students, assessmentComponents]); // Hapus scoreType dependency
 
     // --- Opsi Filter (Sama) ---
     const nameFilterOptions = React.useMemo<FilterOption[]>(() => {
@@ -129,6 +129,8 @@ export function GradeEntryDataTable({
                     weightSumForStudent += compWeight;
                 }
             });
+            // Perhitungan nilai akhir mungkin perlu disesuaikan jika bobot tidak 100%
+            // Untuk sekarang, asumsi bobot komponen yang relevan adalah pembaginya
             const calculatedFinalScore = weightSumForStudent > 0 ? (scoreTimesWeightSum / weightSumForStudent) : null;
 
             return {
@@ -138,7 +140,7 @@ export function GradeEntryDataTable({
         }).filter((item): item is GradeTableRowData => item !== null);
     }, [students, assessmentComponents, grades]);
 
-    // --- Handlers Sederhana (sebelum deklarasi table) ---
+    // --- Handlers Sederhana (Sama) ---
     const handleGradeChange = useCallback((studentId: string, componentId: string, value: string) => {
         const numericValue = value.trim() === '' ? null : Number(value);
         let finalValue = numericValue;
@@ -166,32 +168,39 @@ export function GradeEntryDataTable({
     }, [editingRowId, handleCancelRow]);
 
     const startHeaderEdit = useCallback((component: AssessmentComponent) => { setEditingHeaderId(component.id); setEditingHeaderValues({ name: component.name, weight: component.weight.toString() }); }, []);
-    const handleDeleteComponent = useCallback((id: string, name: string) => { onDeleteComponent(id, name); }, [onDeleteComponent]);
+    const handleDeleteComponent = useCallback((id: string, name: string) => { if(onDeleteComponent) onDeleteComponent(id, name); }, [onDeleteComponent]);
     const cancelHeaderEdit = useCallback(() => { setEditingHeaderId(null); setEditingHeaderValues({ name: '', weight: '' }); }, []);
     const handleHeaderEditChange = useCallback((field: 'name' | 'weight', value: string) => { setEditingHeaderValues(prev => ({ ...prev, [field]: value })); }, []);
     const saveHeaderEdit = useCallback(async () => {
         const currentComponentsSafe = Array.isArray(assessmentComponents) ? assessmentComponents : [];
-        if (!editingHeaderId) return; const comp = currentComponentsSafe.find(c => c.id === editingHeaderId); if (!comp) return; const { name, weight } = editingHeaderValues; if (!name?.trim() || !weight?.trim()) { toast.error("Nama & Bobot wajib"); return; } const weightValue = parseFloat(weight); if (isNaN(weightValue) || weightValue <= 0) { toast.error("Bobot harus > 0."); return; } if (name.trim() === comp.name && weightValue === comp.weight) { cancelHeaderEdit(); return; } setIsHeaderEditingLoading(true); try { await onUpdateComponent({ ...comp, name: name.trim(), weight: weightValue }); toast.success(`Komponen diperbarui.`); cancelHeaderEdit(); } catch (err) { toast.error(`Gagal update header: ${err instanceof Error ? err.message : 'Error'}`); } finally { setIsHeaderEditingLoading(false); }
+        if (!editingHeaderId) return; const comp = currentComponentsSafe.find(c => c.id === editingHeaderId); if (!comp) return; const { name, weight } = editingHeaderValues; if (!name?.trim() || !weight?.trim()) { toast.error("Nama & Bobot wajib"); return; } const weightValue = parseFloat(weight); if (isNaN(weightValue) || weightValue <= 0) { toast.error("Bobot harus > 0."); return; } if (name.trim() === comp.name && weightValue === comp.weight) { cancelHeaderEdit(); return; } setIsHeaderEditingLoading(true); try { if(onUpdateComponent) await onUpdateComponent({ ...comp, name: name.trim(), weight: weightValue }); toast.success(`Komponen diperbarui.`); cancelHeaderEdit(); } catch (err) { toast.error(`Gagal update header: ${err instanceof Error ? err.message : 'Error'}`); } finally { setIsHeaderEditingLoading(false); }
     }, [editingHeaderId, editingHeaderValues, assessmentComponents, onUpdateComponent, cancelHeaderEdit]);
 
     const handleEditAllTrigger = useCallback(() => { setEditingRowId(null); setRowSelection({}); setIsEditingAll(true); toast.info("Mode Edit Semua Aktif"); }, []);
     const handleCancelAllEdit = useCallback(() => { setGrades(originalLoadedGrades); setIsEditingAll(false); setEditingRowId(null); toast.info("Mode Edit Semua dibatalkan."); }, [originalLoadedGrades]);
 
-    // --- Definisi Kolom Tabel (sebelum deklarasi table) ---
+    // --- Definisi Kolom Tabel (Hapus scoreType dari pemanggilan generateGradeColumns) ---
     const columns = React.useMemo<ColumnDef<GradeTableRowData>[]>(() => {
         const currentComponentsSafe = Array.isArray(assessmentComponents) ? assessmentComponents : [];
-        // Pastikan generateGradeColumns di file lain sudah menerima 12 argumen
-        // !!! INGAT UNTUK UPDATE DEFINISI generateGradeColumns !!!
+        // Panggil generateGradeColumns dengan 11 argumen (tanpa scoreType)
+        // !!! PASTIKAN ANDA JUGA MENGEDIT FILE grade-entry-columns.ts !!!
         return generateGradeColumns(
-                currentComponentsSafe, grades, startHeaderEdit, handleDeleteComponent,
-                editingHeaderId, editingHeaderValues, handleHeaderEditChange, saveHeaderEdit,
-                cancelHeaderEdit, isHeaderEditingLoading, !!editingRowId || isEditingAll,
-                scoreType // Argumen ke-12
+                currentComponentsSafe,
+                grades, // Kirim state grades saat ini
+                startHeaderEdit,
+                handleDeleteComponent,
+                editingHeaderId,
+                editingHeaderValues,
+                handleHeaderEditChange,
+                saveHeaderEdit,
+                cancelHeaderEdit,
+                isHeaderEditingLoading,
+                !!editingRowId || isEditingAll
+                // Hapus scoreType dari sini
         );
-    }, [ assessmentComponents, grades, startHeaderEdit, handleDeleteComponent, editingHeaderId, editingHeaderValues, handleHeaderEditChange, saveHeaderEdit, cancelHeaderEdit, isHeaderEditingLoading, editingRowId, isEditingAll, scoreType ]);
+    }, [ assessmentComponents, grades, startHeaderEdit, handleDeleteComponent, editingHeaderId, editingHeaderValues, handleHeaderEditChange, saveHeaderEdit, cancelHeaderEdit, isHeaderEditingLoading, editingRowId, isEditingAll ]); // Hapus scoreType dependency
 
-
-    // --- PINDAHKAN DEKLARASI TABLE KE SINI ---
+    // --- Deklarasi Table (Sama) ---
     const table = useReactTable<GradeTableRowData>({
         data: tableData,
         columns,
@@ -215,16 +224,15 @@ export function GradeEntryDataTable({
             handleGradeChange,
             handleEditRowTrigger,
             handleCancelRow,
-            // Bungkus handleSaveRow dalam fungsi anonim untuk memastikan scope `this` tidak masalah (meskipun tidak pakai this)
-            // dan untuk memastikan fungsi ini konsisten dengan tipe di GradeTableMeta
+            // Pastikan signature handleSaveRow di meta cocok
             handleSaveRow: (rowId: string) => handleSaveRow(rowId),
         } as GradeTableMeta // Pastikan tipe GradeTableMeta sesuai
     });
     // ------------------------------------------
 
-    // --- Handlers Kompleks (setelah deklarasi table) ---
+    // --- Handlers Kompleks (Hapus referensi scoreType) ---
 
-    // handleSaveRow (Sudah diperbaiki)
+    // handleSaveRow (Sudah Disesuaikan)
     const handleSaveRow = useCallback(async (rowId: string) => {
         const currentStudents = Array.isArray(students) ? students : [];
         const currentComponents = Array.isArray(assessmentComponents) ? assessmentComponents : [];
@@ -243,26 +251,28 @@ export function GradeEntryDataTable({
             const initialGrade = studentInitialGrades[componentId] ?? null;
             const hasChanged = JSON.stringify(currentGrade) !== JSON.stringify(initialGrade);
             if (hasChanged) {
-                if (currentGrade !== null && (isNaN(currentGrade) || currentGrade < 0 || currentGrade > 100)) { toast.error(`Nilai ${c.name} (${student.name}) tidak valid (0-100 atau kosong).`); validationError = true; return; } // Hentikan forEach jika error
+                if (currentGrade !== null && (isNaN(currentGrade) || currentGrade < 0 || currentGrade > 100)) { toast.error(`Nilai ${c.name} (${student.name}) tidak valid (0-100 atau kosong).`); validationError = true; return; }
                 changesCount++;
-                console.log(`[SaveRow ${scoreType}] Change detected: St:${rowId}, Comp:${componentId}, Score:${currentGrade}`);
-                promises.push(onSaveSingleGrade(rowId, componentId, currentGrade, scoreType));
+                console.log(`[SaveRow] Change detected: St:${rowId}, Comp:${componentId}, Score:${currentGrade}`); // Hapus scoreType dari log
+                // Panggil onSaveSingleGrade tanpa scoreType
+                promises.push(onSaveSingleGrade(rowId, componentId, currentGrade));
             }
         });
 
         if (validationError) { setIsSavingRow(null); return; }
-        if (changesCount === 0) { toast.info(`Tidak ada perubahan nilai ${scoreType} untuk ${student.name}.`); setIsSavingRow(null); setEditingRowId(null); return; }
+        if (changesCount === 0) { toast.info(`Tidak ada perubahan nilai untuk ${student.name}.`); setIsSavingRow(null); setEditingRowId(null); return; } // Hapus scoreType dari pesan
 
         try {
             await Promise.all(promises);
-            toast.success(`Nilai ${student.name} (${scoreType}) berhasil disimpan.`);
+            toast.success(`Nilai ${student.name} berhasil disimpan.`); // Hapus scoreType dari pesan
+            // Update originalLoadedGrades (sama)
             setOriginalLoadedGrades(prevOrig => { const newOrig = JSON.parse(JSON.stringify(prevOrig)); newOrig[rowId] = { ...(newOrig[rowId] || {}), ...studentCurrentGrades }; return newOrig; });
             setEditingRowId(null);
-        } catch (error) { console.error(`[SaveRow ${scoreType}] Error saving for ${rowId}:`, error); /* Toast error sudah di handle di page.tsx */ }
+        } catch (error) { console.error(`[SaveRow] Error saving for ${rowId}:`, error); /* Toast error sudah di handle di page.tsx */ }
         finally { setIsSavingRow(null); }
-    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade, scoreType]); // <-- scoreType dependency
+    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade]); // Hapus scoreType dependency
 
-    // handleSaveAllChanges (Sudah diperbaiki)
+    // handleSaveAllChanges (Sudah Disesuaikan)
     const handleSaveAllChanges = useCallback(async () => {
         const currentStudents = Array.isArray(students) ? students : [];
         const currentComponents = Array.isArray(assessmentComponents) ? assessmentComponents : [];
@@ -272,39 +282,48 @@ export function GradeEntryDataTable({
         const changesToSave: { studentId: string; componentId: string; score: number | null; studentName: string; componentName: string }[] = [];
         let validationError = false; let saveErrors: { studentName: string; componentName: string; message: string }[] = [];
 
+        // Loop validasi (sama)
         for (const student of currentStudents) {
-            if (!student?.id) continue; const studentId = student.id; const studentCurrentGrades = grades[studentId] || {}; const studentInitialGrades = originalLoadedGrades[studentId] || {}; let studentHasChanges = false;
-            for (const component of currentComponents) {
-                if (!component?.id) continue; const compId = component.id; const current = studentCurrentGrades[compId] ?? null; const initial = studentInitialGrades[compId] ?? null; const hasChanged = JSON.stringify(current) !== JSON.stringify(initial);
-                if (hasChanged) {
-                    if (current !== null && (isNaN(Number(current)) || Number(current) < 0 || Number(current) > 100)) { toast.error(`Nilai ${component.name} (${student.name}) tidak valid.`); validationError = true; break; }
-                    changesToSave.push({ studentId, componentId: compId, score: current, studentName: student.name, componentName: component.name }); studentHasChanges = true;
-                }
-            } if (validationError) break; if (studentHasChanges) { studentsWithChanges[studentId] = { ...studentCurrentGrades }; }
+             if (!student?.id) continue; const studentId = student.id; const studentCurrentGrades = grades[studentId] || {}; const studentInitialGrades = originalLoadedGrades[studentId] || {}; let studentHasChanges = false;
+             for (const component of currentComponents) {
+                 if (!component?.id) continue; const compId = component.id; const current = studentCurrentGrades[compId] ?? null; const initial = studentInitialGrades[compId] ?? null; const hasChanged = JSON.stringify(current) !== JSON.stringify(initial);
+                 if (hasChanged) {
+                     if (current !== null && (isNaN(Number(current)) || Number(current) < 0 || Number(current) > 100)) { toast.error(`Nilai ${component.name} (${student.name}) tidak valid.`); validationError = true; break; }
+                     changesToSave.push({ studentId, componentId: compId, score: current, studentName: student.name, componentName: component.name }); studentHasChanges = true;
+                 }
+             } if (validationError) break; if (studentHasChanges) { studentsWithChanges[studentId] = { ...studentCurrentGrades }; }
         }
         if (validationError) { setIsSavingAll(false); return; }
-        if (changesToSave.length === 0) { toast.info(`Tidak ada perubahan nilai ${scoreType} untuk disimpan.`); setIsSavingAll(false); setIsEditingAll(false); return; }
+        if (changesToSave.length === 0) { toast.info(`Tidak ada perubahan nilai untuk disimpan.`); setIsSavingAll(false); setIsEditingAll(false); return; } // Hapus scoreType dari pesan
 
-        console.log(`[Save All ${scoreType}] Found ${changesToSave.length} changes. Starting sequential save...`);
+        console.log(`[Save All] Found ${changesToSave.length} changes. Starting sequential save...`); // Hapus scoreType dari log
         let successCount = 0;
+        // Loop penyimpanan
         for (const change of changesToSave) {
-            try { await onSaveSingleGrade(change.studentId, change.componentId, change.score, scoreType); successCount++; }
-            catch (error) { console.error(`[Save All ${scoreType}] Failed for St:${change.studentId}, Comp:${change.componentId}:`, error); saveErrors.push({ studentName: change.studentName, componentName: change.componentName, message: error instanceof Error ? error.message : String(error) }); }
+            try {
+                // Panggil onSaveSingleGrade tanpa scoreType
+                await onSaveSingleGrade(change.studentId, change.componentId, change.score);
+                successCount++;
+            }
+            catch (error) { console.error(`[Save All] Failed for St:${change.studentId}, Comp:${change.componentId}:`, error); saveErrors.push({ studentName: change.studentName, componentName: change.componentName, message: error instanceof Error ? error.message : String(error) }); } // Hapus scoreType dari log
         }
-        console.log(`[Save All ${scoreType}] Finished. Success: ${successCount}/${changesToSave.length}. Errors: ${saveErrors.length}`);
+        console.log(`[Save All] Finished. Success: ${successCount}/${changesToSave.length}. Errors: ${saveErrors.length}`); // Hapus scoreType dari log
 
+        // Update originalLoadedGrades (sama)
         if (Object.keys(studentsWithChanges).length > 0) {
             setOriginalLoadedGrades(prevOrig => { const newOrig = JSON.parse(JSON.stringify(prevOrig)); Object.keys(studentsWithChanges).forEach(sid => { newOrig[sid] = { ...(newOrig[sid] || {}), ...studentsWithChanges[sid] }; }); return newOrig; });
         }
-        if (saveErrors.length === 0) { toast.success(`${successCount} perubahan nilai ${scoreType} berhasil disimpan.`); setIsEditingAll(false); }
-        else { toast.error(`Gagal menyimpan ${saveErrors.length} dari ${changesToSave.length} perubahan ${scoreType}. Error pertama: ${saveErrors[0].message}`, { duration: 7000 }); }
-        setIsSavingAll(false);
-    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade, setIsSavingAll, setIsEditingAll, setOriginalLoadedGrades, scoreType]); // <-- scoreType dependency
 
-    // handleResetSelected (Sudah diperbaiki, menggunakan 'table')
+        // Tampilkan hasil (hapus scoreType dari pesan)
+        if (saveErrors.length === 0) { toast.success(`${successCount} perubahan nilai berhasil disimpan.`); setIsEditingAll(false); }
+        else { toast.error(`Gagal menyimpan ${saveErrors.length} dari ${changesToSave.length} perubahan. Error pertama: ${saveErrors[0].message}`, { duration: 7000 }); }
+        setIsSavingAll(false);
+    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade, setIsSavingAll, setIsEditingAll, setOriginalLoadedGrades]); // Hapus scoreType dependency
+
+    // handleResetSelected (Sudah Disesuaikan)
     const handleResetSelected = useCallback(async () => {
         const currentComponentsSafe = Array.isArray(assessmentComponents) ? assessmentComponents : [];
-        const selectedRows = table.getFilteredSelectedRowModel().rows; // Akses table
+        const selectedRows = table.getFilteredSelectedRowModel().rows;
         if (selectedRows.length === 0) { toast.info("Pilih satu atau lebih siswa untuk mereset nilai."); return; }
         if (currentComponentsSafe.length === 0) { toast.warning("Tidak ada komponen penilaian."); return; }
 
@@ -312,30 +331,35 @@ export function GradeEntryDataTable({
         const studentsToReset: { studentId: string, name: string }[] = selectedRows.map(row => ({ studentId: row.original.id, name: row.original.name }));
         const componentsToReset: AssessmentComponent[] = currentComponentsSafe.filter(c => c && c.id);
         const totalOperations = studentsToReset.length * componentsToReset.length;
-        console.log(`[Reset Sequential ${scoreType}] Starting reset for ${studentsToReset.length} students, ${componentsToReset.length} components. Total ops: ${totalOperations}`);
+        console.log(`[Reset Sequential] Starting reset for ${studentsToReset.length} students, ${componentsToReset.length} components. Total ops: ${totalOperations}`); // Hapus scoreType dari log
         const updatedGradesForState: GradesState = structuredClone(grades || {});
 
+        // Loop reset
         for (const student of studentsToReset) {
             const studentId = student.studentId; if (!updatedGradesForState[studentId]) updatedGradesForState[studentId] = {};
             for (const component of componentsToReset) {
                 const componentId = component.id; updatedGradesForState[studentId][componentId] = null;
-                try { await onSaveSingleGrade(studentId, componentId, null, scoreType); successCount++; } // Gunakan scoreType
-                catch (error) { console.error(`[Reset Sequential ${scoreType}] FAILED for St:${studentId}, Comp:${componentId}:`, error); if (!firstError) { firstError = error instanceof Error ? error : new Error(String(error)); } }
+                try {
+                    // Panggil onSaveSingleGrade tanpa scoreType
+                    await onSaveSingleGrade(studentId, componentId, null);
+                    successCount++;
+                }
+                catch (error) { console.error(`[Reset Sequential] FAILED for St:${studentId}, Comp:${componentId}:`, error); if (!firstError) { firstError = error instanceof Error ? error : new Error(String(error)); } } // Hapus scoreType dari log
             }
         }
-        console.log(`[Reset Sequential ${scoreType}] Finished. Success: ${successCount}/${totalOperations}.`);
+        console.log(`[Reset Sequential] Finished. Success: ${successCount}/${totalOperations}.`); // Hapus scoreType dari log
 
         setGrades(updatedGradesForState);
+        // Update originalLoadedGrades (sama)
         if (!firstError && successCount === totalOperations) {
-            setOriginalLoadedGrades(prevOrig => { const newOrig = JSON.parse(JSON.stringify(prevOrig)); studentsToReset.forEach(student => { const sid = student.studentId; if (!newOrig[sid]) newOrig[sid] = {}; componentsToReset.forEach(comp => { if(comp?.id) newOrig[sid][comp.id] = null; }); }); return newOrig; });
-            toast.success(`${successCount} nilai ${scoreType} berhasil direset.`);
-        } else if (firstError) { toast.error(`Gagal mereset sebagian nilai ${scoreType}: ${firstError.message}`, { duration: 5000 }); }
-        else { toast.warning(`Reset nilai ${scoreType} selesai dengan ${successCount} dari ${totalOperations} operasi sukses.`); }
+             setOriginalLoadedGrades(prevOrig => { const newOrig = JSON.parse(JSON.stringify(prevOrig)); studentsToReset.forEach(student => { const sid = student.studentId; if (!newOrig[sid]) newOrig[sid] = {}; componentsToReset.forEach(comp => { if(comp?.id) newOrig[sid][comp.id] = null; }); }); return newOrig; });
+            toast.success(`${successCount} nilai berhasil direset.`); // Hapus scoreType dari pesan
+        } else if (firstError) { toast.error(`Gagal mereset sebagian nilai: ${firstError.message}`, { duration: 5000 }); } // Hapus scoreType dari pesan
+        else { toast.warning(`Reset nilai selesai dengan ${successCount} dari ${totalOperations} operasi sukses.`); } // Hapus scoreType dari pesan
 
-        table.toggleAllPageRowsSelected(false); // Akses table
+        table.toggleAllPageRowsSelected(false);
         setEditingRowId(null); setIsResetting(false);
-    }, [assessmentComponents, onSaveSingleGrade, grades, originalLoadedGrades, setIsResetting, setGrades, setOriginalLoadedGrades, setEditingRowId, scoreType, table]); // <-- scoreType dan table dependencies
-
+    }, [assessmentComponents, onSaveSingleGrade, grades, originalLoadedGrades, setIsResetting, setGrades, setOriginalLoadedGrades, setEditingRowId, table]); // Hapus scoreType dependency, tambah table dependency
 
     // --- Helper function getStickyOffset (Tetap Sama) ---
     const getStickyOffset = (tableInstance: TanstackTable<GradeTableRowData>, columnId: string): number => {
@@ -346,7 +370,7 @@ export function GradeEntryDataTable({
     // --- Render Komponen ---
     return (
         <div className="space-y-4">
-            {/* Toolbar Tabel */}
+            {/* Toolbar Tabel (Tetap Sama) */}
             <GradeDataTableToolbar
                 table={table}
                 onResetSelected={handleResetSelected}
@@ -362,10 +386,10 @@ export function GradeEntryDataTable({
                 isResetting={isResetting}
             />
 
-            {/* Tabel Utama */}
+            {/* Tabel Utama (Tetap Sama) */}
             <div className="overflow-x-auto relative border rounded-md">
                 <Table>
-                    {/* Header Tabel */}
+                    {/* Header Tabel (Tetap Sama) */}
                      <TableHeader className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className='border-b'>
@@ -395,7 +419,7 @@ export function GradeEntryDataTable({
                         ))}
                     </TableHeader>
 
-                   {/* Body Tabel */}
+                   {/* Body Tabel (Tetap Sama) */}
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => {
@@ -439,7 +463,7 @@ export function GradeEntryDataTable({
                 </Table>
             </div>
 
-            {/* Pagination Tabel */}
+            {/* Pagination Tabel (Tetap Sama) */}
             <DataTablePagination table={table} />
         </div>
     );

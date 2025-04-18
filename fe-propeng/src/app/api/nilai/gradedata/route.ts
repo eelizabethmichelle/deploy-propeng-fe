@@ -1,7 +1,6 @@
 // Lokasi: app/api/gradedata/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-const DJANGO_API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Handler GET
 export async function GET(request: NextRequest) {
@@ -14,7 +13,8 @@ export async function GET(request: NextRequest) {
     console.log(token);
     console.log(authHeader);
     try {
-        const djangoUrl = `${DJANGO_API_URL}/api/nilai/subjects/${subjectId}/gradedata/`;
+        const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
+        // const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
         console.log(`[API Route /api/gradedata] Forwarding GET request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = {'Content-Type': 'application/json','Authorization': `Bearer ${token}`};
@@ -59,7 +59,9 @@ export async function POST(request: NextRequest) {
     console.log(authHeader);
     try {
         const body = await request.json();
-        const djangoUrl = `${DJANGO_API_URL}/api/nilai/subjects/${subjectId}/gradedata/`;
+        // const result = await fetch(`http://203.194.113.127/api/nilai/subjects/`, {
+        const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
+        // const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
         console.log(`[API Route /api/gradedata] Forwarding POST request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = {'Content-Type': 'application/json','Authorization': `Bearer ${token}`};
