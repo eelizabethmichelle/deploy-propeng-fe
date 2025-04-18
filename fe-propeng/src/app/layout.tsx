@@ -29,22 +29,22 @@ export default function ProfileLayout({
 
   if (pathname.includes("/profil/@admin")) {
     breadcrumbs = [
-      { label: "Profil", href: "/profil" },
+      { label: "Profil Saya", href: "/profil" },
       { label: "Admin", current: true },
     ];
   } else if (pathname.includes("/profil/@student")) {
     breadcrumbs = [
-      { label: "Profil", href: "/profil" },
+      { label: "Profil Saya", href: "/profil" },
       { label: "Student", current: true },
     ];
   } else if (pathname.includes("/profil/@teacher")) {
     breadcrumbs = [
-      { label: "Profil", href: "/profil" },
+      { label: "Profil Saya", href: "/profil" },
       { label: "Teacher", current: true },
     ];
   } else if (pathname === "/profil") {
     breadcrumbs = [
-      { label: "Profil", current: true },
+      { label: "ProfilSaya", current: true },
     ];
   }
 

@@ -67,7 +67,7 @@
 
     --warning: 48, 100%, 85%;
 
-    --warning-foreground: 24 9.8% 10%;
+    --warning-foreground: 0 0% 0%;
 
     --border: var(--custom-neutral-light);
 
@@ -149,6 +149,9 @@
 
     --destructive-foreground: 0 0% 98%;
 
+    --warning: 48, 100%, 85%;
+
+    --warning-foreground: 0 0% 0%;
     --border: 0 0% 14.9%;
 
     --input: 0 0% 14.9%;
@@ -186,9 +189,9 @@
 
 
 @layer base {
-  * {
+  /* * {
     @apply border-border;
-  }
+  } */
 
   body {
     @apply bg-background text-foreground;
