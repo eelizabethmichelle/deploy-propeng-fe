@@ -1,63 +1,93 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { API_BASE_URL } from "@/lib/api";
+
 
 export default function Page() {
   const router = useRouter();
-  const [hasSubmitted, setHasSubmitted] = useState<boolean | null>(null);
+
   const [loading, setLoading] = useState(true);
-  const [studentName, setStudentName] = useState("Dien Fitriani Azzahra"); // optional: bisa fetch dari API kalau mau dinamis
-  const [studentNISN, setStudentNISN] = useState("1234567890"); // mock NISN
+  const [student, setStudent] = useState<any>(null);
+  const [submisi, setSubmisi] = useState<any>(null);
 
   const getAuthToken = () => {
     const token =
-      localStorage.getItem("accessToken") ||
-      sessionStorage.getItem("accessToken") ||
-      "";
+      localStorage.getItem('accessToken') ||
+      sessionStorage.getItem('accessToken') ||
+      '';
     if (!token) {
-      console.error("No authentication token found");
-      router.push("/login");
+      router.push('/login');
       return null;
     }
     return token;
   };
 
   useEffect(() => {
-    const fetchStatus = async () => {
+    const fetchData = async () => {
       const token = getAuthToken();
       if (!token) return;
 
       try {
-        const res = await fetch("http://203.194.113.127/api/linimasa/active-event/", {
-          method: "GET",
+        // Get active event & submisi status
+        const statusRes = await fetch('/api/linimasa/active-event/', {
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch data");
-        }
+        const statusData = await statusRes.json();
+        const hasSubmitted = statusData.data?.has_submitted;
+        const eventId = statusData.data?.event_id;
 
-        const data = await res.json();
-        setHasSubmitted(data.data.has_submitted);
+        // Get student info
+        const studentRes = await fetch('/api/auth/detail', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const studentData = await studentRes.json();
+        const studentId = studentData.data_user?.id;
+        setStudent(studentData.data_user);
+                console.log("dududuud")
+        console.log(studentData)
+
+        if (hasSubmitted) {
+          // Get all submissions for this event
+          const submisiRes = await fetch(`http://${API_BASE_URL}/api/linimasa/submisi/${eventId}/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+
+          const { data } = await submisiRes.json();
+
+          console.log("---------------")
+          console.log(data)
+          const currentUserSubmission = data.find((s: any) => s.id_siswa === studentId);
+          setSubmisi(currentUserSubmission);
+        } else {
+          setSubmisi(null);
+        }
       } catch (error) {
-        console.error("Gagal mengambil data:", error);
-        toast.error("Gagal mengambil status pendaftaran");
+        console.error('Gagal mengambil data:', error);
+        toast.error('Gagal memuat data.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStatus();
+    fetchData();
   }, []);
 
   if (loading) return <p className="p-4">Loading...</p>;
+
+  const statusText = (val: boolean | null) => {
+    if (val === true) return '✅ Diterima';
+    if (val === false) return '❌ Ditolak';
+    return '⏳ Belum Diproses';
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
@@ -68,23 +98,23 @@ export default function Page() {
               Pendaftaran Mata Pelajaran Peminatan
             </h1>
             <p className="text-sm text-gray-500">
-              Halaman ini digunakan oleh siswa kelas 11 & 12 untuk memilih 4 mata pelajaran peminatan sesuai minat dalam periode linimasa yang aktif.
+              Halaman ini digunakan oleh siswa kelas 11 & 12 untuk memilih 4 mata pelajaran peminatan dalam periode linimasa yang aktif.
             </p>
           </div>
 
           <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-gray-100">
-            <p><strong>Nama:</strong> {studentName}</p>
-            <p><strong>NISN:</strong> {studentNISN}</p>
+            <p><strong>Nama:</strong> {student?.username}</p>
+            <p><strong>NISN:</strong> {student?.nisn || '-'}</p>
           </div>
 
-          {String(hasSubmitted) === "false" ? (
+          {!submisi ? (
             <>
               <p className="text-base font-medium text-yellow-600">
                 Anda belum mengajukan mata pelajaran peminatan.
               </p>
               <Button
                 className="w-full"
-                onClick={() => router.push("/student/mata-pelajaran-peminatan/daftar")}
+                onClick={() => router.push('/student/mata-pelajaran-peminatan/daftar')}
               >
                 Daftarkan Matpel Minat
               </Button>
@@ -95,9 +125,28 @@ export default function Page() {
               </div>
             </>
           ) : (
-            <p className="text-base font-medium text-green-600">
-              Terima kasih, Anda sudah mengajukan mata pelajaran peminatan.
-            </p>
+            <>
+              <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2">
+                <p><strong>Tanggal Pengajuan:</strong> {new Date(submisi.submitted_at).toLocaleString()}</p>
+                <p><strong>Tier 1:</strong> {submisi.tier1 ? submisi.tier1_nama_option2 : submisi.tier1_nama_option1} — {statusText(submisi.statustier1)}</p>
+                <p><strong>Tier 2:</strong> {submisi.tier2 ? submisi.tier2_nama_option2 : submisi.tier2_nama_option1} — {statusText(submisi.statustier2)}</p>
+                <p><strong>Tier 3:</strong> {submisi.tier3 ? submisi.tier3_nama_option2 : submisi.tier3_nama_option1} — {statusText(submisi.statustier3)}</p>
+                <p><strong>Tier 4:</strong> {submisi.tier4 ? submisi.tier4_nama_option2 : submisi.tier4_nama_option1} — {statusText(submisi.statustier4)}</p>
+              </div>
+
+              {[
+                submisi.statustier1,
+                submisi.statustier2,
+                submisi.statustier3,
+                submisi.statustier4
+              ].some((s) => s === null) ? (
+                <p className="text-yellow-600 mt-2">Pengajuan Anda sedang diulas oleh guru.</p>
+              ) : (
+                <p className="text-green-600 mt-2">
+                  Pengajuan Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
+                </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

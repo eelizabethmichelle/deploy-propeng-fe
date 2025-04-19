@@ -563,7 +563,7 @@ export default function LinimasaPage() {
                             variant="default" 
                             size="default"
                             className="bg-[#041765] text-white hover:bg-[#041765]/90 px-4 py-2"
-                            onClick={() => router.push(`/linimasa/${event.id}/submisi`)}
+                            onClick={() => router.push(`/admin/linimasa/${event.id}`)}
                           >
                             <ClipboardList size={16} className="mr-2" />
                             Lihat Submisi

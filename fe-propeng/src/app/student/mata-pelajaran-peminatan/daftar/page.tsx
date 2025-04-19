@@ -64,7 +64,7 @@ export default function PendaftaranPage() {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/auth/detail", {
+        const res = await fetch("/api/auth/detail", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export default function PendaftaranPage() {
 
     const fetchEvent = async () => {
       try {
-        const res = await fetch("http://203.194.113.127/api/linimasa/", {
+        const res = await fetch("/api/linimasa/", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -129,7 +129,7 @@ export default function PendaftaranPage() {
     };
 
     try {
-      const res = await fetch("http://203.194.113.127/api/linimasa/pilihan-siswa/create/", {
+      const res = await fetch("/api/linimasa/pilihan-siswa/create/", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
