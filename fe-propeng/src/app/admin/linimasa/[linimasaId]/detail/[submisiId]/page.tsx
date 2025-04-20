@@ -3,7 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { API_BASE_URL } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api"
 
 import {
   AlertDialog,
@@ -29,17 +29,13 @@ import { Card } from '@/components/ui/card'
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { toast } from 'sonner';
+import { toast } from 'sonner'
 
 export default function SubmisiDetailPage() {
   const router = useRouter()
   const params = useParams()
   const eventId = params?.linimasaId
   const submisiId = params?.submisiId
-    console.log("Submisi ID:", submisiId)
-console.log('params:', params)
-
-
 
   const [statusList, setStatusList] = useState<Record<string, string>>({
     statustier1: '',
@@ -49,24 +45,18 @@ console.log('params:', params)
   })
   const [note, setNote] = useState('')
   const [data, setData] = useState<any>(null)
+  const [kuotaMatpel, setKuotaMatpel] = useState<any[]>([])
 
   useEffect(() => {
     if (!eventId) return
-    console.log("HELLO")
 
-    const fetchData = async () => {
-      const token = localStorage.getItem('accessToken')
-    
+    const token = localStorage.getItem('accessToken')
+
+    const fetchSubmisiData = async () => {
       const res = await fetch(`http://${API_BASE_URL}/api/linimasa/submisi/${eventId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       })
-    
       const json = await res.json()
-      console.log('ALL SUBMISSIONS:', json.data)
-    
-      // ✅ Cari data submisi yang id-nya sama dengan submisiId
       const selected = json.data.find((item: any) => item.id.toString() === submisiId)
       if (selected) {
         setData(selected)
@@ -74,7 +64,35 @@ console.log('params:', params)
         toast.error('Submisi tidak ditemukan dalam event ini.')
       }
     }
-    fetchData()
+
+    const fetchKuotaMatpel = async () => {
+      const [eventRes, matpelRes] = await Promise.all([
+        fetch(`/api/linimasa`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/mata-pelajaran/view-all`, { headers: { Authorization: `Bearer ${token}` } }),
+      ])
+      const eventJson = await eventRes.json()
+      const matpelJson = await matpelRes.json()
+
+      const event = eventJson.data.find((e: any) => e.status === 'aktif')
+      if (!event) return
+
+      const allMatpel = Object.values(event.matpel)
+
+      const enriched = allMatpel.map((m: any) => {
+        const found = matpelJson.data.find((mp: any) => mp.id === m.id)
+        const jumlah = found?.jumlah_siswa || 0
+        return {
+          id: m.id,
+          nama: m.nama,
+          sisa: m.capacity - jumlah,
+        }
+      })
+
+      setKuotaMatpel(enriched)
+    }
+
+    fetchSubmisiData()
+    fetchKuotaMatpel()
   }, [submisiId])
 
   const handleChange = (tier: string, value: string) => {
@@ -112,8 +130,9 @@ console.log('params:', params)
   }
 
   return (
-    <div className="p-10 grid md:grid-cols-2 gap-6">
-      <Card className="p-6 space-y-4">
+    <div className="p-6 grid md:grid-cols-3 gap-6">
+      {/* Form Persetujuan */}
+      <Card className="p-6 space-y-4 col-span-2">
         <h2 className="text-center font-semibold">Formulir Persetujuan</h2>
 
         <div className="space-y-4">
@@ -182,8 +201,29 @@ console.log('params:', params)
               </AlertDialogContent>
             </AlertDialog>
           </div>
-
         </div>
+      </Card>
+
+      {/* Kuota Matpel */}
+      <Card className="p-4 rounded-xl border shadow-sm h-fit">
+        <div className="text-center font-semibold text-base mb-4">
+          Informasi Jumlah Kuota Penerimaan <br /> Mata Pelajaran Peminatan
+        </div>
+
+        <div className="grid grid-cols-2 text-sm font-semibold bg-gray-100 px-4 py-2 text-gray-600 border-b">
+          <div>Mata Pelajaran</div>
+          <div className="text-right">Sisa Kuota</div>
+        </div>
+
+        {kuotaMatpel.map((item) => (
+          <div
+            key={item.id}
+            className="grid grid-cols-2 px-4 py-2 text-sm text-gray-700 border-b last:border-none"
+          >
+            <div>{item.nama}</div>
+            <div className="text-right">{item.sisa} Siswa</div>
+          </div>
+        ))}
       </Card>
     </div>
   )
