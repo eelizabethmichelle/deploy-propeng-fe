@@ -39,7 +39,7 @@ export default function PendaftaranPage() {
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [siswa, setSiswa] = useState<Siswa | null>(null);
   const [isEligible, setIsEligible] = useState<boolean | null>(null);
-const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
   const [selectedMatpel, setSelectedMatpel] = useState({
     tier1: "",
@@ -67,13 +67,13 @@ const currentYear = new Date().getFullYear();
     const checkSubmissionStatus = async () => {
       const token = getAuthToken()
       if (!token) return
-  
+
       const res = await fetch('/api/linimasa/active-event/', {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
-  
+
       const result = await res.json()
       if (result?.data?.has_submitted === true) {
         toast.error("Anda sudah mengajukan pelajaran peminatan")
@@ -93,13 +93,13 @@ const currentYear = new Date().getFullYear();
           const angkatan = data.data_user.angkatan;
           const valid = [currentYear, currentYear - 1, currentYear - 2].includes(angkatan);
           setIsEligible(valid);
-          
+
           if (!valid) {
             toast.error("Angkatan Anda belum berhak memilih Mata Pelajaran Peminatan");
             router.push('/student/mata-pelajaran-peminatan'); // baru redirect jika tidak eligible
             return;
           }
-          
+
           setSiswa({
             name: data.data_user.name,
             nisn: data.data_user.nisn,
@@ -153,7 +153,7 @@ const currentYear = new Date().getFullYear();
       toast.error("Silakan pilih 4 mata pelajaran peminatan.");
       return;
     }
-  
+
 
     const body = {
       event_id: eventData.id,
@@ -231,14 +231,14 @@ const currentYear = new Date().getFullYear();
                   </div>
                 );
               })}
-<div className="flex justify-between gap-4 mt-6">
-  <Button variant="secondary" className="w-full" onClick={() => router.back()}>
-    Batal
-  </Button>
-  <Button className="w-full" onClick={handleSubmit}>
-    Daftarkan Pilihan
-  </Button>
-</div>
+              <div className="flex justify-between gap-4 mt-6">
+                <Button variant="secondary" className="w-full" onClick={() => router.back()}>
+                  Batal
+                </Button>
+                <Button className="w-full" onClick={handleSubmit}>
+                  Daftarkan Pilihan
+                </Button>
+              </div>
 
             </>
           ) : (

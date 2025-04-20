@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DataTable } from "@/components/ui/dt-lihat-submisi-minat/data-table";
 import { submisiMinatColumns } from "@/components/ui/dt-lihat-submisi-minat/columns";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -27,64 +27,73 @@ interface FormattedSubmisi {
   siswa: string;
   submittedAt: string;
   status: string;
-
 }
-
 
 export default function SubmisiMinatPage() {
   const [data, setData] = useState<FormattedSubmisi[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [eventId, setEventId] = useState<string | null>(null);
+
   const router = useRouter();
-  const params = useParams();
-  const eventId = params.linimasaId as string;
 
   useEffect(() => {
-    fetchSubmisi();
+    const fetchInitial = async () => {
+      try {
+        const token =
+          localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const userRes = await fetch("/api/auth/detail", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userJson = await userRes.json();
+        const userAngkatan = userJson?.data_user?.angkatan;
+
+        const eventRes = await fetch("/api/linimasa", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const eventJson = await eventRes.json();
+        const matchingEvent = eventJson.data.find(
+          (event: any) => event.angkatan === userAngkatan
+        );
+
+        if (!matchingEvent) {
+          setError("Tidak ditemukan event untuk angkatan Anda.");
+          setLoading(false);
+          return;
+        }
+
+        const resolvedEventId = matchingEvent.id.toString();
+        setEventId(resolvedEventId);
+        fetchSubmisi(resolvedEventId, token);
+      } catch (err: any) {
+        console.error("Gagal mengambil data:", err);
+        setError("Gagal memuat data awal.");
+        setLoading(false);
+      }
+    };
+
+    fetchInitial();
   }, []);
 
-  const fetchSubmisi = async () => {
+  const fetchSubmisi = async (eventId: string, token: string) => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const accessToken =
-        localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        console.warn("No access token found. Redirecting to login.");
-        router.push("/login");
-        return;
-      }
-
-
       const response = await fetch("/api/linimasa/submisi/detail", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken} Id ${eventId}`, // <- sesuaikan ID-nya
+          Authorization: `Bearer ${token} Id ${eventId}`,
         },
       });
 
-
-      console.log("API Response Status:", response.status);
-      console.log("BADUNAUDU")
-      console.log(eventId)
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.warn("Unauthorized. Clearing token and redirecting to login.");
-          localStorage.removeItem("accessToken");
-          sessionStorage.removeItem("accessToken");
-          router.push("/login");
-          return;
-        }
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error("Gagal fetch submisi");
 
       const result = await response.json();
-
-      console.log("API Response JSON:", result);
 
       if (result.status === 200) {
         const rawData: Submisi[] = result.data;
@@ -102,21 +111,16 @@ export default function SubmisiMinatPage() {
           };
         });
 
-        console.log("Formatted Submisi Data:", formatted);
         setData(formatted);
       } else {
         throw new Error(result.message || "Gagal mengambil data submisi");
       }
     } catch (error: any) {
-      console.error("Error fetching submisi:", error);
       setError(error.message || "Gagal mengambil data submisi");
     } finally {
       setLoading(false);
     }
   };
-
-
-
 
   return (
     <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
@@ -132,10 +136,9 @@ export default function SubmisiMinatPage() {
       {loading && <p>Loading data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && (
+      {!loading && !error && eventId && (
         <div className="relative">
           <DataTable columns={submisiMinatColumns(eventId)} data={data} />
-
         </div>
       )}
     </div>

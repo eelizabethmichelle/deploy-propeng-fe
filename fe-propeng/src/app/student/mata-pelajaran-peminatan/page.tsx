@@ -61,8 +61,13 @@ export default function Page() {
         const eventId = statusData.data?.event_id
 
         if (hasSubmitted) {
-          const submisiRes = await fetch(`http://${API_BASE_URL}/api/linimasa/submisi/${eventId}/`, {
-            headers: { Authorization: `Bearer ${token}` },
+
+          const submisiRes = await fetch("/api/linimasa/submisi/detail", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token} Id ${eventId}`, // <- sesuaikan ID-nya
+            },
           })
 
           const { data } = await submisiRes.json()
@@ -99,7 +104,7 @@ export default function Page() {
               Angkatan Anda belum berhak memilih Mata Pelajaran Peminatan
             </h2>
             <p className="text-base text-gray-600 font-medium">
-            Fitur ini hanya tersedia untuk siswa kelas 11 dan 12. Hubungi wali kelas Anda jika ini adalah kesalahan.
+              Fitur ini hanya tersedia untuk siswa kelas 11 dan 12. Hubungi wali kelas Anda jika ini adalah kesalahan.
             </p>
           </CardContent>
         </Card>
@@ -158,15 +163,15 @@ export default function Page() {
                 <p className="text-yellow-600 mt-2">Pengajuan Anda sedang diulas oleh guru.</p>
               ) : (
                 <>
-                                <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2 mt-2">
-                  <p className="font-semibold">Catatan dari Wali Kelas:</p>
-                  <p>{submisi.note ? submisi.note : "Tidak ada catatan."}</p>
-                </div>
-                <p className="text-green-600 mt-2">
-                  Pengajuan Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
-                </p>
+                  <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2 mt-2">
+                    <p className="font-semibold">Catatan dari Wali Kelas:</p>
+                    <p>{submisi.note ? submisi.note : "Tidak ada catatan."}</p>
+                  </div>
+                  <p className="text-green-600 mt-2">
+                    Pengajuan Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
+                  </p>
 
-              </>
+                </>
               )}
             </>
           )}
