@@ -294,7 +294,7 @@ export default function LinimasaPage() {
       console.log("Delete response data:", data);
 
       if (data.status === 200) {
-        customToast.success("Berhasil Menghapus Event", "Event linimasa berhasil dihapus");
+        customToast.success("Berhasil Menghapus Linimasa","");
         // Remove the deleted event from the state
         setEvents(events.filter(event => event.id !== eventToDelete.id));
       } else {
@@ -699,7 +699,7 @@ export default function LinimasaPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus linimasa pengajuan mata pelajaran peminatan ini? Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

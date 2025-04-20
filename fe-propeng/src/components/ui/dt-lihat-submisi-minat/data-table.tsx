@@ -117,7 +117,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center text-lg text-gray-500"
                 >
-                  Belum ada mata pelajaran yang terdaftar! Silahkan menambahkan mata pelajaran baru.
+                  Belum ada submisi pengajuan mata pelajaran peminatan siswa.
                 </TableCell>
               </TableRow>
             )}

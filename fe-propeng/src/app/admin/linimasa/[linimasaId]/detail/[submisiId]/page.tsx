@@ -6,6 +6,18 @@ import { Textarea } from '@/components/ui/textarea'
 import { API_BASE_URL } from "@/lib/api";
 
 import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
+
+import {
   Select,
   SelectTrigger,
   SelectContent,
@@ -17,6 +29,7 @@ import { Card } from '@/components/ui/card'
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { toast } from 'sonner';
 
 export default function SubmisiDetailPage() {
   const router = useRouter()
@@ -58,7 +71,7 @@ console.log('params:', params)
       if (selected) {
         setData(selected)
       } else {
-        alert('Submisi tidak ditemukan dalam event ini.')
+        toast.error('Submisi tidak ditemukan dalam event ini.')
       }
     }
     fetchData()
@@ -76,6 +89,7 @@ console.log('params:', params)
       tier2: statusList.statustier2 === 'diterima',
       tier3: statusList.statustier3 === 'diterima',
       tier4: statusList.statustier4 === 'diterima',
+      note: note,
     }
 
     await fetch(`http://${API_BASE_URL}/api/linimasa/pilihan-siswa/update-status/`, {
@@ -87,7 +101,7 @@ console.log('params:', params)
       body: JSON.stringify(body)
     })
 
-    alert('Persetujuan berhasil dikirim')
+    toast.success('Persetujuan berhasil dikirim')
     router.back()
   }
 
@@ -146,11 +160,29 @@ console.log('params:', params)
           </div>
 
           <div className="flex justify-between mt-4">
-            <Button variant="outline" onClick={() => router.back()}>
+            <Button variant="secondary" onClick={() => router.back()}>
               Kembali
             </Button>
-            <Button onClick={handleSubmit}>Simpan</Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button>Simpan</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Konfirmasi Ubah Status</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Apakah Anda yakin ingin mengubah status submisi ini?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSubmit}>Ya, Ubah</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
+
         </div>
       </Card>
     </div>

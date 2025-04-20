@@ -38,6 +38,9 @@ export default function PendaftaranPage() {
   const router = useRouter();
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [siswa, setSiswa] = useState<Siswa | null>(null);
+  const [isEligible, setIsEligible] = useState<boolean | null>(null);
+const currentYear = new Date().getFullYear();
+
   const [selectedMatpel, setSelectedMatpel] = useState({
     tier1: "",
     tier2: "",
@@ -61,7 +64,22 @@ export default function PendaftaranPage() {
   useEffect(() => {
     const token = getAuthToken();
     if (!token) return;
-
+    const checkSubmissionStatus = async () => {
+      const token = getAuthToken()
+      if (!token) return
+  
+      const res = await fetch('/api/linimasa/active-event/', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+  
+      const result = await res.json()
+      if (result?.data?.has_submitted === true) {
+        toast.error("Anda sudah mengajukan pelajaran peminatan")
+        router.push('/student/mata-pelajaran-peminatan')
+      }
+    };
     const fetchUser = async () => {
       try {
         const res = await fetch("/api/auth/detail", {
@@ -72,6 +90,16 @@ export default function PendaftaranPage() {
         });
         const data = await res.json();
         if (data.status === 200 && data.data_user) {
+          const angkatan = data.data_user.angkatan;
+          const valid = [currentYear, currentYear - 1, currentYear - 2].includes(angkatan);
+          setIsEligible(valid);
+          
+          if (!valid) {
+            toast.error("Angkatan Anda belum berhak memilih Mata Pelajaran Peminatan");
+            router.push('/student/mata-pelajaran-peminatan'); // baru redirect jika tidak eligible
+            return;
+          }
+          
           setSiswa({
             name: data.data_user.name,
             nisn: data.data_user.nisn,
@@ -107,6 +135,7 @@ export default function PendaftaranPage() {
       }
     };
 
+    checkSubmissionStatus();
     fetchUser();
     fetchEvent();
   }, []);
@@ -118,6 +147,13 @@ export default function PendaftaranPage() {
   const handleSubmit = async () => {
     const token = getAuthToken();
     if (!token || !siswa || !eventData) return;
+
+    const isComplete = Object.values(selectedMatpel).every((val) => val !== "");
+    if (!isComplete) {
+      toast.error("Silakan pilih 4 mata pelajaran peminatan.");
+      return;
+    }
+  
 
     const body = {
       event_id: eventData.id,
@@ -141,6 +177,7 @@ export default function PendaftaranPage() {
       const result = await res.json();
       if (res.ok) {
         toast.success("Pilihan berhasil didaftarkan!");
+        router.back();
       } else {
         toast.error(result.message || "Gagal mendaftar pilihan.");
       }
@@ -152,7 +189,7 @@ export default function PendaftaranPage() {
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-50 p-6">
-      <Card className="w-full max-w-2xl shadow-xl p-6 rounded-2xl bg-white">
+      <Card className="w-full max-w-4xl shadow-xl p-6 rounded-2xl bg-white">
         <CardContent className="space-y-6">
           <h1 className="text-2xl font-bold text-center text-gray-800">
             Pendaftaran Peminatan
@@ -173,7 +210,7 @@ export default function PendaftaranPage() {
                 return (
                   <div key={tier}>
                     <p className="font-medium text-gray-700 mb-2">
-                      Tier {idx + 1}
+                      Mata Pelajaran Peminatan {idx + 1}
                     </p>
                     <RadioGroup
                       value={selectedMatpel[tier as keyof typeof selectedMatpel]}
@@ -194,13 +231,15 @@ export default function PendaftaranPage() {
                   </div>
                 );
               })}
+<div className="flex justify-between gap-4 mt-6">
+  <Button variant="secondary" className="w-full" onClick={() => router.back()}>
+    Batal
+  </Button>
+  <Button className="w-full" onClick={handleSubmit}>
+    Daftarkan Pilihan
+  </Button>
+</div>
 
-              <Button
-                className="w-full mt-6"
-                onClick={handleSubmit}
-              >
-                Daftarkan Pilihan
-              </Button>
             </>
           ) : (
             <p className="text-center text-sm text-gray-500">
