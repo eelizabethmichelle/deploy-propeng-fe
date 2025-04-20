@@ -204,6 +204,7 @@ export default function MatpelDetailPage() {
                         "Authorization": `Bearer ${token} Id ${matpelId}`,
                     },
                 });
+                
 
                 if (!response.ok) {
                     if (response.status === 401) {

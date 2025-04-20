@@ -35,70 +35,17 @@ export default function AdminLayout({
 
   // Rest of your code remains the same
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/admin/kelas": [{ label: "Manajemen Kelas" }],
-    "/admin/kelas/tambah": [
-      { label: "Manajemen Kelas", href: "/admin/kelas" },
-      { label: "Tambah Kelas" },
+
+    "/student/mata-pelajaran-peminatan/daftar": [
+      { label: "Pengajuan Mata Pelajaran Peminatan", href: "/student/mata-pelajaran-peminatan" },
+      { label: "Daftar" },
     ],
-    "/admin/akun": [{ label: "Manajemen Akun" }],
-    "/admin/akun/tambah": [
-      { label: "Manajemen Akun", href: "/admin/akun" },
-      { label: "Tambah Akun" },
-    ],
-    "/admin/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/admin/mata-pelajaran/tambah": [
-      { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
-      { label: "Tambah Mata Pelajaran" },
-    ],
-    "/admin/linimasa": [{ label: "Linimasa Pengajuan Mata Pelajaran Peminatan" }],
-    "/admin/linimasa/tambah": [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Tambah Linimasa" },
-    ],
-    "/admin/linimasa/[linimasaId]": [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+    "/student/mata-pelajaran-peminatan": [
+      { label: "Pengajuan Mata Pelajaran Peminatan"},
     ],
   };
 
   let breadcrumbs = breadcrumbMap[pathname] || [];
-  if (pathname.includes("/admin/kelas/detail")) {
-    breadcrumbs = [
-      { label: "Manajemen Kelas", href: "/admin/kelas" },
-      { label: "Detail Kelas" },
-    ];
-  }
-
-  if (pathname.includes("/admin/linimasa")) {
-    breadcrumbs = [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
-    ];
-  }
-
-  if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
-    const parts = pathname.split("/");
-    const eventId = parts[3];
-    breadcrumbs = [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi", href: `/admin/linimasa/${eventId}` },
-      { label: "Persetujuan" },
-    ];
-  }
-
-  if (pathname.includes("/admin/akun/detil")) {
-    breadcrumbs = [
-      { label: "Manajemen Akun", href: "/admin/akun" },
-      { label: "Detail Akun" },
-    ];
-  }
-
-  if (pathname.includes("admin/akun/ubah")) {
-    breadcrumbs = [
-      { label: "Manajemen Akun", href: "/admin/akun" },
-      { label: "Ubah Akun" },
-    ];
-  }
 
   return (
     <SidebarProvider>
