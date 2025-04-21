@@ -108,9 +108,35 @@ export function generateGradeColumns(
         // Kolom Checkbox (Sama)
         {
             id: 'select',
-            header: ({ table }) => { /* ... (render checkbox header sama) ... */ },
-            cell: ({ row, table }) => { /* ... (render checkbox cell sama) ... */ },
-            enableSorting: false, enableHiding: false, size: 40,
+            header: ({ table }) => {
+                 const meta = table.options.meta as GradeTableMeta;
+                return (
+                    <Checkbox
+                        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+                        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                        aria-label="Pilih semua baris"
+                        // Disable checkbox jika sedang dalam mode edit apapun
+                        disabled={meta?.isEditingAll || !!meta?.editingRowId || isAnyRowEditing} // Tambahkan isAnyRowEditing
+                        className="translate-y-[2px]"
+                    />
+                );
+            },
+            cell: ({ row, table }) => {
+                 const meta = table.options.meta as GradeTableMeta;
+                return (
+                    <Checkbox
+                        checked={row.getIsSelected()}
+                        onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        aria-label="Pilih baris"
+                        // Disable checkbox jika sedang dalam mode edit apapun
+                        disabled={meta?.isEditingAll || !!meta?.editingRowId || isAnyRowEditing} // Tambahkan isAnyRowEditing
+                        className="translate-y-[2px]"
+                    />
+                );
+            },
+            enableSorting: false,
+            enableHiding: false, // Pastikan tidak bisa disembunyikan
+            size: 40, // Beri lebar yang cukup
         },
         // Kolom Nama Siswa (Sama)
         {
