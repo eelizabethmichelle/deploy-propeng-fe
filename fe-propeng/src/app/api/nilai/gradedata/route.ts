@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     console.log(token);
     console.log(authHeader);
     try {
-        // const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
-        const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
+        const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
+        // const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
         console.log(`[API Route /api/gradedata] Forwarding GET request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = {'Content-Type': 'application/json','Authorization': `Bearer ${token}`};
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         // const result = await fetch(`http://203.194.113.127/api/nilai/subjects/`, {
-        // const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
-        const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
+        const djangoUrl = `http://203.194.113.127/api/nilai/subjects/${subjectId}/gradedata/`;
+        // const djangoUrl = `http://localhost:8000/api/nilai/subjects/${subjectId}/gradedata/`;
         console.log(`[API Route /api/gradedata] Forwarding POST request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = {'Content-Type': 'application/json','Authorization': `Bearer ${token}`};
