@@ -117,39 +117,32 @@ export default function Page() {
       year: "numeric",
     }).format(today);
   };
-
   const customToast = {
     success: (title: string, description: string) => {
+      // Using global styles defined in Toaster component for success
       toast.success(title, {
-        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        description: description
       });
     },
     error: (title: string, description: string) => {
+      // Using global styles defined in Toaster component for error
       toast.error(title, {
-        description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        description: description
       });
     },
     warning: (title: string, description: string) => {
       toast.warning(
-        // Apply background and text colors directly to the container
-        // Use the CSS variables defined in globals.css
-        <div className="flex items-start gap-3 p-4 rounded-md border-0 shadow-sm bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground))]"> {/* Added styles here */}
-
-          {/* Icon Part: White Circle + Specific Yellow Exclamation */}
-          <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white p-0.5">
-            {/* Use the specific hex color for the icon */}
+        title, // Title sebagai argumen pertama
+        { // Objek options sebagai argumen kedua
+          description: ( // Bungkus deskripsi dengan span dan paksa warna hitam
+            <span className="!text-black">
+              {description}
+            </span>
+          ),
+          icon: ( // Struktur icon tetap sama
             <AlertCircle className="h-5 w-5 text-[#E8B904]" />
-          </div>
-
-          {/* Text Part */}
-          <div className="flex flex-col">
-            {/* Title color inherits from the container's text color */}
-            <div className="font-semibold text-base">{title}</div>
-            {/* Description color inherits from the container's text color, maybe make slightly less prominent */}
-            <div className="text-sm opacity-90">{description}</div>
-          </div>
-
-        </div>
+          )
+        }
       );
     }
   };
@@ -390,7 +383,8 @@ export default function Page() {
             // setIsCodeGenerated(false); // No longer needed
             setAttendanceCode("");    // Clear the code state
             setIsModalOpen(false); // <-- Close the modal
-            customToast.warning("Kode Kedaluwarsa", "Kode presensi sudah tidak berlaku.");
+            console.log("Toast Kadaluarsa dipicu!")
+            customToast.warning("Kode Kadaluarsa", "Kode presensi sudah tidak berlaku.");
             return 0;
           }
           return newValue;
