@@ -534,6 +534,7 @@ export function GradeEntryDataTable({
     // === JIKA ADA KOMPONEN, LANJUT RENDER TABEL ===
     // ============================================================
 
+   // --- Render Tabel Utama (TANPA STICKY) ---
     return (
         <div className="space-y-4">
             {/* Toolbar Tabel */}
@@ -553,31 +554,30 @@ export function GradeEntryDataTable({
             />
 
             {/* Tabel Utama */}
-            <div className="overflow-x-auto relative border rounded-md">
-                <Table>
+            {/* Tetap pertahankan overflow-x-auto di wrapper ini */}
+            <div className="overflow-x-auto border rounded-md">
+
+                <Table className="w-full">
                     {/* Header Tabel */}
-                     <TableHeader className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                         {/* ... (Render Header sama) ... */}
-                         {table.getHeaderGroups().map((headerGroup) => (
+                     <TableHeader className="bg-white">
+                         {/* TIDAK BOLEH ADA SPASI/ENTER DI SINI */}
+                         {table.getHeaderGroups().map((headerGroup) => ( // Langsung map
                             <TableRow key={headerGroup.id} className='border-b'>
                                 {headerGroup.headers.map((header) => {
-                                    const isStickyLeft = ['select', 'name', 'class'].includes(header.id);
-                                    const isStickyRight = ['finalScore', 'actions'].includes(header.id);
-                                    const stickyLeftOffset = isStickyLeft ? getStickyOffset(table, header.id) : undefined;
-                                    let stickyRightOffset = 0;
-                                    if (header.id === 'actions') stickyRightOffset = 0;
-                                    else if (header.id === 'finalScore') { const actionsCol = table.getColumn('actions'); stickyRightOffset = actionsCol?.getIsVisible() ? actionsCol.getSize() : 0; }
+                                    // Tidak perlu kalkulasi sticky offset lagi
                                     return (
                                         <TableHead key={header.id} colSpan={header.colSpan}
+                                            // --- 👇 HAPUS prop 'style' untuk sticky positioning ---
                                             style={{
                                                 width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined,
                                                 minWidth: header.getSize() !== 150 ? `${header.getSize()}px` : '100px',
-                                                left: isStickyLeft ? `${stickyLeftOffset}px` : undefined,
-                                                right: isStickyRight ? `${stickyRightOffset}px` : undefined,
-                                                position: (isStickyLeft || isStickyRight) ? 'sticky' : undefined,
-                                                zIndex: (isStickyLeft || isStickyRight) ? 11 : undefined,
                                             }}
-                                            className={cn('px-2 py-2 text-xs h-auto whitespace-nowrap bg-inherit', header.id === 'finalScore' && 'text-center', header.id === 'actions' && 'text-center')} >
+                                            // --- 👇 HAPUS kelas background kondisional sticky ---
+                                            className={cn(
+                                                'px-2 py-2 text-xs h-auto whitespace-nowrap bg-inherit', // bg-inherit OK jika TableHeader solid
+                                                header.id === 'finalScore' && 'text-center',
+                                                header.id === 'actions' && 'text-center'
+                                            )} >
                                             {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
                                     );
@@ -590,29 +590,27 @@ export function GradeEntryDataTable({
                     <TableBody>
                         {table.getRowModel().rows?.length ? (
                              table.getRowModel().rows.map((row) => {
-                                // ... (Render Row sama) ...
                                  const isEditingThisRow = editingRowId === row.original.id;
                                 return (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}
-                                        className={cn("hover:bg-muted/50 transition-colors", isEditingThisRow && 'outline outline-2 outline-primary outline-offset-[-1px]')} >
+                                        // Beri background solid di sini jika perlu (misal bg-white)
+                                        className={cn("hover:bg-muted/50 bg-white transition-colors", isEditingThisRow && 'outline outline-2 outline-primary outline-offset-[-1px]')} >
                                         {row.getVisibleCells().map((cell) => {
-                                            const isStickyLeft = ['select', 'name', 'class'].includes(cell.column.id);
-                                            const isStickyRight = ['finalScore', 'actions'].includes(cell.column.id);
-                                            const stickyLeftOffset = isStickyLeft ? getStickyOffset(table, cell.column.id) : undefined;
-                                            let stickyRightOffset = 0;
-                                            if (cell.column.id === 'actions') stickyRightOffset = 0;
-                                            else if (cell.column.id === 'finalScore') { const actionsCol = table.getColumn('actions'); stickyRightOffset = actionsCol?.getIsVisible() ? actionsCol.getSize() : 0; }
+                                             // Tidak perlu kalkulasi sticky offset lagi
                                             return (
                                                 <TableCell key={cell.id}
+                                                    // --- 👇 HAPUS prop 'style' untuk sticky positioning ---
                                                     style={{
                                                         width: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : undefined,
                                                         minWidth: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : '100px',
-                                                        left: isStickyLeft ? `${stickyLeftOffset}px` : undefined,
-                                                        right: isStickyRight ? `${stickyRightOffset}px` : undefined,
-                                                        position: (isStickyLeft || isStickyRight) ? 'sticky' : undefined,
-                                                        zIndex: (isStickyLeft || isStickyRight) ? 10 : undefined,
                                                     }}
-                                                    className={cn('px-2 py-1 h-11 align-middle text-xs', cell.column.id === 'finalScore' && 'text-center font-medium', cell.column.id === 'actions' && 'text-center')} >
+                                                    // --- 👇 HAPUS kelas background kondisional sticky ---
+                                                    className={cn(
+                                                        'px-2 py-1 h-11 align-middle text-xs',
+                                                        // Beri background di TableRow saja sudah cukup
+                                                        cell.column.id === 'finalScore' && 'text-center font-medium',
+                                                        cell.column.id === 'actions' && 'text-center'
+                                                    )} >
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             );
@@ -623,12 +621,12 @@ export function GradeEntryDataTable({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length || 1} className="h-24 text-center">
-                                    {/* Pesan jika ada komponen tapi tidak ada siswa */}
                                     Tidak ada data siswa.
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
+
                     {/* ========================================== */}
                     {/* === TAMBAHKAN TABLE FOOTER (<tfoot>) === */}
                     {/* ========================================== */}
