@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // Impor ikon yang benar-benar dipakai
-import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban, LucideEdit, ArrowUpDown } from "lucide-react";
+import { Pencil, Trash2, Save, XCircle, Loader2, Check, Ban, LucideEdit, ArrowUpDown, Sigma } from "lucide-react";
 import { AssessmentComponent, GradeTableRowData, GradesState, GradeTableMeta } from "./schema"; // Impor tipe
 import { DataTableColumnHeader } from "./sort"; // Pastikan path ini benar
 import { toast } from "sonner";
@@ -190,7 +190,17 @@ export function generateGradeColumns(
         // Kolom Nilai Akhir (Sama)
         {
             accessorKey: 'finalScore',
-            header: ({ column }) => <DataTableColumnHeader column={column} title={`Nilai Akhir`} />, // Sesuaikan title jika perlu
+            header: ({ header }: HeaderContext<GradeTableRowData, unknown>) => { return (
+                <div className="text-center text-xs leading-tight flex flex-col items-center group relative py-1" style={{ minWidth: '80px' }}>
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
+                        <span className='font-semibold'>Nilai Akhir</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
+                        <span className="block text-muted-foreground font-normal mt-0.5 flex justify-center"><Sigma height={12}/> Nilai Tiap Komponen</span>
+                    </div>
+                </div>
+                )
+            },
             cell: ({ row }) => {
                 const finalScore = row.getValue('finalScore') as number | null | undefined;
                 const displayScore = formatNumberOrDash(finalScore, 1); // 1 desimal
@@ -204,7 +214,7 @@ export function generateGradeColumns(
         // Kolom Aksi Baris (Sama)
         {
             id: 'actions',
-            header: () => <div className="text-center px-1">Aksi</div>,
+            header: () => <div className="text-start pl-4">Aksi</div>,
             cell: ({ row, table }) => {
                 const meta = table.options.meta as GradeTableMeta;
                 const isEditingThisRow = meta.editingRowId === row.original.id;

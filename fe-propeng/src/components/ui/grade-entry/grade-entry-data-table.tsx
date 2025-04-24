@@ -40,6 +40,12 @@ interface GradeEntryDataTableProps {
     // Tambahkan prop opsional untuk path halaman komponen
     assessmentComponentPath?: string;
 }
+// --- Tipe Statistik (Bisa ditambahkan di schema.ts atau di sini) ---
+interface Statistics {
+    avg: Record<string, number | null>; // Key: componentId atau 'final'
+    min: Record<string, number | null>;
+    max: Record<string, number | null>;
+}
 
 export function GradeEntryDataTable({
     students,
@@ -189,6 +195,70 @@ export function GradeEntryDataTable({
     // ==================================================================
 
 
+        // ==========================================
+    // === HITUNG STATISTIK UNTUK FOOTER ===
+    // ==========================================
+    const statistics = React.useMemo<Statistics | null>(() => {
+        console.log("[DataTable] Calculating statistics for footer...");
+        // Gunakan tableData yang sudah di-memoize, karena sudah berisi finalScore terbaru
+        if (!tableData || tableData.length === 0) return null;
+
+        const currentComponents = Array.isArray(assessmentComponents) ? assessmentComponents : [];
+        if (currentComponents.length === 0) return null; // Tidak perlu statistik jika tidak ada komponen
+
+        const componentScores: Record<string, number[]> = {};
+        currentComponents.forEach(comp => { componentScores[comp.id] = []; });
+        const finalScoresList: number[] = [];
+
+        // Kumpulkan nilai dari tableData
+        tableData.forEach(row => {
+            // Kumpulkan skor per komponen
+            currentComponents.forEach(comp => {
+                const score = row[comp.id]; // Ambil skor dari data baris
+                if (typeof score === 'number' && !isNaN(score)) {
+                    componentScores[comp.id].push(score);
+                }
+            });
+            // Kumpulkan skor akhir
+            const finalScore = row.finalScore;
+            if (typeof finalScore === 'number' && !isNaN(finalScore)) {
+                finalScoresList.push(finalScore);
+            }
+        });
+
+        // Hitung statistik
+        const stats: Statistics = {
+            avg: {}, min: {}, max: {}
+        };
+
+        currentComponents.forEach(comp => {
+            const scores = componentScores[comp.id];
+            stats.avg[comp.id] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+            stats.min[comp.id] = scores.length > 0 ? Math.min(...scores) : null;
+            stats.max[comp.id] = scores.length > 0 ? Math.max(...scores) : null;
+        });
+
+        stats.avg['final'] = finalScoresList.length > 0 ? finalScoresList.reduce((a, b) => a + b, 0) / finalScoresList.length : null;
+        stats.min['final'] = finalScoresList.length > 0 ? Math.min(...finalScoresList) : null;
+        stats.max['final'] = finalScoresList.length > 0 ? Math.max(...finalScoresList) : null;
+
+        console.log("[DataTable] Footer Stats:", stats);
+        return stats;
+
+    }, [tableData, assessmentComponents]); // Dependency: tableData dan assessmentComponents
+    // ==========================================
+    // === AKHIR HITUNG STATISTIK FOOTER ===
+    // ==========================================
+
+
+    // --- Helper Function ---
+    const formatNumberOrDash = (value: number | null | undefined, decimals: number = 0): string => {
+        if (typeof value === 'number' && !isNaN(value)) {
+            return decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+        }
+        return '-';
+    };
+    
     // --- Handlers Sederhana (Tetap Sama) ---
     const handleGradeChange = useCallback((studentId: string, componentId: string, value: string) => {
         // ... (implementasi sama)
@@ -559,6 +629,69 @@ export function GradeEntryDataTable({
                             </TableRow>
                         )}
                     </TableBody>
+                    {/* ========================================== */}
+                    {/* === TAMBAHKAN TABLE FOOTER (<tfoot>) === */}
+                    {/* ========================================== */}
+                    {statistics && ( // Hanya render footer jika statistik ada
+                        <tfoot className="bg-muted/30 font-medium text-xs border-t">
+                            {/* Kita definisikan 3 baris footer secara manual di sini */}
+                            {/* Baris Rata-rata */}
+                            <TableRow>
+                                <TableCell className="px-3 py-1.5 text-left font-semibold" colSpan={2}> {/* Colspan 2 (select+name) */}
+                                    Rata-rata
+                                </TableCell>
+                                {/* Kolom Kelas Dikosongkan */}
+                                {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
+                                {/* Kolom Komponen */}
+                                {assessmentComponents.map(comp => (
+                                     <TableCell key={`avg-foot-${comp.id}`} className="px-2 py-1.5 text-center">
+                                         {formatNumberOrDash(statistics.avg[comp.id], 1)}
+                                     </TableCell>
+                                ))}
+                                {/* Kolom Nilai Akhir */}
+                                <TableCell className="px-3 py-1.5 text-center font-semibold">
+                                     {formatNumberOrDash(statistics.avg['final'], 1)}
+                                 </TableCell>
+                                 {/* Kolom Aksi Dikosongkan */}
+                                 <TableCell></TableCell>
+                            </TableRow>
+                             {/* Baris Minimum */}
+                            <TableRow>
+                                <TableCell className="px-3 py-1.5 text-left font-semibold" colSpan={2}>
+                                    Minimum
+                                </TableCell>
+                                {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
+                                {assessmentComponents.map(comp => (
+                                     <TableCell key={`min-foot-${comp.id}`} className="px-2 py-1.5 text-center">
+                                         {formatNumberOrDash(statistics.min[comp.id], 0)}
+                                     </TableCell>
+                                ))}
+                                <TableCell className="px-3 py-1.5 text-center font-semibold">
+                                     {formatNumberOrDash(statistics.min['final'], 0)}
+                                 </TableCell>
+                                 <TableCell></TableCell>
+                            </TableRow>
+                             {/* Baris Maksimum */}
+                             <TableRow>
+                                <TableCell className="px-3 py-1.5 text-left font-semibold" colSpan={2}>
+                                    Maksimum
+                                </TableCell>
+                                {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
+                                {assessmentComponents.map(comp => (
+                                     <TableCell key={`max-foot-${comp.id}`} className="px-2 py-1.5 text-center">
+                                         {formatNumberOrDash(statistics.max[comp.id], 0)}
+                                     </TableCell>
+                                ))}
+                                <TableCell className="px-3 py-1.5 text-center font-semibold">
+                                     {formatNumberOrDash(statistics.max['final'], 0)}
+                                 </TableCell>
+                                 <TableCell></TableCell>
+                            </TableRow>
+                        </tfoot>
+                     )}
+                     {/* ========================================== */}
+                     {/* === AKHIR TABLE FOOTER (<tfoot>) === */}
+                     {/* ========================================== */}
                 </Table>
             </div>
 
