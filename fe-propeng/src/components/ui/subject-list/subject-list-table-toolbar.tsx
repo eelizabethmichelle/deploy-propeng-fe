@@ -1,4 +1,4 @@
-// app/components/subject-list-toolbar.tsx
+// app/components/subject-list/subject-list-toolbar.tsx
 'use client';
 
 import * as React from 'react';
@@ -6,9 +6,9 @@ import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
-// Pastikan tipe SubjectSummary di schema sudah punya academicYear
+// Impor tipe SubjectSummary dari schema
 import { SubjectSummary } from './schema';
-import { statusOptions } from './subject-list-columns';
+import { statusOptions } from './subject-list-columns'; // Impor status options
 import { DataTableFacetedFilter } from './filters-clear';
 import { DataTableViewOptions } from './action-menu';
 
@@ -18,22 +18,22 @@ interface FilterOption { label: string; value: string; icon?: React.ComponentTyp
 // Props toolbar
 interface SubjectListToolbarProps {
   table: Table<SubjectSummary>;
-  uniqueComponentOptions: FilterOption[];
-  uniqueAcademicYearOptions: FilterOption[]; // <-- Prop baru ditambahkan
+  uniqueComponentOptions: FilterOption[]; // Berdasarkan nama komponen
+  uniqueAcademicYearOptions: FilterOption[];
 }
 
 export function SubjectListToolbar({
     table,
-    uniqueComponentOptions,
-    uniqueAcademicYearOptions // <-- Terima prop baru
+    uniqueComponentOptions, // Opsi filter nama komponen
+    uniqueAcademicYearOptions
 }: SubjectListToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  // Dapatkan kolom
+  // Dapatkan kolom untuk filter
   const nameColumn = table.getColumn('name');
   const statusColumn = table.getColumn('status');
-  const componentsColumn = table.getColumn('components');
-  const academicYearColumn = table.getColumn('academicYear'); // <-- Dapatkan kolom tahun ajaran
+  const componentsColumn = table.getColumn('components'); // Kolom untuk filter nama komponen
+  const academicYearColumn = table.getColumn('academicYear');
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -53,27 +53,28 @@ export function SubjectListToolbar({
         {/* Filter Tahun Ajaran */}
         {academicYearColumn && uniqueAcademicYearOptions && uniqueAcademicYearOptions.length > 0 && (
             <DataTableFacetedFilter
+                // Cukup teruskan objek kolomnya saja
                 column={academicYearColumn}
                 title="Thn. Ajaran"
+                // Opsi filter sudah berisi nilai asli (e.g., "2024", "2025")
                 options={uniqueAcademicYearOptions}
             />
         )}
-
         {/* Filter Status */}
         {statusColumn && (
           <DataTableFacetedFilter
             column={statusColumn}
             title="Status"
-            options={statusOptions}
+            options={statusOptions} // Gunakan statusOptions yang diimpor
           />
         )}
 
-         {/* Filter Komponen Mapel */}
+         {/* Filter Komponen Mapel (berdasarkan NAMA) */}
          {componentsColumn && uniqueComponentOptions.length > 0 && (
              <DataTableFacetedFilter
-                column={componentsColumn}
-                title="Komponen"
-                options={uniqueComponentOptions}
+                column={componentsColumn} // Targetkan kolom 'components'
+                title="Komponen" // Judul filter
+                options={uniqueComponentOptions} // Opsi berisi nama-nama komponen
             />
          )}
 
