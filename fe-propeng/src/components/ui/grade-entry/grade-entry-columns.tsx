@@ -166,7 +166,7 @@ export function generateGradeColumns(
                          {/* ... (render tampilan header sama, termasuk tombol edit/hapus) ... */}
                         <div className="flex items-center justify-center gap-1 flex-wrap">
                             <span className='font-semibold'>{component.name}</span>
-                             {!editingHeaderId && !isAnyRowEditing && (
+                             {/* {!editingHeaderId && !isAnyRowEditing && (
                                 <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex bg-background border rounded shadow-sm p-0">
                                     <Button variant="ghost" size="icon" className="h-5 w-5 text-blue-600 hover:bg-blue-100" onClick={() => startHeaderEdit(component)} title={`Edit ${component.name}`}>
                                         <Pencil className="h-3 w-3" />
@@ -175,7 +175,7 @@ export function generateGradeColumns(
                                         <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
-                            )}
+                            )} */}
                         </div>
                         <span className="block text-muted-foreground font-normal mt-0.5">({component.weight}%)</span>
                     </div>

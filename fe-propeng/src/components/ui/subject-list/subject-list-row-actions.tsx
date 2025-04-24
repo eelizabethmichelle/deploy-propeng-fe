@@ -38,9 +38,9 @@ export function SubjectListRowActions({ row }: SubjectListRowActionsProps) {
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem asChild>
            {/* Link ke halaman detail mapel */}
-           <Link href={`/guru/inputnilai/${subjectId}`}>
+           <Link href={`/guru/mata-pelajaran/detil/${subjectId}`}>
                <LucideBookOpenText className="mr-2 h-4 w-4" />
-               Atur Bobot & CPK
+               Atur Bobot
            </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
