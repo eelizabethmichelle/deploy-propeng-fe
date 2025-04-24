@@ -40,7 +40,7 @@ export function SubjectListRowActions({ row }: SubjectListRowActionsProps) {
            {/* Link ke halaman detail mapel */}
            <Link href={`/guru/mata-pelajaran/detil/${subjectId}`}>
                <LucideBookOpenText className="mr-2 h-4 w-4" />
-               Atur Bobot
+               Atur Komponen Penilaian dan Bobot
            </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
