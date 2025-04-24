@@ -352,44 +352,97 @@ export function GradeEntryDataTable({
 
     // --- Handlers Kompleks (Tetap Sama) ---
 
-    // handleSaveRow (Tetap Sama)
     const handleSaveRow = useCallback(async (rowId: string) => {
-        // ... (implementasi sama)
-         const currentStudents = Array.isArray(students) ? students : [];
+        const currentStudents = Array.isArray(students) ? students : [];
         const currentComponents = Array.isArray(assessmentComponents) ? assessmentComponents : [];
-        if (currentStudents.length === 0 || currentComponents.length === 0) { toast.error("Data siswa atau komponen belum siap."); return; }
-        setIsSavingRow(rowId);
-        const promises: Promise<void>[] = []; let changesCount = 0; let validationError = false;
+        if (currentStudents.length === 0 || currentComponents.length === 0) {
+            toast.error("Data siswa atau komponen belum siap."); return;
+        }
+        setIsSavingRow(rowId); // Tandai baris sedang disimpan
+
+        const changesToSave: { componentId: string; score: number | null }[] = []; // Kumpulkan perubahan
+        let validationError = false;
         const student = currentStudents.find(s => s.id === rowId);
-        if (!student) { toast.error("Siswa tidak ditemukan."); setIsSavingRow(null); return; }
+        if (!student) {
+            toast.error("Siswa tidak ditemukan."); setIsSavingRow(null); return;
+        }
         const studentCurrentGrades = grades[rowId] || {};
         const studentInitialGrades = originalLoadedGrades[rowId] || {};
 
+        // 1. Identifikasi semua perubahan dan validasi
         currentComponents.forEach((c: AssessmentComponent) => {
             if (!c?.id) return;
             const componentId = c.id;
             const currentGrade = studentCurrentGrades[componentId] ?? null;
             const initialGrade = studentInitialGrades[componentId] ?? null;
+
+            // Cek perubahan (pastikan perbandingan null/angka benar)
             const hasChanged = JSON.stringify(currentGrade) !== JSON.stringify(initialGrade);
+
             if (hasChanged) {
-                if (currentGrade !== null && (isNaN(currentGrade) || currentGrade < 0 || currentGrade > 100)) { toast.error(`Nilai ${c.name} (${student.name}) tidak valid (0-100 atau kosong).`); validationError = true; return; }
-                changesCount++;
-                console.log(`[SaveRow] Change detected: St:${rowId}, Comp:${componentId}, Score:${currentGrade}`);
-                promises.push(onSaveSingleGrade(rowId, componentId, currentGrade));
+                // Validasi nilai sebelum dimasukkan ke list
+                if (currentGrade !== null && (isNaN(currentGrade) || currentGrade < 0 || currentGrade > 100)) {
+                     toast.error(`Nilai ${c.name} (${student.name}) tidak valid (0-100 atau kosong).`);
+                     validationError = true;
+                     // Jangan hentikan loop di sini, kumpulkan semua error dulu jika perlu
+                     // atau return langsung jika ingin stop di error pertama
+                     // return; // <-- Hapus ini agar semua divalidasi
+                }
+                changesToSave.push({ componentId, score: currentGrade }); // Tambahkan ke list jika berubah
             }
         });
 
-        if (validationError) { setIsSavingRow(null); return; }
-        if (changesCount === 0) { toast.info(`Tidak ada perubahan nilai untuk ${student.name}.`); setIsSavingRow(null); setEditingRowId(null); return; }
+        // Jika ada error validasi, hentikan proses simpan
+        if (validationError) {
+            setIsSavingRow(null);
+            return;
+        }
 
-        try {
-            await Promise.all(promises);
-            toast.success(`Nilai ${student.name} berhasil disimpan.`);
-            setOriginalLoadedGrades(prevOrig => { const newOrig = JSON.parse(JSON.stringify(prevOrig)); newOrig[rowId] = { ...(newOrig[rowId] || {}), ...studentCurrentGrades }; return newOrig; });
-            setEditingRowId(null);
-        } catch (error) { console.error(`[SaveRow] Error saving for ${rowId}:`, error); }
-        finally { setIsSavingRow(null); }
-    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade]);
+        // Jika tidak ada perubahan
+        if (changesToSave.length === 0) {
+            toast.info(`Tidak ada perubahan nilai untuk ${student.name}.`);
+            setIsSavingRow(null);
+            setEditingRowId(null); // Tutup mode edit
+            return;
+        }
+
+        // 2. Kirim perubahan secara SEKUENTIAL
+        let saveSuccess = true; // Flag untuk status keseluruhan
+        console.log(`[SaveRow Sequential] Saving ${changesToSave.length} changes for ${student.name}...`);
+        for (const change of changesToSave) {
+            try {
+                // Panggil onSaveSingleGrade (yang memanggil API) dan tunggu selesai
+                await onSaveSingleGrade(rowId, change.componentId, change.score);
+                console.log(`  - Saved Comp: ${change.componentId}, Score: ${change.score}`);
+            } catch (error) {
+                console.error(`[SaveRow Sequential] FAILED for Comp: ${change.componentId}, Score: ${change.score}:`, error);
+                saveSuccess = false;
+                // Hentikan loop jika satu gagal? Atau lanjutkan? Tergantung kebutuhan.
+                // Di sini kita hentikan jika satu gagal agar tidak membuat state tidak konsisten.
+                break; // Hentikan loop jika ada error
+            }
+        }
+
+        // 3. Update state dan UI setelah semua (atau sebagian) berhasil
+        if (saveSuccess) {
+            toast.success(`Nilai ${student.name} (${changesToSave.length} perubahan) berhasil disimpan.`);
+            // Update originalLoadedGrades HANYA jika semua berhasil
+            setOriginalLoadedGrades(prevOrig => {
+                const newOrig = JSON.parse(JSON.stringify(prevOrig));
+                newOrig[rowId] = { ...(newOrig[rowId] || {}), ...studentCurrentGrades }; // Update dengan semua nilai saat ini
+                return newOrig;
+            });
+             setEditingRowId(null); // Tutup mode edit jika semua sukses
+        } else {
+            // Toast error sudah ditangani di handleSaveSingleGradeClient atau di catch di atas
+            toast.warning(`Sebagian nilai ${student.name} mungkin gagal disimpan. Silakan cek kembali.`);
+            // Jangan tutup mode edit jika ada yg gagal? Atau biarkan guru yg cancel manual?
+            // setEditingRowId(null); // <-- Mungkin jangan ditutup otomatis
+        }
+
+        setIsSavingRow(null); // Selesai menyimpan (baik sukses maupun gagal)
+
+    }, [students, assessmentComponents, grades, originalLoadedGrades, onSaveSingleGrade]); // Tambahkan dependency
 
     // handleSaveAllChanges (Tetap Sama)
     const handleSaveAllChanges = useCallback(async () => {
@@ -643,12 +696,12 @@ export function GradeEntryDataTable({
                                 {/* Kolom Komponen */}
                                 {assessmentComponents.map(comp => (
                                      <TableCell key={`avg-foot-${comp.id}`} className="px-2 py-1.5 text-center">
-                                         {formatNumberOrDash(statistics.avg[comp.id], 1)}
+                                         {formatNumberOrDash(statistics.avg[comp.id], 2)}
                                      </TableCell>
                                 ))}
                                 {/* Kolom Nilai Akhir */}
                                 <TableCell className="px-3 py-1.5 text-center font-semibold">
-                                     {formatNumberOrDash(statistics.avg['final'], 1)}
+                                     {formatNumberOrDash(statistics.avg['final'], 2)}
                                  </TableCell>
                                  {/* Kolom Aksi Dikosongkan */}
                                  <TableCell></TableCell>
@@ -661,11 +714,11 @@ export function GradeEntryDataTable({
                                 {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
                                 {assessmentComponents.map(comp => (
                                      <TableCell key={`min-foot-${comp.id}`} className="px-2 py-1.5 text-center">
-                                         {formatNumberOrDash(statistics.min[comp.id], 0)}
+                                         {formatNumberOrDash(statistics.min[comp.id], 2)}
                                      </TableCell>
                                 ))}
                                 <TableCell className="px-3 py-1.5 text-center font-semibold">
-                                     {formatNumberOrDash(statistics.min['final'], 0)}
+                                     {formatNumberOrDash(statistics.min['final'], 2)}
                                  </TableCell>
                                  <TableCell></TableCell>
                             </TableRow>
@@ -677,11 +730,11 @@ export function GradeEntryDataTable({
                                 {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
                                 {assessmentComponents.map(comp => (
                                      <TableCell key={`max-foot-${comp.id}`} className="px-2 py-1.5 text-center">
-                                         {formatNumberOrDash(statistics.max[comp.id], 0)}
+                                         {formatNumberOrDash(statistics.max[comp.id], 2)}
                                      </TableCell>
                                 ))}
                                 <TableCell className="px-3 py-1.5 text-center font-semibold">
-                                     {formatNumberOrDash(statistics.max['final'], 0)}
+                                     {formatNumberOrDash(statistics.max['final'], 2)}
                                  </TableCell>
                                  <TableCell></TableCell>
                             </TableRow>

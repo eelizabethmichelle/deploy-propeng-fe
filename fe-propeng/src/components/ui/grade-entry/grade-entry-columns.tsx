@@ -203,8 +203,10 @@ export function generateGradeColumns(
             },
             cell: ({ row }) => {
                 const finalScore = row.getValue('finalScore') as number | null | undefined;
-                const displayScore = formatNumberOrDash(finalScore, 1); // 1 desimal
-                return <div className="text-center font-semibold text-sm">{displayScore}</div>;
+                // === UBAH DESIMAL JADI 2 DI SINI ===
+                const displayScore = formatNumberOrDash(finalScore, 2);
+                // ===================================
+                return <div className="text-center font-semibold text-sm">{displayScore}</div>; // Biarkan rata tengah atau ubah jika perlu
             },
             enableSorting: true,
             enableColumnFilter: true,

@@ -458,7 +458,7 @@ export default function InputNilaiPage() {
                 const finalScore = calculateStudentFinalScore(student.id, gradesData, componentsForTable); // Gunakan fungsi kalkulasi baru
                 if (finalScore !== null) { finalScoresList.push(finalScore); }
                 studentRow.push({
-                    content: formatNumberOrDash(finalScore, 1), // Format NA dengan 1 desimal
+                    content: formatNumberOrDash(finalScore, 2), // Format NA dengan 1 desimal
                     styles: { halign: 'right' as HAlignType, fontStyle: 'bold' as FontStyle }
                 });
                 return studentRow;
