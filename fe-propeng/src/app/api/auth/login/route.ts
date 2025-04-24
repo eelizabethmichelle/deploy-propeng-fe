@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     const { username, password } = await req.json();
 
     // Send login request to your Django backend
-    const res = await fetch(`http://localhost:8000/api/auth/login/`, {
+    const res = await fetch(`http://${API_BASE_URL}/api/auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
