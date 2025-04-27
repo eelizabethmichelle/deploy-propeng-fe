@@ -126,6 +126,7 @@ export default function PendaftaranPage() {
         const activeEvent = data.data.find((e: any) => e.status === "aktif");
         if (!activeEvent) {
           toast.warning("Tidak ada event aktif saat ini.");
+          setEventData(null);
         } else {
           setEventData(activeEvent);
         }
@@ -188,7 +189,7 @@ export default function PendaftaranPage() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-50 p-6">
+    <div className="min-h-screen flex justify-center items-center   p-6">
       <Card className="w-full max-w-xl shadow-xl p-6 rounded-2xl bg-white">
         <CardContent className="space-y-6">
           <h1 className="text-2xl font-bold text-center text-gray-800">
@@ -231,19 +232,26 @@ export default function PendaftaranPage() {
                   </div>
                 );
               })}
-              <div className="flex justify-between gap-4 mt-6">
-                <Button variant="secondary" className="w-full" onClick={() => router.back()}>
-                  Batal
-                </Button>
-                <Button className="w-full" onClick={handleSubmit}>
-                  Daftarkan Pilihan
-                </Button>
-              </div>
+              <div className="flex justify-between items-center mt-6">
+  <Button 
+    variant="secondary" 
+    className="w-auto px-6" 
+    onClick={() => router.back()}
+  >
+    Batal
+  </Button>
+  <div className="flex-1 flex justify-end">
+    <Button className="w-2/3" onClick={handleSubmit}>
+      Daftar
+    </Button>
+  </div>
+</div>
+
 
             </>
           ) : (
             <p className="text-center text-sm text-gray-500">
-              Memuat event aktif...
+              Memuat mata pelajaran peminatan pilihan...
             </p>
           )}
         </CardContent>

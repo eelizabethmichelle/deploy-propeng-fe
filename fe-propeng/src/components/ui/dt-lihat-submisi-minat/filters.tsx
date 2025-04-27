@@ -136,7 +136,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       <Toaster />
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Input
-          placeholder="Cari nama mata pelajaran, nama guru, atau kode mata pelajaran"
+          placeholder="Cari nama siswa"
           value={table.getState().globalFilter ?? ""}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
           className="h-8 w-[150px] lg:w-[500px]"

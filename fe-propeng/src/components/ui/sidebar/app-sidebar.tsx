@@ -186,17 +186,29 @@ const data = {
           },
         ],
       },
+      {
+        title: "Mata Pelajaran Peminatan",
+        url: "#",
+        icon: BookOpen ,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "/guru/submisi-peminatan/",
+          }
+        ],
+      },
     ],
     student: [
       {
         title: "Mata Pelajaran Peminatan", // Main group title
-        url: "#", // Top-level doesn't navigate directly
+        url: "/siswa/mata-pelajaran-peminatan", // Top-level doesn't navigate directly
         icon: BookOpen,
         isActive: false, // Adjust based on active route logic
         items: [
           {
-            title: "Daftar", // Sub-item is the actual link
-            url: "/siswa/peminatan", // Placeholder URL for now
+            title: "Lihat Pendaftaran", // Sub-item is the actual link
+            url: "/siswa/mata-pelajaran-peminatan", // Placeholder URL for now
             // icon: PlusCircle, // Optional sub-item icon
           }
         ]

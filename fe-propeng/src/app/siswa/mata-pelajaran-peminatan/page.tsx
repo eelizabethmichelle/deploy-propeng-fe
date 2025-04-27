@@ -13,6 +13,8 @@ export default function Page() {
   const [student, setStudent] = useState<any>(null)
   const [submisi, setSubmisi] = useState<any>(null)
   const [isEligible, setIsEligible] = useState<boolean | null>(null)
+  const [hasActiveEvent, setHasActiveEvent] = useState<boolean>(true)
+
 
   const currentYear = new Date().getFullYear()
 
@@ -57,25 +59,32 @@ export default function Page() {
           },
         })
         const statusData = await statusRes.json()
+
+        if (!statusData.data?.is_active) {
+          setHasActiveEvent(false)
+          setSubmisi(null)
+          return
+        }
+
+        setHasActiveEvent(true)
         const hasSubmitted = statusData.data?.has_submitted
         const eventId = statusData.data?.event_id
 
         if (hasSubmitted) {
-
           const submisiRes = await fetch("/api/linimasa/submisi/detail", {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${token} Id ${eventId}`, // <- sesuaikan ID-nya
+              "Authorization": `Bearer ${token} Id ${eventId}`,
             },
           })
-
           const { data } = await submisiRes.json()
           const currentUserSubmission = data.find((s: any) => s.id_siswa === siswa.id)
           setSubmisi(currentUserSubmission)
         } else {
           setSubmisi(null)
         }
+
       } catch (error) {
         console.error('Gagal mengambil data:', error)
         toast.error('Gagal memuat data.')
@@ -97,7 +106,7 @@ export default function Page() {
 
   if (isEligible === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center border border-gray-300 shadow-md rounded-xl p-6 bg-white">
           <CardContent>
             <h2 className="text-xl font-semibold text-[#041765] mb-2">
@@ -112,8 +121,27 @@ export default function Page() {
     )
   }
 
+  // console.log ("----------")
+  // console.log(hasActiveEvent)
+  if (!hasActiveEvent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 ">
+        <Card className="max-w-md w-full text-center border border-gray-300 shadow-md rounded-xl p-6 bg-white">
+          <CardContent>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Tidak ada pendaftaran mata pelajaran peminatan yang sedang dibuka.
+            </h2>
+            <p className="text-base text-gray-600 font-medium">
+              Silakan cek kembali saat periode pendaftaran dibuka oleh pihak sekolah.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center p-4 ">
       <Card className="max-w-md w-full shadow-md rounded-2xl p-6 text-center">
         <CardContent className="space-y-4">
           <div>
@@ -130,6 +158,8 @@ export default function Page() {
             <p><strong>NISN:</strong> {student?.nisn || '-'}</p>
           </div>
 
+          
+
           {!submisi ? (
             <>
               <p className="text-base font-medium text-yellow-600">
@@ -139,7 +169,7 @@ export default function Page() {
                 className="w-full"
                 onClick={() => router.push('/siswa/mata-pelajaran-peminatan/daftar')}
               >
-                Daftarkan Matpel Minat
+                Daftarkan Mata Pelajaran Peminatan
               </Button>
               <div className="text-xs text-left text-gray-500 mt-2">
                 <p>✅ Pilih 4 mata pelajaran peminatan.</p>

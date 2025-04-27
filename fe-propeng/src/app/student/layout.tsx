@@ -36,11 +36,11 @@ export default function AdminLayout({
   // Rest of your code remains the same
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
 
-    "/student/mata-pelajaran-peminatan/daftar": [
-      { label: "Pengajuan Mata Pelajaran Peminatan", href: "/student/mata-pelajaran-peminatan" },
+    "/siswa/mata-pelajaran-peminatan/daftar": [
+      { label: "Pengajuan Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
       { label: "Daftar" },
     ],
-    "/student/mata-pelajaran-peminatan": [
+    "/siswa/mata-pelajaran-peminatan": [
       { label: "Pengajuan Mata Pelajaran Peminatan"},
     ],
   };

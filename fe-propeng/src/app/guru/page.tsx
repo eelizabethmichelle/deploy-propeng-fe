@@ -51,8 +51,19 @@ export default function DashboardPage() {
                         Lihat daftar mata pelajaran yang telah ditugaskan kepada Anda untuk diampu
                             <strong> Lihat Mata Pelajaran</strong>
                         </p>
-                        <Button variant="default" onClick={() => router.push("/guru/mata-peljaaran")}>
+                        <Button variant="default" onClick={() => router.push("/guru/mata-pelajaran")}>
                             Lihat Mata Pelajaran
+                        </Button>
+                    </div>
+
+                    {/* Peminatan */}
+                    <div className="p-6 bg-white shadow rounded-lg text-center">
+                        <p className="mb-4 text-gray-700">
+                        Lihat daftar submisi peminatan untuk siswa yang telah ditugaskan kepada Anda untuk diampu
+                            <strong> Lihat Mata Pelajaran</strong>
+                        </p>
+                        <Button variant="default" onClick={() => router.push("/guru/submisi-peminatan")}>
+                            Lihat Submisi Peminatan
                         </Button>
                     </div>
                 </div>

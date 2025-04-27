@@ -37,6 +37,13 @@ export default function GuruLayout({
     "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
     "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
     "/guru/raport": [{ label: "Raport Siswa" }],
+    "/siswa/mata-pelajaran-peminatan/daftar": [
+      { label: "Pengajuan Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
+      { label: "Daftar" },
+    ],
+    "/siswa/mata-pelajaran-peminatan": [
+      { label: "Pengajuan Mata Pelajaran Peminatan"},
+    ],
   };
 
   // Generate breadcrumbs based on current pathname
