@@ -1,147 +1,145 @@
-// app/components/subject-list-data-table.tsx
-'use client';
+// Contoh file: @/components/ui/subject-list/subject-list-data-table.tsx
 
 import * as React from 'react';
 import {
-    ColumnDef,
-    ColumnFiltersState,
-    SortingState,
-    VisibilityState,
-    flexRender,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
-    getFacetedRowModel, // Model untuk filter faceted
-    getFacetedUniqueValues, // Model untuk filter faceted
-} from '@tanstack/react-table';
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel, // Pastikan filter model diimpor
+  useReactTable,
+  SortingState,
+  ColumnFiltersState,
+  VisibilityState,
+} from "@tanstack/react-table";
+
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { subjectListColumns } from './subject-list-columns';
-// Pastikan tipe SubjectSummary di schema sudah punya academicYear
-import { SubjectSummary, ComponentSummary } from './schema';
-import { DataTablePagination } from './pagination';
-import { SubjectListToolbar } from './subject-list-table-toolbar'; // Pastikan impor benar
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+// Impor schema untuk tipe data dan FilterOption
+import { SubjectSummary } from "./schema";
+import { subjectListColumns } from "./subject-list-columns"; // Impor definisi kolom
+import { SubjectListToolbar } from './subject-list-table-toolbar';
 
-// Tipe opsi filter
-interface FilterOption {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-}
+// Tipe FilterOption (bisa diimpor dari schema atau didefinisikan di sini/atas)
+interface FilterOption { label: string; value: string; icon?: React.ComponentType<{ className?: string }>; }
 
-// Props komponen
+// ---- 👇 INTERFACE PROPS YANG PERLU DIUPDATE 👇 ----
 interface SubjectListDataTableProps {
-  data: SubjectSummary[]; // Menerima array data SubjectSummary
+  data: SubjectSummary[];
+  // Tambahkan dua properti ini agar komponen bisa menerimanya:
+  uniqueComponentOptions: FilterOption[];
+  uniqueAcademicYearOptions: FilterOption[];
 }
 
-export function SubjectListDataTable({ data }: SubjectListDataTableProps) {
-    // State tabel
-    const [rowSelection, setRowSelection] = React.useState({});
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-    const [sorting, setSorting] = React.useState<SortingState>([]);
+export function SubjectListDataTable({
+  data,
+  uniqueComponentOptions,      // <-- Terima prop di sini
+  uniqueAcademicYearOptions, // <-- Terima prop di sini
+}: SubjectListDataTableProps) { // Gunakan interface yang sudah diupdate
 
-    // Memoize kolom
-    const columns = React.useMemo(() => subjectListColumns, []);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
-    // Inisialisasi tabel
-    const table = useReactTable({
-        data,
-        columns,
-        state: { sorting, columnVisibility, rowSelection, columnFilters },
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        onColumnVisibilityChange: setColumnVisibility,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFacetedRowModel: getFacetedRowModel(),
-        getFacetedUniqueValues: getFacetedUniqueValues(),
-        // enableRowSelection: true, // Aktifkan jika perlu
-        // onRowSelectionChange: setRowSelection,
-    });
+  const table = useReactTable({
+    data,
+    columns: subjectListColumns, // Gunakan kolom yang sudah didefinisikan
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(), // Aktifkan model filter
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  });
 
-    // Hitung opsi komponen unik (jika toolbar memerlukannya)
-    const uniqueComponentsForSubjectList = React.useMemo(() => {
-        const componentNameSet = new Set<string>();
-        data.forEach(subject => {
-            subject.components?.forEach(component => {
-                if (component.name) componentNameSet.add(component.name);
-            });
-        });
-        return Array.from(componentNameSet).sort().map(name => ({ label: name, value: name }));
-    }, [data]);
-
-    // Hitung opsi tahun ajaran unik
-    const uniqueAcademicYearOptions = React.useMemo(() => {
-        const years = new Set<string>();
-        data.forEach(item => {
-            if (item.academicYear) years.add(item.academicYear);
-        });
-        // Urutkan descending
-        return Array.from(years).sort((a, b) => b.localeCompare(a)).map(year => ({
-            label: year,
-            value: year,
-        }));
-    }, [data]);
-
-    // Render JSX
-    return (
-        <div className="space-y-4 w-full">
-            {/* Render Toolbar dengan prop baru */}
-            <SubjectListToolbar
-                table={table}
-                uniqueComponentOptions={uniqueComponentsForSubjectList}
-                uniqueAcademicYearOptions={uniqueAcademicYearOptions} // <-- Teruskan prop baru
-            />
-
-            {/* Wadah Tabel */}
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} style={{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined }}>
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    Tidak ada data mata pelajaran ditemukan.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            {/* Render Pagination */}
-            <DataTablePagination table={table} />
-        </div>
-    );
+  return (
+    <div className="space-y-4">
+      {/* ---- 👇 TERUSKAN PROPS KE TOOLBAR 👇 ---- */}
+      <SubjectListToolbar
+        table={table}
+        uniqueComponentOptions={uniqueComponentOptions}      // <-- Teruskan ke Toolbar
+        uniqueAcademicYearOptions={uniqueAcademicYearOptions} // <-- Teruskan ke Toolbar
+      />
+      <div className="rounded-md border bg-white"> {/* Tambah bg-white jika perlu */}
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} style={{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined }}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={subjectListColumns.length} className="h-24 text-center">
+                  Tidak ada data ditemukan.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      {/* Pagination Controls (jika ada) */}
+      {/* <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div> */}
+    </div>
+  );
 }

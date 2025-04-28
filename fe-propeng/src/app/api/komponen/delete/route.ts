@@ -10,6 +10,18 @@ export async function DELETE(request: Request) {
     }
 
     try {
+        // Verify authorization with Django backend
+        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        });
+
+        if (!authCheck.ok) {
+            return NextResponse.json({ message: "Unauthorized access" }, { status: authCheck.status });
+        }
+
         const { id } = await request.json();
 
         if (!id) {

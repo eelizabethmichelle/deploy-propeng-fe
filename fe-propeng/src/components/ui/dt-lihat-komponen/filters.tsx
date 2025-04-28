@@ -108,6 +108,7 @@ export function DataTableToolbar({
         });
 
         if (!response.ok) {
+          console.log("failed failed failed")
           failed++;
         }
 
@@ -152,7 +153,7 @@ export function DataTableToolbar({
     }
 
     if (!bobotKomponen || isNaN(Number(bobotKomponen))) {
-      customToast.error("Gagal menambahkan Komponen Penilaian", "Bobot komponen harus berupa angka")
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Bobot Komponen Penilaian harus berupa angka")
       return;
     }
 
@@ -193,10 +194,10 @@ export function DataTableToolbar({
       setNamaKomponen("");
       setBobotKomponen("");
       setTipeKomponen("Pengetahuan");
-      toast.success("Komponen berhasil ditambahkan");
+      customToast.success("Komponen Penilaian berhasil ditambahkan", "Komponen Penilaian berhaisl ditambahkan");
       triggerReload();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Terjadi kesalahan");
+      customToast.error("Gagal menambahkan Komponen Penilaian", error instanceof Error ? error.message : "Terjadi kesalahan ketika menambahkan Komponen Penilaian");
     }
   };
 

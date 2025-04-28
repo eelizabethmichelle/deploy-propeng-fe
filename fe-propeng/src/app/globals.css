@@ -18,8 +18,8 @@
     --custom-secondary-darker: hsl(42, 97%, 36%);
 
     /* Custom Neutral Colors */
-    --custom-neutral-light: 0 0% 89.8%;
-    --custom-neutral: 225 1% 59%;
+    --custom-neutral-light: 0% 89.8%;
+    --custom-neutral: 240, 100%, 100%;
     --custom-neutral-darker: hsl(225, 2%, 44%);
 
     /* Custom Accent Colors */
@@ -65,11 +65,15 @@
 
     --destructive-foreground: 0 0% 98%;
 
-    --border: var(--custom-neutral-light);
+    --warning: 48, 100%, 85%;
 
-    --input: var(--custom-neutral-light);
+    --warning-foreground: 0 0% 0%;
 
-    --ring: var(--custom-neutral-light);
+    --border: 240 4% 79%;
+
+    --input: 240 4% 79%;
+
+    --ring: 240 4% 79%;
 
     --chart-1: 12 76% 61%;
 
@@ -83,29 +87,32 @@
 
     --radius: 0.5rem;
 
-  /* Background utama sidebar - biru sangat muda, hampir putih */
-  --sidebar-background: 225 40% 98%;
+    /* Background utama sidebar - biru sangat muda, hampir putih */
+    --sidebar-background: 225 40% 98%;
 
-  /* Teks utama sidebar - biru tua */
-  --sidebar-foreground: oklch(225 60% 98%;);
+    /* Teks utama sidebar - biru tua */
+    --sidebar-foreground: oklch(225 60% 98%; );
 
-  /* Warna dasar primer sidebar (putih) */
-  --sidebar-primary: oklch(100% 0 0); /* Putih */
+    /* Warna dasar primer sidebar (putih) */
+    --sidebar-primary: oklch(100% 0 0);
+    /* Putih */
 
-  /* Warna teks di atas elemen primer (biru muda) */
-  --sidebar-primary-foreground: oklch(225 60% 98%;);
+    /* Warna teks di atas elemen primer (biru muda) */
+    --sidebar-primary-foreground: oklch(225 60% 98%; );
 
-  /* Warna aksen sidebar (gelap keabu-abuan) */
-  --sidebar-accent: oklch(225 60% 98%;);
+    /* Warna aksen sidebar (gelap keabu-abuan) */
+    --sidebar-accent: oklch(225 60% 98%; );
 
-  /* Warna teks di atas aksen (biru tua terang) */
-  --sidebar-accent-foreground: oklch(225 60% 98%;); /* sedikit lebih terang dari foreground */
+    /* Warna teks di atas aksen (biru tua terang) */
+    --sidebar-accent-foreground: oklch(225 60% 98%; );
+    /* sedikit lebih terang dari foreground */
 
-  /* Border warna sidebar (sama dengan accent untuk kesan solid) */
-  --sidebar-border: oklch(225 60% 98%;);
+    /* Border warna sidebar (sama dengan accent untuk kesan solid) */
+    --sidebar-border: oklch(225 60% 98%; );
 
-  /* Ring highlight atau fokus, biru terang menyala */
-  --sidebar-ring: oklch(225 60% 98%;); /* Highlight/fokus */
+    /* Ring highlight atau fokus, biru terang menyala */
+    --sidebar-ring: oklch(225 60% 98%; );
+    /* Highlight/fokus */
   }
 
   .dark {
@@ -142,6 +149,9 @@
 
     --destructive-foreground: 0 0% 98%;
 
+    --warning: 48, 100%, 85%;
+
+    --warning-foreground: 0 0% 0%;
     --border: 0 0% 14.9%;
 
     --input: 0 0% 14.9%;
@@ -179,9 +189,9 @@
 
 
 @layer base {
-  * {
+  /* * {
     @apply border-border;
-  }
+  } */
 
   body {
     @apply bg-background text-foreground;

@@ -51,30 +51,48 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
     );
   }, []);
 
+  const customToast = {
+    success: (title: string, description: string) => {
+        toast.success(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    error: (title: string, description: string) => {
+        toast.error(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    warning: (title: string, description: string) => {
+        toast.warning(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    }
+  };
+
   const handleEditSave = async () => {
     if (!accessToken) {
-      toast.error("Gagal mengubah komponen. Token tidak ditemukan");
+      customToast.error("Gagal mengubah Komponen Penilaian", "Token tidak ditemukan");
       router.push("/login")
       return;
     }
 
     if (!namaKomponen.trim()) {
-      toast.error("Nama komponen tidak boleh kosong");
+      customToast.error("Gagal mengubah Komponen Penilaian", "Nama Komponen Penilaian tidak boleh kosong");
       return;
     }
   
     if (namaKomponen.length > 50) {
-      toast.error("Nama komponen maksimal 50 karakter");
+      customToast.error("Gagal mengubah Komponen Penilaian", "Nama Komponen Penilaian maksimal memiliki panjang 50 karakter");
       return;
     }
   
     if (!bobotKomponen || isNaN(Number(bobotKomponen))) {
-      toast.error("Bobot komponen harus berupa angka");
+      customToast.error("Gagal mengubah Komponen Penilaian", "Bobot Komponen Penilaian harus berupa angka");
       return;
     }
   
     if (Number(bobotKomponen) < 1 || (Number(bobotKomponen)) > 100) {
-      toast.error("Bobot komponen harus antara 1 hingga 100");
+      customToast.error("Gagal mengubah Komponen Penilaian", "Bobot Komponen Penilaian harus bernilai di antara 1 hingga 100");
       return;
     }
     
@@ -96,12 +114,11 @@ export function DataTableRowActions<TData>({ row, reloadTrigger, triggerReload }
       if (!response.ok) {
         throw new Error("Gagal mengubah data komponen penilaian.");
       }
-
-      toast.success("Komponen penilaian berhasil diubah.");
+      customToast.success("Berhasil mengubah Komponen Penilaian", "Berhasil mengubah Komponen Penilaian")
       triggerReload();
       setEditDialogOpen(false);
     } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan saat menyimpan.");
+      customToast.error("Gagal mengubah Komponen Penilaian", error.message || "Terjadi kesalahan saat menyimpan perubahan");
     } finally {
       setLoading(false);
     }

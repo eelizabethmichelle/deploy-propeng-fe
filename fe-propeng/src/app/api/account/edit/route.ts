@@ -11,6 +11,7 @@ export async function PUT(request: Request) {
     }
 
     try {
+        // TODO : api_base_url ga recognize tapi yg bawah kedeclare..
         const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {

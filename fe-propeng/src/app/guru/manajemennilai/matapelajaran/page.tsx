@@ -73,6 +73,38 @@ export default function DaftarMataPelajaranPage() {
         }));
     }, [subjects]); // Hitung ulang jika data subjects berubah
 
+     // --- Memo untuk menghitung opsi filter unik TAHUN AJARAN ---
+     // --- Memo untuk menghitung opsi filter unik TAHUN AJARAN (dengan label diformat) ---
+     const uniqueAcademicYearOptions = useMemo(() => {
+        if (!subjects || subjects.length === 0) return [];
+        const allYears = new Set<string>();
+        subjects.forEach(subject => {
+            if (subject.academicYear && subject.academicYear !== "N/A" && !subject.academicYear.includes('/')) {
+                 // Hanya tambahkan tahun awal ke Set untuk diolah
+                allYears.add(subject.academicYear);
+            } else if (subject.academicYear && subject.academicYear !== "N/A") {
+                // Jika sudah terformat atau format lain, tambahkan apa adanya (opsional)
+                // Atau coba ekstrak tahun awal jika memungkinkan
+                 allYears.add(subject.academicYear); // Tambahkan saja dulu
+            }
+        });
+        // Ubah Set menjadi array objek { label (format YYYY/YYYY), value (format YYYY) }
+        return Array.from(allYears).sort().map(yearValue => {
+            let displayLabel = yearValue; // Label default adalah nilai asli
+            const startYear = parseInt(yearValue, 10); // Coba parse tahun awal
+
+            // Jika parsing berhasil dan nilai asli BUKAN N/A atau sudah ada '/'
+            if (!isNaN(startYear) && yearValue !== "N/A" && !yearValue.includes('/')) {
+                 displayLabel = `${startYear}/${startYear + 1}`; // Format labelnya
+            }
+
+            return {
+                label: displayLabel, // Tampilkan YYYY/YYYY di dropdown
+                value: yearValue     // Gunakan YYYY (nilai asli) untuk filtering
+            };
+        });
+     }, [subjects]); // Hitung ulang hanya jika state 'subjects' berubah
+
     return (
         <div className="container mx-auto py-6 px-4 md:px-6 lg:px-8">
              <h1 className="text-2xl font-bold mb-6">Manajemen Nilai</h1>
@@ -97,9 +129,13 @@ export default function DaftarMataPelajaranPage() {
                     )}
                     {/* Pastikan data sudah ada sebelum merender tabel */}
                     {!isLoading && !error && subjects && (
+                        
                         <SubjectListDataTable
                             data={subjects}
-                            // Teruskan opsi filter komponen ke DataTable
+                            // Teruskan opsi filter unik ke DataTable
+                            // DataTable kemungkinan akan meneruskannya lagi ke Toolbar
+                            uniqueComponentOptions={uniqueComponentOptions}
+                            uniqueAcademicYearOptions={uniqueAcademicYearOptions}
                          />
                     )}
                     {/* Kondisi jika tidak loading, tidak error, tapi data kosong */}

@@ -46,6 +46,11 @@ export default function GuruLayout({
         { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
         { label: "Input Data Nilai" },
       ];
+    } else if (pathname.startsWith("/guru/mata-pelajaran/detil/")) {
+      return [
+        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+        { label: "Atur Komponen Penilaian dan Bobot" },
+      ];
     } else if (pathname.includes("/guru/kelas/detail")) {
       return [
         { label: "Manajemen Kelas", href: "/guru/kelas" },
