@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // ... other imports
-import { AttendanceSummary } from '@/components/ui/summarystudent/attendance-summary';
+import { AttendanceSummaryTable } from "@/components/ui/summarystudent/attendance-summary"
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toast } from "sonner";
@@ -288,7 +288,7 @@ export default function StudentReportPage() {
                     ) : (<Card className="border-destructive bg-destructive/10 text-destructive"><CardHeader><CardTitle className="text-lg">Error Memuat Nilai</CardTitle></CardHeader><CardContent><p>{gradesError}</p></CardContent></Card>)}
 
                     {/* Attendance Section */}
-                    <AttendanceSummary data={attendanceData} isLoading={isLoadingAttendance} error={attendanceError} />
+                    <AttendanceSummaryTable data={attendanceData} isLoading={isLoadingAttendance} error={attendanceError} />
                 </div>
             )}
         </div>
