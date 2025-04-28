@@ -22,7 +22,9 @@ import {
     Edit2Icon,
     Edit,
     BookText,
-    Wrench
+    Wrench,
+    Check,
+    Settings
 } from 'lucide-react';
 import { useRouter } from 'next/navigation'; // <-- Pastikan useRouter diimpor
 
@@ -720,7 +722,21 @@ export default function InputNilaiPage() {
                     {/* <div className="text-sm font-medium flex items-center gap-1 text-muted-foreground pt-1"> <Sigma size={16} className="h-4 w-4 flex-shrink-0" /> Rata-Rata Pengetahuan: {formatNumberOrDash(overallAveragePengetahuan, 1)} </div>
                     <div className="text-sm font-medium flex items-center gap-1 text-muted-foreground"> <Sigma size={16} className="h-4 w-4 flex-shrink-0" /> Rata-Rata Keterampilan: {formatNumberOrDash(overallAverageKeterampilan, 1)} </div> */}
                  </div>
-                 <div className='flex items-center gap-2 flex-shrink-0 self-start pt-1'>
+                <div className='flex items-center gap-2 flex-shrink-0 self-start pt-1'>
+                    <Button
+                     variant="secondary" // Menggunakan variant dari kode Anda
+                     className='w-full'
+                     onClick={() => {
+                         if (subjectId) {
+                             router.push(`/guru/mata-pelajaran/detil/${subjectId}`);
+                         } else {
+                             toast.error("Tidak dapat mengarahkan: ID Mata Pelajaran tidak ditemukan.");
+                         }
+                     }}
+                 >
+                     <Settings className="ml-2 h-4 w-4" />
+                     Atur Komponen Penilaian dan Bobot
+                 </Button>
                     {/* Tombol PDF */}
                      <Dialog open={isPdfOptionsDialogOpen} onOpenChange={(open) => { setIsPdfOptionsDialogOpen(open); if (!open) setPdfPreviewUrl(null); }}>
                          <DialogTrigger asChild>
@@ -786,76 +802,94 @@ export default function InputNilaiPage() {
             {/* BAGIAN INFORMASI BOBOT BARU                             */}
             {/* ======================================================== */}
              <div className="space-y-4">
-                 {/* Kotak Peringatan Bobot */}
-                 {showWeightWarning && (
-                     <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-sm flex items-start gap-2">
-                         <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                         <div>
-                             Total bobot komponen penilaian
-                             {!isPengetahuanWeightOk && !isKeterampilanWeightOk ? " Pengetahuan & Keterampilan " :
-                              !isPengetahuanWeightOk ? " Pengetahuan " : " Keterampilan "}
-                             ({!isPengetahuanWeightOk ? `${totalWeightPengetahuan.toFixed(0)}%` : ''}{!isPengetahuanWeightOk && !isKeterampilanWeightOk ? ' & ' : ''}{!isKeterampilanWeightOk ? `${totalWeightKeterampilan.toFixed(0)}%` : ''})
-                             tidak sama dengan 100%. Pastikan jumlah bobot = 100%.
-                         </div>
-                     </div>
-                 )}
+                 {/* --- Peringatan Bobot (Dipisah) --- */}
+                 {/* Peringatan untuk Pengetahuan */}
 
-                 {/* Kartu Bobot */}
+                 {/* Kartu Bobot (Struktur Grid Tetap Sama untuk Kanan-Kiri di Layar Sedang/Besar) */}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {/* Kartu Pengetahuan */}
+                     {/* Kartu Pengetahuan (Konten Tetap Sama) */}
                      <div className="flex items-center gap-3 p-4 border rounded-lg bg-card">
-                         <div className={`flex-shrink-0 rounded-full p-2 bg-primary text-yellow-500`}>
+                         <div className={`flex-shrink-0 rounded-full p-2 bg-primary text-yellow-500`}> {/* Sesuaikan warna ikon jika perlu */}
                              <Scale className="h-6 w-6" />
                          </div>
                          <div className="flex-grow">
                              <p className="text-sm text-muted-foreground">Bobot Pengetahuan</p>
                              <div className="flex items-baseline gap-2 mt-0.5">
                                  <span className="text-xl font-bold">{totalWeightPengetahuan.toFixed(0)}%</span>
+                                 {/* Indikator Status Bobot P */}
                                  <span className={`text-xs font-medium ${isPengetahuanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isPengetahuanWeightOk ? <Minus size={12} height={12}/> : <ArrowUpDown size={12} height={12}/>}
+                                     {isPengetahuanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />} {/* Icon */}
                                  </span>
                                  <span className={`text-xs font-medium ${isPengetahuanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isPengetahuanWeightOk ? 'Aman' : 'Kurang atau Lebih dari 100%'}
+                                     {isPengetahuanWeightOk ? 'Aman' : 'Perlu Koreksi'} {/* Teks Status */}
                                  </span>
                              </div>
-                         </div>
+                         </div>{isPengetahuanWeightOk ? (
+                        // Tampilan jika Bobot Pengetahuan OK (100%) - KARTU HIJAU
+                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-sm flex items-start gap-2">
+                            <Check className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600" /> {/* Ganti ikon & warna */}
+                            <div>
+                                {/* Teks disesuaikan untuk kondisi OK */}
+                               Total Bobot Komponen Penilaian Pengetahuan: 100%.
+                            </div>
+                        </div>
+                    ) : (
+                        // Tampilan jika Bobot Pengetahuan TIDAK OK - KARTU KUNING
+                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-sm flex items-start gap-2">
+                            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                            <div>
+                                Total bobot komponen penilaian Pengetahuan: ({totalWeightPengetahuan.toFixed(0)}%). Pastikan jumlah bobot = 100%.
+                            </div>
+                        </div>
+                    )}
                      </div>
 
-                     {/* Kartu Keterampilan */}
+                     {/* Kartu Keterampilan (Konten Tetap Sama) */}
                      <div className="flex items-center gap-3 p-4 border rounded-lg bg-card">
-                         <div className={`flex-shrink-0 rounded-full p-2 bg-primary text-yellow-500`}>
+                         <div className={`flex-shrink-0 rounded-full p-2 bg-primary text-yellow-500`}> {/* Sesuaikan warna ikon jika perlu */}
                              <Scale className="h-6 w-6" />
                          </div>
                          <div className="flex-grow">
                              <p className="text-sm text-muted-foreground">Bobot Keterampilan</p>
                              <div className="flex items-baseline gap-2 mt-0.5">
                                  <span className="text-xl font-bold">{totalWeightKeterampilan.toFixed(0)}%</span>
-                                 <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isKeterampilanWeightOk ? <Minus size={12} height={12}/> : <ArrowUpDown size={12} height={12}/>}
+                                  {/* Indikator Status Bobot K */}
+                                  <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
+                                     {isKeterampilanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />} {/* Icon */}
                                  </span>
                                  <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isKeterampilanWeightOk ? 'Aman' : 'Kurang atau Lebih dari 100%'}
+                                     {isKeterampilanWeightOk ? 'Aman' : 'Perlu Koreksi'} {/* Teks Status */}
                                  </span>
                              </div>
-                         </div>
+                        </div>
+                        {isKeterampilanWeightOk ? (
+                        // Tampilan jika Bobot Keterampilan OK (100%) - KARTU HIJAU
+                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-sm flex items-start gap-2">
+                            <Check className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600" /> {/* Ganti ikon & warna */}
+                            <div>
+                                 {/* Teks disesuaikan untuk kondisi OK */}
+                                Bobot Komponen Penilaian Keterampilan: 100%.
+                            </div>
+                        </div>
+                    ) : (
+                        // Tampilan jika Bobot Keterampilan TIDAK OK - KARTU KUNING
+                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-sm flex items-start gap-2">
+                            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <div>
+                                Total bobot komponen penilaian Keterampilan: {totalWeightKeterampilan.toFixed(0)}%.
+                                </div>
+                                <div>
+                                    Pastikan jumlah bobot = 100%.
+                                </div>
+                            </div>
+                            
+                        </div>
+                    )}
                      </div>
                  </div>
-
-                 {/* Tombol Atur Komponen */}
-                 <Button
-                     variant="default"
-                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                     onClick={() => {
-                         if (subjectId) {
-                             router.push(`/guru/mata-pelajaran/detil/${subjectId}`); // Arahkan ke halaman detail mapel
-                         } else {
-                             toast.error("Tidak dapat mengarahkan: ID Mata Pelajaran tidak ditemukan.");
-                         }
-                     }}
-                 >
-                     Atur Komponen Penilaian dan Bobot
-                     <ArrowRight className="ml-2 h-4 w-4" />
-                 </Button>
+                 {/* Akhir Kartu Bobot */}
+                 {/* Tombol Atur Komponen (Tetap Sama, menggunakan variant="secondary" dari kode Anda) */}
              </div>
             {/* ======================================================== */}
             {/* AKHIR BAGIAN INFORMASI BOBOT BARU                     */}
