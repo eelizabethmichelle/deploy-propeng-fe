@@ -189,27 +189,26 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
   <DialogContent className="sm:max-w-md">
     <DialogHeader>
-      <DialogTitle>Hapus Linimasa?</DialogTitle>
+      <DialogTitle>Apakah Anda yakin menghapus linimasa ini?</DialogTitle>
       <DialogDescription>
-        Apakah Anda yakin ingin menghapus linimasa ini? Linimasa yang sudah terhapus tidak dapat dikembalikan.
+        Linimasa yang sudah terhapus tidak dapat dikembalikan.
       </DialogDescription>
     </DialogHeader>
 
     <DialogFooter className="sm:justify-end flex gap-4">
-      {/* destructive confirm on the left */}
+      <DialogClose asChild>
+        <Button variant="neutral">
+          Batal
+        </Button>
+      </DialogClose>
       <Button
-        variant="secondary"
+        variant="destructive"
         onClick={handleDelete}
       >
         {isDeleting ? "Menghapus..." : "Ya, Hapus"}
       </Button>
 
-      {/* default cancel on the right */}
-      <DialogClose asChild>
-        <Button variant="default">
-          Batal
-        </Button>
-      </DialogClose>
+      
     </DialogFooter>
   </DialogContent>
 </Dialog>

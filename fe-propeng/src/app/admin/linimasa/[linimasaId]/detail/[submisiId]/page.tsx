@@ -214,47 +214,54 @@ export default function SubmisiDetailPage() {
   }
 
   return (
-    <div className="p-6 grid md:grid-cols-3 gap-6">
-      {/* Form Persetujuan */}
-      <Card className="p-6 space-y-4 col-span-2">
+<div className="p-6 flex flex-col md:flex-row justify-center items-start">
+{/* Form Persetujuan */}
+      <Card className="p-6 space-y-4  max-w-md md:mr-4">
         <h2 className="text-center font-semibold">Formulir Persetujuan</h2>
 
         <div className="space-y-4">
-          <div>
+          {/* <div>
             <Label>NISN</Label>
-            <Input disabled value={data.id_siswa} />
-          </div>
+            <Input disabled value={data.id_siswa}   className="bg-gray-200" />
+          </div> */}
 
           <div>
             <Label>Nama Siswa</Label>
-            <Input disabled value={data.nama_siswa} />
+            <Input disabled value={data.nama_siswa}   className="bg-gray-200" />
           </div>
+          
+
+          <div className="space-y-3">
+  <Label >
+    Mata Pelajaran yang Dipilih
+  </Label>
+  {[1, 2, 3, 4].map((tier) => (
+    <div
+      key={tier}
+      className="flex items-center justify-between gap-6 p-4 border rounded-md bg-white"
+    >
+      <div className="text-sm text-gray-700">
+        <span className="font-semibold">{tier}</span>: {mapTier(tier)}
+      </div>
+      <Select
+        value={statusList[`statustier${tier}`]}
+        onValueChange={(val) => handleChange(`statustier${tier}`, val)}
+      >
+        <SelectTrigger className="w-[180px] border-gray-300 focus:ring-2 focus:ring-primary">
+          <SelectValue placeholder="Pilih Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="diterima">Diterima</SelectItem>
+          <SelectItem value="ditolak">Ditolak</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ))}
+</div>
+
 
           <div>
-            <Label>Mata Pelajaran yang Dipilih</Label>
-            {[1, 2, 3, 4].map((tier) => (
-              <div key={tier} className="flex items-center justify-between gap-4">
-                <span className="font-medium text-foreground">
-                  {tier}: {mapTier(tier)}
-                </span>
-                <Select
-                  value={statusList[`statustier${tier}`]}
-                  onValueChange={(val) => handleChange(`statustier${tier}`, val)}
-                >
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="diterima">Diterima</SelectItem>
-                    <SelectItem value="ditolak">Ditolak</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <Label>Catatan</Label>
+            <Label >Catatan</Label>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -289,22 +296,28 @@ export default function SubmisiDetailPage() {
       </Card>
 
       {/* Kuota Matpel */}
-      <Card className="p-4 rounded-xl border shadow-sm h-fit">
+      <Card className="p-4 border shadow-sm h-fit max-w-m">
         <div className="text-center font-semibold text-base mb-4">
           Informasi Jumlah Kuota Penerimaan <br /> Mata Pelajaran Peminatan
         </div>
 
         <div className="grid grid-cols-2 text-sm font-semibold bg-gray-100 px-4 py-2 text-gray-600 border-b">
+          {/* <div>Tier</div> */}
+          {/* <div>ID</div> */}
+
           <div>Mata Pelajaran</div>
           <div className="text-right">Sisa Kuota</div>
         </div>
 
-        {kuotaMatpel.map((item) => (
+        {kuotaMatpel.map((item, index) => (
           <div
             key={item.id}
             className="grid grid-cols-2 px-4 py-2 text-sm text-gray-700 border-b last:border-none"
           >
-            <div>{item.nama}</div>
+                  {/* <div className="text-center">{Math.floor(index / 2) + 1}</div> */}
+
+            {/* <div>{item.tier}</div> */}
+            <div>{Math.floor(index / 2) + 1}: {item.nama}</div>
             <div className="text-right">{item.sisa} Siswa</div>
           </div>
         ))}

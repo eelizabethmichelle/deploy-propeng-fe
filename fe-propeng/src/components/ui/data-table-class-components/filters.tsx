@@ -191,17 +191,18 @@ export function DataTableToolbar<TData extends RowData>({
               </DialogHeader>
               <DialogFooter className="sm:justify-end">
                 <div className="flex gap-4">
+                <DialogClose asChild>
+                    <Button type="button" variant="neutral" disabled={isDeleting}>Batal</Button>
+                  </DialogClose>
                   <Button
                     type="button"
                     onClick={handleDeleteConfirm}
-                    variant="secondary"
+                    variant="destructive"
                     disabled={isDeleting}
                   >
                     {isDeleting ? "Menghapus..." : "Ya, Hapus"}
                   </Button>
-                  <DialogClose asChild>
-                    <Button type="button" disabled={isDeleting}>Batal</Button>
-                  </DialogClose>
+
                 </div>
               </DialogFooter>
             </DialogContent>

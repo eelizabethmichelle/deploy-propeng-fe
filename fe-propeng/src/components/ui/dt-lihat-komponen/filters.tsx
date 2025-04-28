@@ -203,19 +203,20 @@ export function DataTableToolbar({
                 {loading && <Progress value={progress} className="mt-4" />}
                 <DialogFooter className="sm:justify-end">
                   <div className="flex gap-4">
+                    <DialogClose asChild>
+                      <Button type="button" disabled={loading}  variant = "neutral">
+                        Batal
+                      </Button>
+                    </DialogClose>
                     <Button
                       type="button"
                       onClick={handleDeleteConfirm}
-                      variant="secondary"
+                      variant="destructive"
                       disabled={loading}
                     >
                       {loading ? "Menghapus..." : "Ya, Hapus"}
                     </Button>
-                    <DialogClose asChild>
-                      <Button type="button" disabled={loading}>
-                        Batal
-                      </Button>
-                    </DialogClose>
+                    
                   </div>
                 </DialogFooter>
               </DialogContent>
