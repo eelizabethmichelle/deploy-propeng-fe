@@ -30,6 +30,7 @@ import { Card } from '@/components/ui/card'
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { toast } from 'sonner'
+import { Save } from 'lucide-react'
 
 export default function SubmisiDetailPage() {
   const router = useRouter()
@@ -227,7 +228,7 @@ export default function SubmisiDetailPage() {
 
           <div>
             <Label>Nama Siswa</Label>
-            <Input disabled value={data.nama_siswa}   className="bg-gray-200" />
+            <Input disabled value={data.nama_siswa}  />
           </div>
           
 
@@ -238,7 +239,7 @@ export default function SubmisiDetailPage() {
   {[1, 2, 3, 4].map((tier) => (
     <div
       key={tier}
-      className="flex items-center justify-between gap-6 p-4 border rounded-md bg-white"
+      className="flex items-center justify-between gap-6 p-4 rounded-md bg-white" 
     >
       <div className="text-sm text-gray-700">
         <span className="font-semibold">{tier}</span>: {mapTier(tier)}
@@ -247,9 +248,21 @@ export default function SubmisiDetailPage() {
         value={statusList[`statustier${tier}`]}
         onValueChange={(val) => handleChange(`statustier${tier}`, val)}
       >
-        <SelectTrigger className="w-[180px] border-gray-300 focus:ring-2 focus:ring-primary">
-          <SelectValue placeholder="Pilih Status" />
-        </SelectTrigger>
+        <SelectTrigger
+  className={`
+    w-[180px] border-gray-300 focus:ring-2 focus:ring-primary
+    ${
+      statusList[`statustier${tier}`] === 'diterima'
+        ? 'bg-green-100 text-green-800'
+        : statusList[`statustier${tier}`] === 'ditolak'
+        ? 'bg-red-100 text-red-800'
+        : ''
+    }
+  `}
+>
+  <SelectValue placeholder="Pilih Status" />
+</SelectTrigger>
+
         <SelectContent>
           <SelectItem value="diterima">Diterima</SelectItem>
           <SelectItem value="ditolak">Ditolak</SelectItem>
@@ -268,7 +281,7 @@ export default function SubmisiDetailPage() {
               placeholder="Contoh: Siswa ditolak di mata pelajaran pilihan 2 karena ..."
             />
           </div>
-
+          
           <div className="flex justify-between mt-4">
             <Button variant="secondary" onClick={() => router.back()}>
               Kembali
@@ -276,7 +289,13 @@ export default function SubmisiDetailPage() {
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button>Simpan</Button>
+              <Button
+                  variant="default"
+                  type="submit"
+                >
+                  <Save className="h-5 w-5 mr-2" />
+                  Simpan
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

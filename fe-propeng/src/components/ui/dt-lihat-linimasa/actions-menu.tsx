@@ -20,16 +20,6 @@ interface DataTableViewOptionsProps<TData> {
 export function DataTableViewOptions<TData>({
   table
 }: DataTableViewOptionsProps<TData>) {
-  const columnDisplayNames: Record<string, string> = {
-    "start_date": "Tanggal Mulai",
-    "end_date": "Tanggal Berakhir",
-    "angkatan": "Angkatan",
-    "matpel": "Mata Pelajaran",
-    "submissions_count": "Pendaftar",
-    "status": "Status",
-    "actions": "Aksi"
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -59,11 +49,11 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {columnDisplayNames[column.id] || column.id}
+                {column.id}
               </DropdownMenuCheckboxItem>
             );
           })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
-} 
+}

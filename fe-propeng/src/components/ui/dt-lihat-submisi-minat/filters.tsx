@@ -4,9 +4,9 @@ import { Cross2Icon, ArrowDownIcon, ArrowUpIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTableFacetedFilter } from "@/components/ui/dt-lihat-matpel/filters_clear";
+import { DataTableFacetedFilter } from "@/components/ui/dt-lihat-submisi-minat/filters_clear";
 import { useState } from "react";
-import { DataTableViewOptions } from "@/components/ui/dt-lihat-matpel/actions-menu";
+import { DataTableViewOptions } from "@/components/ui/dt-lihat-submisi-minat/actions-menu";
 import { TrashIcon, Check } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -159,6 +159,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           </Button>
         )}
       </div>
+            <DataTableViewOptions table={table} />
     </div>
   );
 }
