@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { ClipboardList, Trash2, Pencil } from "lucide-react";
-import { LINIMASA_UPDATED_EVENT } from "@/app/admin/linimasa/page";
+import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 import { Button } from "@/components/ui/button";
 import {

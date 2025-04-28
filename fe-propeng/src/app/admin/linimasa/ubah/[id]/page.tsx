@@ -36,6 +36,7 @@ import { ArrowLeft, CalendarIcon, Save } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 interface Angkatan {
   id: number;
@@ -510,7 +511,7 @@ export default function UpdateLinimasa() {
         customToast.success("Berhasil Memperbarui Linimasa", "Linimasa berhasil diperbarui");
         
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("linimasa_updated"));
+          window.dispatchEvent(new Event(LINIMASA_UPDATED_EVENT));
         }
         
         setTimeout(() => {

@@ -40,6 +40,7 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 interface DataGuru {
   id: string;
@@ -440,7 +441,7 @@ export default function CreateLinimasa() {
         
         // Dispatch event to refresh the list
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("linimasa_updated"));
+          window.dispatchEvent(new Event(LINIMASA_UPDATED_EVENT));
         }
         
         setTimeout(() => {
