@@ -1,86 +1,57 @@
-"use client";
+"use client"
 
-import React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
+import React from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
-export default function GuruLayout({
+export default function SiswaLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const hideSidebar = false;
+  const pathname = usePathname()
+  const router = useRouter()
+  const hideSidebar = false
 
-  // Merged breadcrumb maps
+  // Breadcrumb maps for student routes
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/guru/kelas": [{ label: "Manajemen Kelas" }],
-    "/guru/kelas/absensi": [
-      { label: "Manajemen Kelas", href: "/guru/kelas" },
-      { label: "Absensi" },
-    ],
-    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/raport": [{ label: "Raport Siswa" }],
+    "/siswa/laporannilaiabsen": [{ label: "Laporan Nilai dan Kehadiran Siswa" }],
+    "/siswa/mata-pelajaran-peminatan": [{ label: "Pengajuan Mata Pelajaran Peminatan" }],
     "/siswa/mata-pelajaran-peminatan/daftar": [
       { label: "Pengajuan Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
       { label: "Daftar" },
     ],
-    "/siswa/mata-pelajaran-peminatan": [
-      { label: "Pengajuan Mata Pelajaran Peminatan"},
-    ],
-  };
+  }
 
   // Generate breadcrumbs based on current pathname
   const generateBreadcrumbs = (pathname: string): { label: string; href?: string }[] => {
-    if (pathname.startsWith("/guru/manajemennilai/inputnilai/")) {
+    // Handle dynamic routes
+    if (pathname.match(/^\/siswa\/laporannilai\/[^/]+$/)) {
       return [
-        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
-        { label: "Input Data Nilai" },
-      ];
-    } else if (pathname.startsWith("/guru/mata-pelajaran/detil/")) {
-      return [
-        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
-        { label: "Atur Komponen Penilaian dan Bobot" },
-      ];
-    } else if (pathname.includes("/guru/kelas/detail")) {
-      return [
-        { label: "Manajemen Kelas", href: "/guru/kelas" },
-        { label: "Detail Kelas" },
-      ];
+        { label: "Laporan Nilai dan Kehadiran Siswa", href: "/siswa/laporannilaiabsen" },
+        { label: "Detail Nilai Siswa" },
+      ]
     } else {
-      return breadcrumbMap[pathname] || [];
+      return breadcrumbMap[pathname] || []
     }
-  };
+  }
 
-  const handleBreadcrumbClick = (
-    href: string | undefined,
-    e: React.MouseEvent
-  ) => {
-    if (!href) return;
-    e.preventDefault();
-    if (href === "/guru/kelas" && pathname.includes("/guru/kelas/detail")) {
-      localStorage.setItem("kelas_data_refresh", "true");
-    }
-    router.push(href);
-  };
+  const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
+    if (!href) return
+    e.preventDefault()
+    router.push(href)
+  }
 
-  const breadcrumbs = generateBreadcrumbs(pathname);
+  const breadcrumbs = generateBreadcrumbs(pathname)
 
   return (
     <SidebarProvider>
@@ -100,9 +71,7 @@ export default function GuruLayout({
                         {breadcrumb.href ? (
                           <a
                             href={breadcrumb.href}
-                            onClick={(e) =>
-                              handleBreadcrumbClick(breadcrumb.href, e)
-                            }
+                            onClick={(e) => handleBreadcrumbClick(breadcrumb.href, e)}
                             className="text-sm font-medium text-muted-foreground hover:text-foreground"
                           >
                             {breadcrumb.label}
@@ -121,5 +90,5 @@ export default function GuruLayout({
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }

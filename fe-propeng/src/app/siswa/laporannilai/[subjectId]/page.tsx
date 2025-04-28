@@ -1,3 +1,4 @@
+// src/app/siswa/laporannilai/[subjectId]/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
