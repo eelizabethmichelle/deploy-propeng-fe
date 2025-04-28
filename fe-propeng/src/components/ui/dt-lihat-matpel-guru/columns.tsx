@@ -8,6 +8,19 @@ import { CheckCircle, X } from "lucide-react";
 
 export const mataPelajaranColumns: ColumnDef<Schema>[] = [
   {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Nama Pelajaran" />
+    ),
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <span className="max-w-[250px] truncate font-medium capitalize">
+          {row.getValue("name")}
+        </span>
+      </div>
+    ),
+  },
+  {
     accessorKey: "tahunAjaran",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Tahun Ajaran" />
@@ -27,19 +40,6 @@ export const mataPelajaranColumns: ColumnDef<Schema>[] = [
       return value.includes(rowValue);
     },
   },  
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Nama Pelajaran" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <span className="max-w-[250px] truncate font-medium capitalize">
-          {row.getValue("name")}
-        </span>
-      </div>
-    ),
-  },
   {
     accessorKey: "students",
     header: ({ column }) => (

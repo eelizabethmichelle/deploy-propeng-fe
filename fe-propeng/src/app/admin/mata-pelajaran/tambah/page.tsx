@@ -369,7 +369,19 @@ export default function TambahMataPelajaran() {
                   <FormItem>
                     <FormLabel>Nama Mata Pelajaran *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Contoh: Matematika" {...field} />
+                      <Input
+                        placeholder="Contoh: Matematika"
+                        value={field.value}
+                        onChange={(e) => {
+                          const input = e.target.value;
+                          const formatted = input
+                            .toLowerCase()
+                            .split(' ')
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ');
+                          field.onChange(formatted); // <-- important!
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
