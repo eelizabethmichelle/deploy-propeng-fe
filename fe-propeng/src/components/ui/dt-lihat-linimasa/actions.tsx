@@ -64,6 +64,14 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
   };
 
   const handleDelete = async () => {
+    if ((data as any).submissions_count > 0) {
+      customToast.error(
+        "Linimasa ini tidak dapat dihapus karena sudah ada submisi pengajuan mata pelajaran peminatan siswa",
+        ""
+      );
+      setDeleteDialogOpen(false);
+      return;
+    }
     setIsDeleting(true);
 
     try {
