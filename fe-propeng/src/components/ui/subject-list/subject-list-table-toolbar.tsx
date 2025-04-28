@@ -1,4 +1,4 @@
-// app/components/subject-list-toolbar.tsx
+// app/components/subject-list/subject-list-toolbar.tsx
 'use client';
 
 import * as React from 'react';
@@ -6,9 +6,9 @@ import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { XCircle } from 'lucide-react';
-// Pastikan tipe SubjectSummary di schema sudah punya academicYear
+// Impor tipe SubjectSummary dari schema
 import { SubjectSummary } from './schema';
-import { statusOptions } from './subject-list-columns';
+import { statusOptions } from './subject-list-columns'; // Impor status options
 import { DataTableFacetedFilter } from './filters-clear';
 import { DataTableViewOptions } from './action-menu';
 
@@ -19,27 +19,31 @@ interface FilterOption { label: string; value: string; icon?: React.ComponentTyp
 interface SubjectListToolbarProps {
   table: Table<SubjectSummary>;
   uniqueComponentOptions: FilterOption[];
-  uniqueAcademicYearOptions: FilterOption[]; // <-- Prop baru ditambahkan
+  uniqueAcademicYearOptions: FilterOption[];
 }
 
 export function SubjectListToolbar({
     table,
     uniqueComponentOptions,
-    uniqueAcademicYearOptions // <-- Terima prop baru
+    uniqueAcademicYearOptions
 }: SubjectListToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
-  // Dapatkan kolom
+  // Dapatkan kolom untuk filter
   const nameColumn = table.getColumn('name');
-  const statusColumn = table.getColumn('status');
+  // const statusColumn = table.getColumn('status');
   const componentsColumn = table.getColumn('components');
-  const academicYearColumn = table.getColumn('academicYear'); // <-- Dapatkan kolom tahun ajaran
+  const academicYearColumn = table.getColumn('academicYear');
+  const detailedStatus = table.getColumn('detailedStatus');
+  // const statusPColumn = table.getColumn('statusPengetahuan');
+  // const statusKColumn = table.getColumn('statusKeterampilan');
+
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
       {/* Filter */}
       <div className="flex flex-1 items-center space-x-2 flex-wrap">
-        {/* Filter Nama Mapel */}
+        {/* Filter Nama Mapel (Sama) */}
         {nameColumn && (
           <Input
             placeholder="Cari mata pelajaran..."
@@ -50,7 +54,6 @@ export function SubjectListToolbar({
           />
         )}
 
-        {/* Filter Tahun Ajaran */}
         {academicYearColumn && uniqueAcademicYearOptions && uniqueAcademicYearOptions.length > 0 && (
             <DataTableFacetedFilter
                 column={academicYearColumn}
@@ -59,16 +62,31 @@ export function SubjectListToolbar({
             />
         )}
 
-        {/* Filter Status */}
-        {statusColumn && (
+        {detailedStatus && (
           <DataTableFacetedFilter
-            column={statusColumn}
-            title="Status"
-            options={statusOptions}
+            column={detailedStatus} // Gunakan kolom statusPengetahuan
+            title="Status Pengisian" 
+            options={statusOptions} // Opsi status sama
           />
         )}
+        {/* {statusPColumn && (
+          <DataTableFacetedFilter
+            column={statusPColumn} // Gunakan kolom statusPengetahuan
+            title="Status Pengetahuan" 
+            options={statusOptions} // Opsi status sama
+          />
+        )} */}
 
-         {/* Filter Komponen Mapel */}
+        {/* Filter Status Keterampilan */}
+        {/* {statusKColumn && (
+          <DataTableFacetedFilter
+            column={statusKColumn} // Gunakan kolom statusKeterampilan
+            title="Status Keterampilan" // Judul lebih pendek
+            options={statusOptions} 
+          />
+        )} */}
+
+
          {componentsColumn && uniqueComponentOptions.length > 0 && (
              <DataTableFacetedFilter
                 column={componentsColumn}
@@ -77,7 +95,7 @@ export function SubjectListToolbar({
             />
          )}
 
-        {/* Tombol Reset Filter */}
+        {/* Tombol Reset Filter (Sama) */}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -90,7 +108,7 @@ export function SubjectListToolbar({
         )}
       </div>
 
-      {/* View Options */}
+      {/* View Options (Sama) */}
       <div className="flex items-center space-x-2">
         <DataTableViewOptions table={table} />
       </div>

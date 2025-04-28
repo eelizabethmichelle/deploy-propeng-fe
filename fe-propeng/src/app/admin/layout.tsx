@@ -50,6 +50,15 @@ export default function AdminLayout({
       { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
       { label: "Tambah Mata Pelajaran" },
     ],
+    "/admin/linimasa": [{ label: "Linimasa Pengajuan Mata Pelajaran Peminatan" }],
+    "/admin/linimasa/tambah": [
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Tambah Linimasa" },
+    ],
+    "/admin/linimasa/[linimasaId]": [
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Submisi" },
+    ],
   };
 
   let breadcrumbs = breadcrumbMap[pathname] || [];
@@ -57,6 +66,23 @@ export default function AdminLayout({
     breadcrumbs = [
       { label: "Manajemen Kelas", href: "/admin/kelas" },
       { label: "Detail Kelas" },
+    ];
+  }
+
+  if (pathname.includes("/admin/linimasa")) {
+    breadcrumbs = [
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Submisi" },
+    ];
+  }
+
+  if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
+    const parts = pathname.split("/");
+    const eventId = parts[3];
+    breadcrumbs = [
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Submisi", href: `/admin/linimasa/${eventId}` },
+      { label: "Persetujuan" },
     ];
   }
 

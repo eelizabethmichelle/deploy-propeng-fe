@@ -48,12 +48,12 @@ interface ProfileData {
 // Custom logo component (updated)
 const Logo = () => (
   <div className="flex items-center justify-center">
-    <Image 
+    <Image
       color="#ffffff"
-      src="/logo.svg" 
-      alt="SIMAK SMA Kristen Anglo" 
-      width={50} 
-      height={72} 
+      src="/logo.svg"
+      alt="SIMAK SMA Kristen Anglo"
+      width={50}
+      height={72}
       className="w-auto h-auto rounded-lg"
     />
   </div>
@@ -153,7 +153,7 @@ const data = {
         isActive: true,
         items: [
           {
-            title: "Lihat kelas",
+            title: "Mengelola Absensi",
             url: "/guru/kelas/absensi",
           },
           {
@@ -186,6 +186,46 @@ const data = {
           },
         ],
       },
+      {
+        title: "Mata Pelajaran Peminatan",
+        url: "#",
+        icon: BookOpen ,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "/guru/submisi-peminatan/",
+          }
+        ],
+      },
+    ],
+    student: [
+      {
+        title: "Mata Pelajaran Peminatan", // Main group title
+        url: "/siswa/mata-pelajaran-peminatan", // Top-level doesn't navigate directly
+        icon: BookOpen,
+        isActive: false, // Adjust based on active route logic
+        items: [
+          {
+            title: "Lihat Pendaftaran", // Sub-item is the actual link
+            url: "/siswa/mata-pelajaran-peminatan", // Placeholder URL for now
+            // icon: PlusCircle, // Optional sub-item icon
+          }
+        ]
+      },
+      {
+        title: "Laporan Nilai dan Absen", // Main group title
+        url: "#", // Top-level doesn't navigate directly
+        icon: SquareDivide,
+        isActive: false, // Adjust based on active route logic
+        items: [
+          {
+            title: "Lihat Semua", // Sub-item is the actual link
+            url: "/siswa/laporannilaiabsen", // URL for your existing page
+            // icon: Newspaper, // Optional sub-item icon
+          }
+        ]
+      },
     ],
     other: [
     ],
@@ -199,28 +239,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
 
   const fetchProfile = async (userId: number) => {
-      try {
-        const accessToken =
-          localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+    try {
+      const accessToken =
+        localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
-        const response = await fetch(`/api/profile`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken} Id ${userId}`,
-          },
-        });
+      const response = await fetch(`/api/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken} Id ${userId}`,
+        },
+      });
 
-        if (!response.ok) {
-          router.push("/login")
-          throw new Error("Failed to fetch profile");
-        }
-
-        const data = await response.json();
-        console.log("Fetched profile:", data.data);
-        setProfile(data.data);
-      } catch (error) {
-        console.error(error);
+      if (!response.ok) {
+        router.push("/login")
+        throw new Error("Failed to fetch profile");
       }
+
+      const data = await response.json();
+      console.log("Fetched profile:", data.data);
+      setProfile(data.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -228,7 +268,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setUserId(Number(localStorage.getItem("user_id")) || Number(sessionStorage.getItem("user_id")));
     if (user_id !== null) fetchProfile(user_id);
   }, [user_id]);
-  
+
   const { user, isLoading } = useAuth();
 
   // Show loading state
@@ -262,7 +302,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {user.role === "admin" && <NavMain items={data.navMain.admin} />}
         {user.role === "teacher" && <NavMain items={data.navMain.teacher} />}
-        {user.role === "student" && <NavMain items={data.navMain.other} />}
+        {user.role === "student" && <NavMain items={data.navMain.student} />}
       </SidebarContent>
       <SidebarFooter>
         {profile && <NavUser user={{ name: profile.username, email: profile.email, avatar: data.user.avatar }} />}
