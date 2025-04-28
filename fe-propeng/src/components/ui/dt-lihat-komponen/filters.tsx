@@ -59,6 +59,24 @@ export function DataTableToolbar({
   );  
   const [komponenList, setKomponenList] = useState<any[]>([]);
 
+  const customToast = {
+    success: (title: string, description: string) => {
+        toast.success(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    error: (title: string, description: string) => {
+        toast.error(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    },
+    warning: (title: string, description: string) => {
+        toast.warning(title, {
+            description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+        });
+    }
+  };
+
   useEffect(() => {
     setAccessToken(
       localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken")
@@ -67,7 +85,7 @@ export function DataTableToolbar({
 
   const handleDeleteConfirm = async () => {
     if (!accessToken) {
-      toast.error("Gagal menghapus komponen. Token tidak ditemukan");
+      customToast.error("Gagal menghapus Komponen Penilaian", "Token tidak ditemukan")
       router.push("/login");
       return;
     }
@@ -96,15 +114,20 @@ export function DataTableToolbar({
         setProgress(((i + 1) / selectedRows.length) * 100);
       }
 
-      toast.success(`${selectedRows.length - failed} Komponen Penilaian berhasil dihapus`);
+      if (failed > 0) {
+        customToast.error(`Gagal menghapus Komponen Penilaian`, `${failed} Komponen Penilaian gagal dihapus karena telah memiliki nilai`);
+      } 
+      
+      if (selectedRows.length - failed > 0) {
+        customToast.success(`Berhasil menghapus Komponen Penilaian`, `${selectedRows.length - failed} dari ${selectedRows} Komponen Penilaian berhasil dihapus`);
+      }
+
       triggerReload();
       table.resetRowSelection();
       setDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting komponen:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Gagal menghapus Komponen Penilaian"
-      );
+      customToast.error(`Gagal menghapus Komponen Penilaian`, error instanceof Error ? error.message : `Gagal menghapus Komponen Penilaian`);
     } finally {
       setLoading(false);
       setProgress(0);
@@ -113,28 +136,28 @@ export function DataTableToolbar({
 
   const handleAddKomponen = async () => {
     if (!accessToken) {
-      toast.error("Gagal menambahkan komponen. Token tidak ditemukan");
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Token tidak ditemukan")
       router.push("/login");
       return;
     }
 
     if (!namaKomponen.trim()) {
-      toast.error("Nama komponen tidak boleh kosong");
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Nama Komponen Penilaian tidak boleh kosong")
       return;
     }
 
     if (namaKomponen.length > 50) {
-      toast.error("Nama komponen maksimal 50 karakter");
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Nama Komponen Penilaian maksimal memiliki panjang 50 karakter")
       return;
     }
 
     if (!bobotKomponen || isNaN(Number(bobotKomponen))) {
-      toast.error("Bobot komponen harus berupa angka");
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Bobot komponen harus berupa angka")
       return;
     }
 
     if (Number(bobotKomponen) < 1 || Number(bobotKomponen) > 100) {
-      toast.error("Bobot komponen harus antara 1 hingga 100");
+      customToast.error("Gagal menambahkan Komponen Penilaian", "Bobot Komponen Penilaian harus bernilai di antara 1 hingga 100")
       return;
     }
 

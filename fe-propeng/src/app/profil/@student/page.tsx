@@ -541,7 +541,7 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
             <div>
               <p className="text-gray-500">Kelas</p>
               <p className="text-blue-900">
-                {user.activeClasses?.[0] ? user.activeClasses[0] : "Tidak tergabung ke Kelas aktif manapun"}
+                {user.activeClasses?.[0] ? user.activeClasses : "Tidak tergabung ke Kelas aktif manapun"}
               </p>
             </div>
             <div>
