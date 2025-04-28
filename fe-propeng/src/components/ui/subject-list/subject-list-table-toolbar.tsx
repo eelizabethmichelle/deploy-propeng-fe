@@ -18,28 +18,32 @@ interface FilterOption { label: string; value: string; icon?: React.ComponentTyp
 // Props toolbar
 interface SubjectListToolbarProps {
   table: Table<SubjectSummary>;
-  uniqueComponentOptions: FilterOption[]; // Berdasarkan nama komponen
+  uniqueComponentOptions: FilterOption[];
   uniqueAcademicYearOptions: FilterOption[];
 }
 
 export function SubjectListToolbar({
     table,
-    uniqueComponentOptions, // Opsi filter nama komponen
+    uniqueComponentOptions,
     uniqueAcademicYearOptions
 }: SubjectListToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
   // Dapatkan kolom untuk filter
   const nameColumn = table.getColumn('name');
-  const statusColumn = table.getColumn('status');
-  const componentsColumn = table.getColumn('components'); // Kolom untuk filter nama komponen
+  // const statusColumn = table.getColumn('status');
+  const componentsColumn = table.getColumn('components');
   const academicYearColumn = table.getColumn('academicYear');
+  const detailedStatus = table.getColumn('detailedStatus');
+  // const statusPColumn = table.getColumn('statusPengetahuan');
+  // const statusKColumn = table.getColumn('statusKeterampilan');
+
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
       {/* Filter */}
       <div className="flex flex-1 items-center space-x-2 flex-wrap">
-        {/* Filter Nama Mapel */}
+        {/* Filter Nama Mapel (Sama) */}
         {nameColumn && (
           <Input
             placeholder="Cari mata pelajaran..."
@@ -50,35 +54,48 @@ export function SubjectListToolbar({
           />
         )}
 
-        {/* Filter Tahun Ajaran */}
         {academicYearColumn && uniqueAcademicYearOptions && uniqueAcademicYearOptions.length > 0 && (
             <DataTableFacetedFilter
-                // Cukup teruskan objek kolomnya saja
                 column={academicYearColumn}
                 title="Thn. Ajaran"
-                // Opsi filter sudah berisi nilai asli (e.g., "2024", "2025")
                 options={uniqueAcademicYearOptions}
             />
         )}
-        {/* Filter Status */}
-        {statusColumn && (
+
+        {detailedStatus && (
           <DataTableFacetedFilter
-            column={statusColumn}
-            title="Status"
-            options={statusOptions} // Gunakan statusOptions yang diimpor
+            column={detailedStatus} // Gunakan kolom statusPengetahuan
+            title="Status Pengisian" 
+            options={statusOptions} // Opsi status sama
           />
         )}
+        {/* {statusPColumn && (
+          <DataTableFacetedFilter
+            column={statusPColumn} // Gunakan kolom statusPengetahuan
+            title="Status Pengetahuan" 
+            options={statusOptions} // Opsi status sama
+          />
+        )} */}
 
-         {/* Filter Komponen Mapel (berdasarkan NAMA) */}
+        {/* Filter Status Keterampilan */}
+        {/* {statusKColumn && (
+          <DataTableFacetedFilter
+            column={statusKColumn} // Gunakan kolom statusKeterampilan
+            title="Status Keterampilan" // Judul lebih pendek
+            options={statusOptions} 
+          />
+        )} */}
+
+
          {componentsColumn && uniqueComponentOptions.length > 0 && (
              <DataTableFacetedFilter
-                column={componentsColumn} // Targetkan kolom 'components'
-                title="Komponen" // Judul filter
-                options={uniqueComponentOptions} // Opsi berisi nama-nama komponen
+                column={componentsColumn}
+                title="Komponen"
+                options={uniqueComponentOptions}
             />
          )}
 
-        {/* Tombol Reset Filter */}
+        {/* Tombol Reset Filter (Sama) */}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -91,7 +108,7 @@ export function SubjectListToolbar({
         )}
       </div>
 
-      {/* View Options */}
+      {/* View Options (Sama) */}
       <div className="flex items-center space-x-2">
         <DataTableViewOptions table={table} />
       </div>

@@ -7,17 +7,41 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Activity, XCircle, LoaderIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 // Impor schema yang sudah diupdate
-import { ComponentSummary, SubjectSummary } from "./schema";
+import { ComponentSummary, SubjectStatusType, SubjectSummary } from "./schema";
 import { DataTableColumnHeader } from "./sort";
 import { SubjectListRowActions } from "./subject-list-row-actions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../tooltip";
 
-// Opsi untuk filter status
+// Opsi untuk filter status (tetap bisa digunakan untuk helper render)
 export const statusOptions = [
-    { value: 'Terisi Penuh', label: 'Terisi Penuh', icon: CheckCircle },
-    { value: 'Dalam Proses', label: 'Dalam Proses', icon: LoaderIcon },
-    { value: 'Belum Dimulai', label: 'Belum Dimulai', icon: XCircle },
+    { value: 'Terisi Penuh', label: 'Terisi Penuh', icon: CheckCircle, iconColorClass: "text-primary" }, // Tambah warna ikon di sini
+    { value: 'Dalam Proses', label: 'Dalam Proses', icon: LoaderIcon, iconColorClass: "text-green-500" }, // Ganti Activity -> LoaderIcon jika mau, atau Activity
+    { value: 'Belum Dimulai', label: 'Belum Dimulai', icon: XCircle, iconColorClass: "text-red-500" },
 ];
+
+// Helper function untuk merender badge status tunggal
+const renderStatusBadge = (status: SubjectStatusType | undefined | null, typeLabel: string) => {
+    if (!status) {
+        return <span className="text-xs text-muted-foreground">{typeLabel}: N/A</span>; // Tampilkan N/A jika status tidak ada
+    }
+
+    const option = statusOptions.find(opt => opt.value === status);
+    if (!option) {
+        // Tampilkan status mentah jika tidak ada di opsi (fallback)
+        return <span className="text-xs">{typeLabel}: {status}</span>;
+    }
+
+    // Style badge bisa disamakan dengan yang lama atau disesuaikan
+    return (
+        <div className="flex items-center space-x-1 whitespace-nowrap">
+            <span className="text-xs font-medium">{typeLabel}:</span>
+            <Badge variant="outline" className="bg-white text-xs px-1.5 h-5 font-normal">
+                 <option.icon className={cn("h-3 w-3", option.iconColorClass)} style={{ marginRight: '2px' }} />
+                 <span>{option.label}</span>
+            </Badge>
+        </div>
+    );
+};
 
 export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
     // Kolom No.
@@ -131,114 +155,130 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
         },
         size: 130, // Sesuaikan size jika perlu agar tidak wrap
     },
+    // {
+    //     accessorKey: 'statusPengetahuan',
+    //     header: 'Status Pengetahuan', // Header mungkin tidak perlu jika disembunyikan
+    //     enableHiding: true, // Izinkan user menampilkannya jika mau 
+    //     enableColumnFilter: false
+    // },
+    // {
+    //     accessorKey: 'statusKeterampilan',
+    //     header: 'Status Keterampilan', // Header mungkin tidak perlu jika disembunyikan
+    //     enableHiding: true, // Izinkan user menampilkannya jika mau
+      
+    // },
 
-    // Kolom Status Pengisian (Agregat)
-    {
-        accessorKey: "status",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian" />,
-        cell: ({ row }) => {
-            const status = row.original.status;
-            const option = statusOptions.find(option => option.value === status);
-            if (!option) return null;
-             let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
-             let iconColorClass = "text-gray-500";
-             if (status === 'Terisi Penuh') iconColorClass = "text-primary";
-             else if (status === 'Dalam Proses') iconColorClass = "text-green-500";
-             else if (status === 'Belum Dimulai') iconColorClass = "text-red-500";
-            return (
-                 <Badge variant={badgeVariant} className="bg-white text-xs whitespace-nowrap">
-                     <option.icon className={cn("mr-1 h-3 w-3", iconColorClass)} />{option.label}
-                 </Badge>
-            );
-        },
-        enableSorting: true, filterFn: (row, id, value) => value.includes(row.getValue(id)), size: 150,
-    },
+
     // --- Kolom Komponen Penilaian (Nama komponen pertama jadi Badge) ---
    // --- Kolom Komponen Penilaian (Style Badge disamakan dengan Status) ---
     {
         accessorKey: "components",
         header: ({ column }) => <DataTableColumnHeader column={column} title="Komponen Penilaian" />,
         cell: ({ row }) => {
-            const components: ComponentSummary[] | undefined = row.original.components;
-            if (!components || components.length === 0) {
-                return <span className="text-xs text-muted-foreground">Belum Diatur</span>;
-            }
+        const components: ComponentSummary[] | undefined = row.original.components;
 
-            const knowledgeComponents = components.filter(c => c.type === 'Pengetahuan');
-            const skillComponents = components.filter(c => c.type === 'Keterampilan');
+        // Check if components array itself is valid before proceeding
+        if (!components || !Array.isArray(components) || components.length === 0) {
+            // Handle case where there are NO components at all for the subject
+            return <span className="text-xs text-muted-foreground">Belum Diatur</span>;
+            // Alternatively, show Belum Dibuat for both explicitly:
+            // return (
+            //     <div className="flex flex-col gap-y-1">
+            //         <div className="text-xs ..."><span className="font-medium">Pengetahuan:</span> <span className="text-muted-foreground italic">Belum Dibuat</span></div>
+            //         <div className="text-xs ..."><span className="font-medium">Keterampilan:</span> <span className="text-muted-foreground italic">Belum Dibuat</span></div>
+            //     </div>
+            // );
+             // Sticking with "Belum Diatur" is simpler if NO components exist at all.
+        }
 
-            const knowledgeNames = knowledgeComponents.map(c => c.name).join(", ") || "-";
-            const skillNames = skillComponents.map(c => c.name).join(", ") || "-";
+        // Filter components (existing logic)
+        const knowledgeComponents = components.filter(c => c.type === 'Pengetahuan');
+        const skillComponents = components.filter(c => c.type === 'Keterampilan');
 
-            // Fungsi helper untuk merender satu grup tipe komponen
-            const renderComponentGroup = (
-                label: string,
-                componentList: ComponentSummary[],
-                allNamesTooltip: string,
-                labelColorClass: string // Kita masih bisa bedakan warna label jika mau
-            ) => {
-                if (componentList.length === 0) return null;
+        // Tooltip strings (existing logic)
+        const knowledgeNames = knowledgeComponents.map(c => c.name).join(", ") || "-";
+        const skillNames = skillComponents.map(c => c.name).join(", ") || "-";
 
-                const firstComponentName = componentList[0]?.name ?? 'N/A';
-                const remainingCount = componentList.length - 1;
-
+        // MODIFIED Helper function
+        const renderComponentGroup = (
+            label: string,
+            componentList: ComponentSummary[],
+            allNamesTooltip: string,
+            labelColorClass: string
+        ) => {
+            // --- MODIFICATION START ---
+            // Check if the list for this specific type is empty
+            if (componentList.length === 0) {
+                // If empty, return the "Belum Dibuat" message for this type
                 return (
                     <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
-                        {/* Label Tipe */}
                         <span className={cn("font-medium", labelColorClass)}>{label}:</span>
-
-                        {/* Nama Komponen Pertama (Style seperti Status) */}
-                        <Badge
-                            variant="outline" // Samakan variant
-                            // Samakan kelas dasar: bg-white, ukuran teks, dll.
-                            // Hapus kelas warna spesifik tipe (bg-blue-50, dll.)
-                            className="bg-white h-5 px-1.5 font-normal text-xs whitespace-nowrap"
-                        >
-                             {firstComponentName}
-                        </Badge>
-
-                        {/* Badge "+N" (Style seperti Status) */}
-                        {remainingCount > 0 && (
-                            <TooltipProvider delayDuration={100}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Badge
-                                            variant="outline" // Samakan variant
-                                            // Samakan kelas dasar: bg-white, ukuran teks, dll.
-                                            className="bg-white h-5 px-1.5 text-xs whitespace-nowrap cursor-default"
-                                        >
-                                            +{remainingCount}
-                                        </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                        <p className="text-xs">{allNamesTooltip}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        )}
+                        <span className="text-muted-foreground italic">Belum Dibuat</span>
                     </div>
                 );
-            };
+            }
+            // --- MODIFICATION END ---
 
-            // Render kedua grup
+            // If not empty, proceed with the original logic
+            const firstComponentName = componentList[0]?.name ?? 'N/A';
+            const remainingCount = componentList.length - 1;
+
             return (
-                <div className="flex flex-col gap-y-1">
-                    {renderComponentGroup(
-                        'Pengetahuan',
-                        knowledgeComponents,
-                        knowledgeNames,
-                        'text-foreground' // Warna label bisa tetap beda atau disamakan (misal: 'text-gray-700')
-                    )}
-                    {renderComponentGroup(
-                        'Keterampilan',
-                        skillComponents,
-                        skillNames,
-                        'text-foreground'// Warna label bisa tetap beda atau disamakan
+                <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
+                    <span className={cn("font-medium", labelColorClass)}>{label}:</span>
+                    
+                     <Badge
+                                variant="outline" // Samakan variant
+                                // Samakan kelas dasar: bg-white, ukuran teks, dll.
+                                // Hapus kelas warna spesifik tipe (bg-blue-50, dll.)
+                                className="bg-white h-5 px-1.5 font-normal text-xs whitespace-nowrap"
+                            >
+                                {firstComponentName}
+                            </Badge>
+
+                            {/* Badge "+N" (Style seperti Status) */}
+                            {remainingCount > 0 && (
+                                <TooltipProvider delayDuration={100}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Badge
+                                                variant="outline" // Samakan variant
+                                                // Samakan kelas dasar: bg-white, ukuran teks, dll.
+                                                className="bg-white h-5 px-1.5 text-xs whitespace-nowrap cursor-default"
+                                            >
+                                                +{remainingCount}
+                                            </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="text-xs">{allNamesTooltip}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            
                     )}
                 </div>
             );
-        },
-        enableSorting: false,
+        };
+
+        // Render both groups (calls the modified helper)
+        return (
+            <div className="flex flex-col gap-y-1">
+                {renderComponentGroup(
+                    'Pengetahuan',
+                    knowledgeComponents,
+                    knowledgeNames,
+                    'text-foreground'
+                )}
+                {renderComponentGroup(
+                    'Keterampilan',
+                    skillComponents,
+                    skillNames,
+                    'text-foreground'
+                )}
+            </div>
+        );
+    },
+    enableSorting: false,
         filterFn: (row, id, value: string[]) => {
             const components = row.original.components;
             if (!components || value.length === 0) return true;
@@ -247,6 +287,36 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
     },
     // --- Akhir Kolom Komponen Penilaian ---
 
+        // Kolom Status Pengisian (Agregat)
+   {
+        // Ganti accessorKey ke id karena kita butuh akses ke beberapa field
+        id: "detailedStatus",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian" />, // Ganti Judul
+        cell: ({ row }) => {
+            // Ambil kedua status dari data baris
+            const statusP = row.original.statusPengetahuan;
+            const statusK = row.original.statusKeterampilan;
+
+            return (
+                // Gunakan flex-col untuk menumpuk status
+                <div className="flex flex-col gap-y-1 items-start">
+                    {renderStatusBadge(statusP, 'Pengetahuan')} {/* Render status Pengetahuan */}
+                    {renderStatusBadge(statusK, 'Keterampilan')} {/* Render status Keterampilan */}
+                </div>
+            );
+        },
+        enableSorting: false, // Sorting pada status gabungan ini mungkin tidak intuitif
+        // Filter function bisa disesuaikan jika diperlukan, mungkin filter berdasarkan salah satu status?
+        // Atau biarkan tanpa filter di kolom ini.
+        // filterFn: (row, id, value) => {
+        //     // Contoh: filter jika value ada di statusP ATAU statusK
+        //     const statusP = row.original.statusPengetahuan;
+        //     const statusK = row.original.statusKeterampilan;
+        //     return value.includes(statusP) || value.includes(statusK);
+        // },
+        size: 150, // Mungkin perlu sedikit lebih lebar
+    },
+    // --- Akhir Kolom Status Pengisian ---
     // Kolom Aksi
     {
         id: 'actions',

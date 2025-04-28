@@ -15,6 +15,10 @@ export const componentSummarySchema = z.object({
   type: z.enum(['Pengetahuan', 'Keterampilan']).or(z.string()), // Validasi tipe
 });
 
+// Tipe Status yang Mungkin (Tambahkan ini untuk konsistensi)
+export type SubjectStatusType = 'Terisi Penuh' | 'Dalam Proses' | 'Belum Dimulai' | string;
+const subjectStatusEnum = z.enum(['Terisi Penuh', 'Dalam Proses', 'Belum Dimulai']);
+
 // Skema untuk ringkasan satu mata pelajaran
 export interface SubjectSummary {
     id: string; // UUID MataPelajaran
@@ -25,7 +29,9 @@ export interface SubjectSummary {
     skillWeight: number;     // Total bobot Keterampilan
     componentCount: number;  // Jumlah total komponen
     studentCount: number;    // Jumlah siswa
-    status: 'Terisi Penuh' | 'Dalam Proses' | 'Belum Dimulai' | string; // Status pengisian
+    status: SubjectStatusType; // Status keseluruhan (masih ada dari backend)
+    statusPengetahuan: SubjectStatusType; 
+    statusKeterampilan: SubjectStatusType;
     components: ComponentSummary[]; // Array detail komponen
 }
 export const subjectSummarySchema = z.object({
@@ -38,6 +44,8 @@ export const subjectSummarySchema = z.object({
    componentCount: z.number(),
    studentCount: z.number(), // Asumsikan selalu ada angka jumlah siswa
    status: z.enum(['Terisi Penuh', 'Dalam Proses', 'Belum Dimulai']).or(z.string()), // Validasi status
+   statusPengetahuan: subjectStatusEnum.or(z.string()),
+   statusKeterampilan: subjectStatusEnum.or(z.string()),
    components: z.array(componentSummarySchema), // Validasi array komponen
  });
 
