@@ -26,6 +26,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import {
+     Dialog,
+     DialogTrigger,
+     DialogContent,
+     DialogHeader,
+     DialogTitle,
+     DialogDescription,
+     DialogFooter,
+     DialogClose,
+  } from "@/components/ui/dialog";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -54,6 +64,14 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
   };
 
   const handleDelete = async () => {
+    if ((data as any).submissions_count > 0) {
+      customToast.error(
+        "Linimasa ini tidak dapat dihapus karena sudah ada submisi pengajuan mata pelajaran peminatan siswa",
+        ""
+      );
+      setDeleteDialogOpen(false);
+      return;
+    }
     setIsDeleting(true);
 
     try {
@@ -158,30 +176,42 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
               <Trash2 size={14} className="mr-2" />
               Hapus
             </DropdownMenuItem>
+            {/* <DialogTrigger asChild>
+              <DropdownMenuItem className="text-red-600">
+              <Trash2 size={14} className="mr-2" />
+              Hapus
+              </DropdownMenuItem>
+            </DialogTrigger> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Menghapus..." : "Ya, Hapus"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-} 
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Apakah Anda yakin menghapus linimasa ini?</DialogTitle>
+      <DialogDescription>
+        Linimasa yang sudah terhapus tidak dapat dikembalikan.
+      </DialogDescription>
+    </DialogHeader>
+
+    <DialogFooter className="sm:justify-end flex gap-4">
+      <DialogClose asChild>
+        <Button variant="neutral">
+          Batal
+        </Button>
+      </DialogClose>
+      <Button
+        variant="destructive"
+        onClick={handleDelete}
+      >
+        {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+      </Button>
+
+      
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+  </>
+);}

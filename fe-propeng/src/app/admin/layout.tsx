@@ -69,14 +69,11 @@ export default function AdminLayout({
     ];
   }
 
-  if (pathname.includes("/admin/linimasa")) {
+  if (pathname === "/admin/linimasa") {
     breadcrumbs = [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan" },
     ];
-  }
-
-  if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
+  } else if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
     const parts = pathname.split("/");
     const eventId = parts[3];
     breadcrumbs = [
@@ -84,7 +81,13 @@ export default function AdminLayout({
       { label: "Submisi", href: `/admin/linimasa/${eventId}` },
       { label: "Persetujuan" },
     ];
+  } else if (pathname.includes("/admin/linimasa")) {
+    breadcrumbs = [
+      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Submisi" },
+    ];
   }
+  
 
   if (pathname.includes("/admin/akun/detil")) {
     breadcrumbs = [
