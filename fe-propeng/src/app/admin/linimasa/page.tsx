@@ -77,14 +77,14 @@ export default function LinimasaPage() {
   const [sortField, setSortField] = useState<SortField>('start_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-
+  
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  // test
 
   // Register event listener for linimasa updates
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function LinimasaPage() {
       setError(null);
 
       const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
+      
       if (!accessToken) {
         router.push("/login");
         return;
@@ -203,7 +203,7 @@ export default function LinimasaPage() {
   const isEventEditable = (event: Event) => {
     const now = new Date();
     const endDate = new Date(event.end_date);
-
+    
     // Event is editable if it hasn't ended yet AND has no submissions
     return isBefore(now, endDate) && event.submissions_count === 0;
   };
@@ -211,24 +211,11 @@ export default function LinimasaPage() {
   const getEditTooltipMessage = (event: Event) => {
     const now = new Date();
     const endDate = new Date(event.end_date);
-
+    
     if (isAfter(now, endDate)) {
       return "Event yang sudah berakhir tidak dapat diedit";
     } else if (event.submissions_count > 0) {
       return "Event yang sudah memiliki submisi tidak dapat diedit";
-    }
-    return "";
-  };
-
-
-  const getDeleteTooltipMessage = (event: Event) => {
-    const now = new Date();
-    const endDate = new Date(event.end_date);
-
-    if (isAfter(now, endDate)) {
-      return "Event yang sudah berakhir tidak dapat dihapus";
-    } else if (event.submissions_count > 0) {
-      return "Event yang sudah memiliki submisi tidak dapat dihapus";
     }
     return "";
   };
@@ -248,83 +235,19 @@ export default function LinimasaPage() {
     if (sortField !== field) {
       return <ArrowUpDown size={16} className="text-gray-400" />;
     }
-    return sortDirection === 'asc'
-      ? <ArrowUp size={16} className="text-[#041765]" />
+    return sortDirection === 'asc' 
+      ? <ArrowUp size={16} className="text-[#041765]" /> 
       : <ArrowDown size={16} className="text-[#041765]" />;
-  };
-
-  const handleUpdate = (eventId: number) => {
-    router.push(`/admin/linimasa/update/${eventId}`);
-  };
-
-  const openDeleteDialog = (event: Event) => {
-    setEventToDelete(event);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!eventToDelete) return;
-
-    setIsDeleting(true);
-
-    try {
-      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        router.push("/login");
-        return;
-      }
-
-      console.log("Deleting event with ID:", eventToDelete.id);
-
-      const response = await fetch(`/api/linimasa/hapus/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken} id ${eventToDelete.id}`,
-        },
-      });
-
-      console.log("Delete response status:", response.status);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("accessToken");
-          sessionStorage.removeItem("accessToken");
-          router.push("/login");
-          return;
-        }
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Delete response data:", data);
-
-      if (data.status === 200) {
-        customToast.success("Berhasil Menghapus Linimasa", "");
-        // Remove the deleted event from the state
-        setEvents(events.filter(event => event.id !== eventToDelete.id));
-      } else {
-        throw new Error(data.message || "Failed to delete event");
-      }
-    } catch (error: any) {
-      console.error("Error deleting event:", error);
-      customToast.error("Gagal Menghapus Event", error.message || "Terjadi kesalahan saat menghapus event");
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setEventToDelete(null);
-    }
   };
 
   // Filter events based on status
   const filteredEvents = events.filter(event => {
     if (statusFilter === "all") return true;
-
+    
     const now = new Date();
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
-
+    
     switch (statusFilter) {
       case "active":
         return isAfter(now, startDate) && isBefore(now, endDate);
@@ -340,7 +263,7 @@ export default function LinimasaPage() {
   // Sort the filtered events
   const sortedEvents = [...filteredEvents].sort((a, b) => {
     let comparison = 0;
-
+    
     switch (sortField) {
       case 'start_date':
         comparison = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
@@ -360,7 +283,7 @@ export default function LinimasaPage() {
       default:
         comparison = 0;
     }
-
+    
     return sortDirection === 'asc' ? comparison : -comparison;
   });
 
@@ -444,7 +367,6 @@ export default function LinimasaPage() {
             Tambah Linimasa
           </Button>
         </div>
-
       </div>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
