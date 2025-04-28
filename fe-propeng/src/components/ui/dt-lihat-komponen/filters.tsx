@@ -120,7 +120,7 @@ export function DataTableToolbar({
       } 
       
       if (selectedRows.length - failed > 0) {
-        customToast.success(`Berhasil menghapus Komponen Penilaian`, `${selectedRows.length - failed} dari ${selectedRows} Komponen Penilaian berhasil dihapus`);
+        customToast.success(`Berhasil menghapus Komponen Penilaian`, `${selectedRows.length - failed} dari ${selectedRows.length} Komponen Penilaian berhasil dihapus`);
       }
 
       triggerReload();
@@ -178,7 +178,7 @@ export function DataTableToolbar({
       });
 
       if (!response.ok) {
-        throw new Error("Gagal menambahkan komponen");
+        throw new Error("Gagal menambahkan Komponen Penilaian");
       }
 
       const result = await response.json();
