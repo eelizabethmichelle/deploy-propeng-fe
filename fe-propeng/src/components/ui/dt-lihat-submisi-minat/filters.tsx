@@ -31,7 +31,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     ...new Set(allRows.map((row) => String(row.original.status)))
   ].map((status) => ({
     value: status,
-    label: status === "Active" ? "Aktif" : "Tidak Aktif",
+    label: status === "Active" ? "Aktif" : "Butuh persetujuan",
     icon: status === "Active" ? ArrowUpIcon : ArrowDownIcon
   }));
 
@@ -139,15 +139,15 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           placeholder="Cari nama siswa"
           value={table.getState().globalFilter ?? ""}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
-          className="h-8 w-[150px] lg:w-[500px]"
+          className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("status") && (
+        {/* {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Status"
             options={uniqueStatus}
           />
-        )}
+        )} */}
         {isFiltered && (
           <Button
             variant="ghost"
