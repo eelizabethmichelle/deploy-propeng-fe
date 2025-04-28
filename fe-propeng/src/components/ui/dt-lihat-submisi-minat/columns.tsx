@@ -25,7 +25,7 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
     {
       accessorKey: "submittedAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Waktu Pendaftaran" />
+        <DataTableColumnHeader column={column} title="Waktu Terakhir Perubahan" />
       ),
       cell: ({ row }) => (
         <div className="flex space-x-2">
@@ -81,7 +81,7 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
 
         return (
           <Button variant="default" onClick={() => router.push(targetUrl)}>
-            Lakukan Persetujuan
+            Ubah Status
           </Button>
         );
       },
