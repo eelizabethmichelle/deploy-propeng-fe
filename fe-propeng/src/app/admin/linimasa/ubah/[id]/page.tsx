@@ -3,14 +3,12 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { API_BASE_URL } from "@/lib/api";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
@@ -34,20 +32,10 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { SelectPills } from "@/components/ui/multiple-select";
-import { Plus, ArrowLeft, CalendarIcon } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Save } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import React from "react";
-
-interface DataGuru {
-  id: string;
-  name: string;
-  username?: string;
-  nisp?: string;
-  status?: boolean ;
-}
 
 interface Angkatan {
   id: number;
@@ -59,18 +47,29 @@ interface TahunAjaran {
   tahunAjaran: number;
 }
 
-interface DataSiswa {
-  id: string;
-  name: string;
-  nisn?: string;
-  username?: string;
-  angkatan: number;
-}
-
 interface MatpelOption {
   id: number;
   nama: string;
   capacity: number;
+}
+
+interface Linimasa {
+  id: number;
+  start_date: string;
+  end_date: string;
+  angkatan: number;
+  submissions_count: number;
+  matpel: {
+    tier1_option1: { id: number; nama: string; capacity: number };
+    tier1_option2: { id: number; nama: string; capacity: number };
+    tier2_option1: { id: number; nama: string; capacity: number };
+    tier2_option2: { id: number; nama: string; capacity: number };
+    tier3_option1: { id: number; nama: string; capacity: number };
+    tier3_option2: { id: number; nama: string; capacity: number };
+    tier4_option1: { id: number; nama: string; capacity: number };
+    tier4_option2: { id: number; nama: string; capacity: number };
+  };
+  status: string;
 }
 
 const formSchema = z.object({
@@ -102,9 +101,14 @@ const customToast = {
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function CreateLinimasa() {
+export default function UpdateLinimasa() {
   const router = useRouter();
+  const params = useParams();
+  const linimasaId = params.id as string;
+  
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [linimasa, setLinimasa] = useState<Linimasa | null>(null);
   const [matpelOptions, setMatpelOptions] = useState<MatpelOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loadingMatpel, setLoadingMatpel] = useState<boolean>(true);
@@ -113,11 +117,10 @@ export default function CreateLinimasa() {
   const [angkatanOptions, setAngkatanOptions] = useState<{ value: string; label: string; }[]>([]);
   const [loadingAngkatan, setLoadingAngkatan] = useState<boolean>(true);
   const [selectedTahunAjaran, setSelectedTahunAjaran] = useState<string>("");
+  const [hasSubmissions, setHasSubmissions] = useState<boolean>(false);
   
-  // Create simple state for form validation
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Simple form without complex validation
   const form = useForm<FormData>({
     defaultValues: {
       start_date: "",
@@ -129,14 +132,12 @@ export default function CreateLinimasa() {
     },
   });
 
-  // Watch all necessary fields for validation
   const startDate = form.watch("start_date");
   const endDate = form.watch("end_date");
   const angkatan = form.watch("angkatan");
   const tahunAjaran = form.watch("tahun_ajaran");
   const matpels = form.watch("matpels");
 
-  // Simple effect to check form validity
   useEffect(() => {
     const hasBasicFields = !!(startDate && endDate && angkatan && tahunAjaran);
     const hasAllMatpels = matpels.every(m => m > 0);
@@ -150,7 +151,114 @@ export default function CreateLinimasa() {
     setIsFormValid(hasBasicFields && hasAllMatpels);
   }, [startDate, endDate, angkatan, tahunAjaran, matpels]);
 
-  // Fetch tahun ajaran options from API
+  const isMatpelSelectedElsewhere = (matpelId: number, currentIndex: number) => {
+    const currentMatpels = form.getValues("matpels");
+    return currentMatpels.some((id, idx) => idx !== currentIndex && id === matpelId);
+  };
+
+  const handleMatpelChange = (index: number, matpelId: number) => {
+    console.log(`Setting matpel at index ${index} to ${matpelId}`);
+    const newMatpels = [...form.getValues("matpels")];
+    newMatpels[index] = matpelId;
+    form.setValue("matpels", newMatpels);
+  };
+
+  useEffect(() => {
+    const fetchLinimasaData = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
+        if (!token) {
+          console.error("Token tidak tersedia.");
+          router.push("/login");
+          return;
+        }
+
+        console.log("Fetching linimasa data with ID:", linimasaId);
+        
+        const response = await fetch(`/api/linimasa/get`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token} id ${linimasaId}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          sessionStorage.removeItem("accessToken");
+          router.push("/login");
+          return;
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        if (data.status === 200 && Array.isArray(data.data) && data.data.length > 0) {
+          const linimasaData = data.data.find((item: any) => item.id.toString() === linimasaId);
+          
+          if (linimasaData) {
+            console.log("Found linimasa data:", linimasaData);
+            setLinimasa(linimasaData);
+            setHasSubmissions(linimasaData.submissions_count > 0);
+            
+            form.setValue("start_date", linimasaData.start_date);
+            form.setValue("end_date", linimasaData.end_date);
+            
+            form.setValue("angkatan", linimasaData.angkatan.toString());
+            
+            if (linimasaData.tahun_ajaran !== undefined) {
+              form.setValue("tahun_ajaran", linimasaData.tahun_ajaran.toString());
+              setSelectedTahunAjaran(linimasaData.tahun_ajaran.toString());
+            }
+            
+            const matpels = [
+              linimasaData.matpel.tier1_option1.id,
+              linimasaData.matpel.tier1_option2.id,
+              linimasaData.matpel.tier2_option1.id,
+              linimasaData.matpel.tier2_option2.id,
+              linimasaData.matpel.tier3_option1.id,
+              linimasaData.matpel.tier3_option2.id,
+              linimasaData.matpel.tier4_option1.id,
+              linimasaData.matpel.tier4_option2.id,
+            ];
+            
+            const capacities = [
+              linimasaData.matpel.tier1_option1.capacity,
+              linimasaData.matpel.tier1_option2.capacity,
+              linimasaData.matpel.tier2_option1.capacity,
+              linimasaData.matpel.tier2_option2.capacity,
+              linimasaData.matpel.tier3_option1.capacity,
+              linimasaData.matpel.tier3_option2.capacity,
+              linimasaData.matpel.tier4_option1.capacity,
+              linimasaData.matpel.tier4_option2.capacity,
+            ];
+            
+            form.setValue("matpels", matpels);
+            form.setValue("capacity", capacities);
+            
+            setError(null);
+          } else {
+            throw new Error("Linimasa dengan ID tersebut tidak ditemukan");
+          }
+        } else {
+          throw new Error(data.message || "Gagal mengambil data linimasa");
+        }
+      } catch (err: any) {
+        console.error("Error fetching linimasa data:", err);
+        setError("Gagal mengambil data linimasa: " + err.message);
+        customToast.error("Gagal mengambil data", err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (linimasaId) {
+      fetchLinimasaData();
+    }
+  }, [linimasaId, router, form]);
+
   useEffect(() => {
     const fetchTahunAjaranOptions = async () => {
       setLoadingTahunAjaran(true);
@@ -171,7 +279,6 @@ export default function CreateLinimasa() {
           },
         });
 
-        // Jika token tidak valid, logout user
         if (response.status === 401) {
           localStorage.removeItem("accessToken");
           sessionStorage.removeItem("accessToken");
@@ -180,18 +287,24 @@ export default function CreateLinimasa() {
         }
 
         const data = await response.json();
+        console.log("Tahun ajaran options API response:", data);
 
         if (data.status === 200) {
           const options = data.data.map((tahunAjaran: TahunAjaran) => ({
             value: tahunAjaran.id.toString(),
             label: tahunAjaran.tahunAjaran.toString(),
           }));
+          
+          console.log("Mapped tahun ajaran options:", options);
           setTahunAjaranOptions(options);
           
-          if (options.length > 0) {
+          if (!form.getValues("tahun_ajaran") && options.length > 0) {
             const defaultTahunAjaran = options[0].value;
+            console.log("Setting default tahun ajaran:", defaultTahunAjaran);
             form.setValue("tahun_ajaran", defaultTahunAjaran);
             setSelectedTahunAjaran(defaultTahunAjaran);
+          } else {
+            console.log("Keeping existing tahun ajaran:", form.getValues("tahun_ajaran"));
           }
           
           setError(null);
@@ -210,7 +323,6 @@ export default function CreateLinimasa() {
     fetchTahunAjaranOptions();
   }, [router, form]);
 
-  // Fetch angkatan options from API
   useEffect(() => {
     const fetchAngkatanOptions = async () => {
       setLoadingAngkatan(true);
@@ -231,7 +343,6 @@ export default function CreateLinimasa() {
           },
         });
 
-        // Jika token tidak valid, logout user
         if (response.status === 401) {
           localStorage.removeItem("accessToken");
           sessionStorage.removeItem("accessToken");
@@ -240,16 +351,22 @@ export default function CreateLinimasa() {
         }
 
         const data = await response.json();
+        console.log("Angkatan options API response:", data);
 
         if (data.status === 200) {
           const options = data.data.map((angkatan: Angkatan) => ({
             value: angkatan.id.toString(),
             label: angkatan.angkatan.toString(),
           }));
+          
+          console.log("Mapped angkatan options:", options);
           setAngkatanOptions(options);
           
-          if (options.length > 0) {
+          if (!form.getValues("angkatan") && options.length > 0) {
+            console.log("Setting default angkatan:", options[0].value);
             form.setValue("angkatan", options[0].value);
+          } else {
+            console.log("Keeping existing angkatan:", form.getValues("angkatan"));
           }
           
           setError(null);
@@ -268,7 +385,6 @@ export default function CreateLinimasa() {
     fetchAngkatanOptions();
   }, [router, form]);
 
-  // Fetch available matpel options based on tahun ajaran
   useEffect(() => {
     const fetchMatpelOptions = async () => {
       if (!selectedTahunAjaran) {
@@ -286,8 +402,6 @@ export default function CreateLinimasa() {
           router.push("/login");
           return;
         }
-
-        console.log("Making API request to:", `/api/linimasa/tahun-ajaran/${selectedTahunAjaran}/`);
         
         const response = await fetch(`/api/linimasa/tahun-ajaran/`, {
           method: "GET",
@@ -297,7 +411,6 @@ export default function CreateLinimasa() {
           },
         });
 
-        // Jika token tidak valid, logout user
         if (response.status === 401) {
           localStorage.removeItem("accessToken");
           sessionStorage.removeItem("accessToken");
@@ -306,17 +419,14 @@ export default function CreateLinimasa() {
         }
 
         const data = await response.json();
-        console.log("API response:", data);
+        console.log("Matpel options API response:", data);
 
         if (data.status === 200) {
+          console.log("Setting matpel options:", data.data);
           setMatpelOptions(data.data || []);
           
-          // Jika ada mata pelajaran yang tersedia, atur default untuk setiap tier
-          // Removed auto-filling code to let users manually select mata pelajaran
-          // if (data.data && data.data.length > 0) {
-          //   const defaultMatpels = Array(8).fill(data.data[0].id);
-          //   form.setValue("matpels", defaultMatpels);
-          // }
+          const currentMatpels = form.getValues("matpels");
+          console.log("Current matpels values:", currentMatpels);
           
           setError(null);
         } else if (data.status === 404) {
@@ -337,49 +447,9 @@ export default function CreateLinimasa() {
     fetchMatpelOptions();
   }, [router, form, selectedTahunAjaran]);
 
-  // Function to filter out already selected mata pelajaran options
-  const getFilteredOptions = (currentFieldIndex: number) => {
-    const allSelectedValues = form.getValues("matpels");
-    console.log(`Filtering options for field ${currentFieldIndex}. All selected:`, allSelectedValues);
-    
-    // Filter matpels that aren't selected in other fields
-    return matpelOptions.filter(option => {
-      // If this option is already selected in the current field, allow it
-      if (allSelectedValues[currentFieldIndex] === option.id) {
-        return true;
-      }
-      
-      // Otherwise, check if it's selected in any other field
-      const isSelectedElsewhere = allSelectedValues.some((value, index) => 
-        index !== currentFieldIndex && 
-        value !== null && 
-        value !== undefined && 
-        value > 0 && 
-        value === option.id
-      );
-      
-      return !isSelectedElsewhere;
-    });
-  };
-
-  // Helper functions for mata pelajaran selection
-  const isMatpelSelectedElsewhere = (matpelId: number, currentIndex: number) => {
-    const currentMatpels = form.getValues("matpels");
-    return currentMatpels.some((id, idx) => idx !== currentIndex && id === matpelId);
-  };
-
-  const handleMatpelChange = (index: number, matpelId: number) => {
-    console.log(`Setting matpel at index ${index} to ${matpelId}`);
-    const newMatpels = [...form.getValues("matpels")];
-    newMatpels[index] = matpelId;
-    form.setValue("matpels", newMatpels);
-  };
-
-  // Simplified submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Only allow submission if form is valid
     if (!isFormValid) {
       customToast.error("Validasi Gagal", "Harap lengkapi semua field dan pilih semua mata pelajaran");
       return;
@@ -390,7 +460,6 @@ export default function CreateLinimasa() {
     try {
       const formValues = form.getValues();
       
-      // Simple date validation
       const startDateObj = new Date(formValues.start_date);
       const endDateObj = new Date(formValues.end_date);
       
@@ -405,8 +474,9 @@ export default function CreateLinimasa() {
         setIsSubmitting(false);
         return;
       }
-      
+
       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+
       if (!token) {
         console.error("Token tidak tersedia.");
         router.push("/login");
@@ -414,17 +484,18 @@ export default function CreateLinimasa() {
       }
 
       const requestBody = {
+        id: parseInt(linimasaId),
         start_date: formValues.start_date,
         end_date: formValues.end_date,
-        angkatan: formValues.angkatan,
+        angkatan: parseInt(formValues.angkatan),
         matpels: formValues.matpels,
         capacity: formValues.capacity,
       };
 
-      console.log("Payload yang dikirim:", requestBody);
+      console.log("Sending update request:", requestBody);
 
-      const response = await fetch(`/api/linimasa/tambah/`, {
-        method: "POST",
+      const response = await fetch(`/api/linimasa/ubah/`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
@@ -433,12 +504,11 @@ export default function CreateLinimasa() {
       });
 
       const responseData = await response.json();
-      console.log("Response data:", responseData);
+      console.log("Update response:", responseData);
 
       if (response.ok && responseData.status === 200) {
-        customToast.success("Berhasil Membuat Linimasa", "Linimasa berhasil dibuat");
+        customToast.success("Berhasil Memperbarui Linimasa", "Linimasa berhasil diperbarui");
         
-        // Dispatch event to refresh the list
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("linimasa_updated"));
         }
@@ -450,29 +520,39 @@ export default function CreateLinimasa() {
         if (responseData.status === 400 && responseData.message) {
           throw new Error(responseData.message + (responseData.error ? `: ${responseData.error}` : ""));
         } else {
-          throw new Error(responseData.message || "Gagal membuat linimasa");
+          throw new Error(responseData.message || "Gagal memperbarui linimasa");
         }
       }
     } catch (err: any) {
-      console.error("Gagal Membuat Linimasa:", err);
-      customToast.error("Gagal Membuat Linimasa", err.message || "Terjadi kesalahan saat membuat linimasa");
+      console.error("Gagal Memperbarui Linimasa:", err);
+      customToast.error("Gagal Memperbarui Linimasa", err.message || "Terjadi kesalahan saat memperbarui linimasa");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Memuat data...</div>;
+  }
 
   return (
     <div className="flex justify-center items-start min-h-screen p-6 mt-10">
       <Toaster />
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
-          <CardTitle>Tambah Linimasa Pengajuan
+          <CardTitle>Edit Linimasa Pengajuan
           Mata Pelajaran Minat</CardTitle>
-          <CardDescription>Buat linimasa baru untuk pemilihan mata pelajaran</CardDescription>
+          <CardDescription>Perbarui Kegiatan Seleksi untuk pemilihan mata pelajaran</CardDescription>
         </CardHeader>
         <CardContent className="px-6 pb-6">
           {error && (
             <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
+          )}
+          {hasSubmissions && (
+            <div className="mb-4 p-4 bg-amber-50 text-amber-700 rounded border border-amber-200">
+              <p className="font-medium">Perhatian!</p>
+              <p>Linimasa ini sudah memiliki pendaftaran. Mengubah mata pelajaran tidak dianjurkan.</p>
+            </div>
           )}
           <Form {...form}>
             <form
@@ -480,7 +560,6 @@ export default function CreateLinimasa() {
               className="space-y-6"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Tanggal Mulai */}
                 <FormField
                   control={form.control}
                   name="start_date"
@@ -528,7 +607,6 @@ export default function CreateLinimasa() {
                   )}
                 />
 
-                {/* Tanggal Selesai */}
                 <FormField
                   control={form.control}
                   name="end_date"
@@ -569,7 +647,6 @@ export default function CreateLinimasa() {
                               fromDate={
                                 form.watch("start_date")
                                   ? (() => {
-                                      // Add 1 day to start_date
                                       const minDate = new Date(form.watch("start_date"));
                                       minDate.setDate(minDate.getDate() + 1);
                                       return minDate;
@@ -587,7 +664,6 @@ export default function CreateLinimasa() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Angkatan */}
                 <FormField
                   control={form.control}
                   name="angkatan"
@@ -602,6 +678,7 @@ export default function CreateLinimasa() {
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={hasSubmissions}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -625,7 +702,6 @@ export default function CreateLinimasa() {
                   )}
                 />
 
-                {/* Tahun Ajaran */}
                 <FormField
                   control={form.control}
                   name="tahun_ajaran"
@@ -639,11 +715,11 @@ export default function CreateLinimasa() {
                       ) : (
                         <Select
                           onValueChange={(value) => {
-                            console.log("Tahun ajaran selected:", value);
                             field.onChange(value);
                             setSelectedTahunAjaran(value);
                           }}
                           value={field.value}
+                          disabled={hasSubmissions}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -668,7 +744,6 @@ export default function CreateLinimasa() {
                 />
               </div>
 
-              {/* Mata Pelajaran Selection */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Pilihan Mata Pelajaran</h3>
                 {loadingMatpel ? (
@@ -679,10 +754,8 @@ export default function CreateLinimasa() {
                   </div>
                 ) : (
                   <>
-                    {/* Display mata pelajaran options in pairs */}
                     {Array.from({ length: 4 }).map((_, pairIndex) => (
                       <div key={pairIndex} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-md">
-                        {/* First option in the pair */}
                         <div className="space-y-4">
                           <h4 className="font-medium">Opsi 1</h4>
                           <FormField
@@ -693,10 +766,10 @@ export default function CreateLinimasa() {
                                 <FormLabel>Mata Pelajaran {pairIndex * 2 + 1} *</FormLabel>
                                 <Select
                                   onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2, numValue);
+                                    handleMatpelChange(pairIndex * 2, parseInt(value));
                                   }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
+                                  value={field.value.toString()}
+                                  disabled={hasSubmissions}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -704,16 +777,14 @@ export default function CreateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2))
-                                      .map((matpel) => (
-                                        <SelectItem
-                                          key={matpel.id}
-                                          value={matpel.id.toString()}
-                                        >
-                                          {matpel.nama}
-                                        </SelectItem>
-                                      ))}
+                                    {matpelOptions.map((matpel) => (
+                                      <SelectItem
+                                        key={matpel.id}
+                                        value={matpel.id.toString()}
+                                      >
+                                        {matpel.nama}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -733,7 +804,6 @@ export default function CreateLinimasa() {
                                     {...field} 
                                     onChange={(e) => {
                                       const value = parseInt(e.target.value);
-                                      // Ensure value is at least 1
                                       field.onChange(value < 1 ? 1 : value);
                                     }}
                                   />
@@ -744,7 +814,6 @@ export default function CreateLinimasa() {
                           />
                         </div>
 
-                        {/* Second option in the pair */}
                         <div className="space-y-4">
                           <h4 className="font-medium">Opsi 2</h4>
                           <FormField
@@ -755,10 +824,10 @@ export default function CreateLinimasa() {
                                 <FormLabel>Mata Pelajaran {pairIndex * 2 + 2} *</FormLabel>
                                 <Select
                                   onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2 + 1, numValue);
+                                    handleMatpelChange(pairIndex * 2 + 1, parseInt(value));
                                   }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
+                                  value={field.value.toString()}
+                                  disabled={hasSubmissions}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -766,16 +835,14 @@ export default function CreateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2 + 1))
-                                      .map((matpel) => (
-                                        <SelectItem
-                                          key={matpel.id}
-                                          value={matpel.id.toString()}
-                                        >
-                                          {matpel.nama}
-                                        </SelectItem>
-                                      ))}
+                                    {matpelOptions.map((matpel) => (
+                                      <SelectItem
+                                        key={matpel.id}
+                                        value={matpel.id.toString()}
+                                      >
+                                        {matpel.nama}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -795,7 +862,6 @@ export default function CreateLinimasa() {
                                     {...field} 
                                     onChange={(e) => {
                                       const value = parseInt(e.target.value);
-                                      // Ensure value is at least 1
                                       field.onChange(value < 1 ? 1 : value);
                                     }}
                                   />
@@ -811,9 +877,7 @@ export default function CreateLinimasa() {
                 )}
               </div>
 
-              {/* Container untuk Tombol */}
               <div className="flex justify-between items-center gap-2 pt-4">
-                {/* Tombol Kembali */}
                 <Button
                   variant="outline"
                   type="button"
@@ -824,19 +888,13 @@ export default function CreateLinimasa() {
                   Kembali
                 </Button>
 
-                {/* Tombol Simpan */}
                 <Button
                   variant="default"
                   type="submit"
-                  disabled={!isFormValid || isSubmitting}
+                  disabled={isSubmitting}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  {isSubmitting 
-                    ? "Menyimpan..." 
-                    : !isFormValid 
-                      ? "Lengkapi Semua Data" 
-                      : "Buat Linimasa"
-                  }
+                  <Save className="h-5 w-5 mr-2" />
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </Button>
               </div>
             </form>

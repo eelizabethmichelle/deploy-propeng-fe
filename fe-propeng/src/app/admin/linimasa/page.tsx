@@ -1,30 +1,13 @@
 "use client";
 //lihat all disini
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, CheckCircle, XCircle, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Trash2, MoreVertical, Eye, ClipboardList, CalendarClock, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, Clock, Users, CheckCircle, XCircle, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, Pencil, Plus } from "lucide-react";
 import { format, parseISO, isAfter, isBefore, isSameDay } from "date-fns";
 import { id } from "date-fns/locale";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -32,6 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DataTable } from "@/components/ui/dt-lihat-linimasa/data-table";
+import { linimasaColumns } from "@/components/ui/dt-lihat-linimasa/columns";
+
+// Create a custom event for linimasa updates
+export const LINIMASA_UPDATED_EVENT = "linimasa_updated";
 
 interface MatpelOption {
   id: number;
@@ -90,9 +78,7 @@ export default function LinimasaPage() {
   const [error, setError] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('start_date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -102,11 +88,26 @@ export default function LinimasaPage() {
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  // Register event listener for linimasa updates
   useEffect(() => {
-    fetchEvents();
+    const handleLinimasaUpdated = () => {
+      console.log("Linimasa updated event received");
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener(LINIMASA_UPDATED_EVENT, handleLinimasaUpdated);
+    
+    return () => {
+      window.removeEventListener(LINIMASA_UPDATED_EVENT, handleLinimasaUpdated);
+    };
   }, []);
 
-  const fetchEvents = async () => {
+  // Fetch events whenever the refresh trigger changes
+  useEffect(() => {
+    fetchEvents();
+  }, [refreshTrigger]);
+
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -124,6 +125,8 @@ export default function LinimasaPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`,
         },
+        // Add cache control to prevent caching
+        cache: "no-store"
       });
 
       if (!response.ok) {
@@ -150,6 +153,11 @@ export default function LinimasaPage() {
     } finally {
       setLoading(false);
     }
+  }, [router]);
+
+  // Manually trigger a refresh
+  const refreshData = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const formatDate = (dateString: string) => {
@@ -180,7 +188,7 @@ export default function LinimasaPage() {
       case "akan_datang":
         return (
           <div className="flex items-center gap-1 text-yellow-600 bg-yellow-50 px-3 py-1.5 rounded-full text-sm">
-            <CalendarClock size={16} />
+            <AlertCircle size={16} />
             <span>Belum Dimulai</span>
           </div>
         );
@@ -214,18 +222,6 @@ export default function LinimasaPage() {
     return "";
   };
 
-  const getDeleteTooltipMessage = (event: Event) => {
-    const now = new Date();
-    const endDate = new Date(event.end_date);
-    
-    if (isAfter(now, endDate)) {
-      return "Event yang sudah berakhir tidak dapat dihapus";
-    } else if (event.submissions_count > 0) {
-      return "Event yang sudah memiliki submisi tidak dapat dihapus";
-    }
-    return "";
-  };
-
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Toggle direction if clicking the same field
@@ -244,70 +240,6 @@ export default function LinimasaPage() {
     return sortDirection === 'asc' 
       ? <ArrowUp size={16} className="text-[#041765]" /> 
       : <ArrowDown size={16} className="text-[#041765]" />;
-  };
-
-  const handleUpdate = (eventId: number) => {
-    router.push(`/admin/linimasa/update/${eventId}`);
-  };
-
-  const openDeleteDialog = (event: Event) => {
-    setEventToDelete(event);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!eventToDelete) return;
-    
-    setIsDeleting(true);
-    
-    try {
-      const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-      
-      if (!accessToken) {
-        router.push("/login");
-        return;
-      }
-
-      console.log("Deleting event with ID:", eventToDelete.id);
-      
-      const response = await fetch(`/api/linimasa/hapus/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken} id ${eventToDelete.id}`,
-        },
-      });
-
-      console.log("Delete response status:", response.status);
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("accessToken");
-          sessionStorage.removeItem("accessToken");
-          router.push("/login");
-          return;
-        }
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Delete response data:", data);
-
-      if (data.status === 200) {
-        customToast.success("Berhasil Menghapus Event", "Event linimasa berhasil dihapus");
-        // Remove the deleted event from the state
-        setEvents(events.filter(event => event.id !== eventToDelete.id));
-      } else {
-        throw new Error(data.message || "Failed to delete event");
-      }
-    } catch (error: any) {
-      console.error("Error deleting event:", error);
-      customToast.error("Gagal Menghapus Event", error.message || "Terjadi kesalahan saat menghapus event");
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setEventToDelete(null);
-    }
   };
 
   // Filter events based on status
@@ -409,311 +341,46 @@ export default function LinimasaPage() {
 
   return (
     <div className="p-6">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-normal text-[#041765]">Manajemen Linimasa Pengajuan Mata Pelajaran Peminatan</h2>
-          <p className="text-sm text-[#88888C]">Daftar event dan jadwal pemilihan mata pelajaran</p>
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-semibold tracking-tight">
+          Manajemen Linimasa Pengajuan Mata Pelajaran Peminatan
+          </h2>
+          <p className="text-muted-foreground">
+          Daftar event dan jadwal pemilihan mata pelajaran
+          </p>
         </div>
-
-        <Card className="border-[#E1E2E8]">
-          <CardHeader className="p-6 border-b border-[#E6E9F4]">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base font-bold text-[#041765]">Daftar Event</CardTitle>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="default" 
-                  size="default"
-                  className="bg-[#041765] text-white hover:bg-[#041765]/90"
-                  onClick={() => router.push('/admin/linimasa/tambah')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Tambah Linimasa
-                </Button>
-                <span className="text-sm text-gray-500">Filter:</span>
-                <Select
-                  value={statusFilter}
-                  onValueChange={handleFilterChange}
-                >
-                  <SelectTrigger className="h-9 w-[150px]">
-                    <SelectValue placeholder="Semua Event" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Event</SelectItem>
-                    <SelectItem value="active">Event Aktif</SelectItem>
-                    <SelectItem value="ended">Event Berakhir</SelectItem>
-                    <SelectItem value="upcoming">Event Mendatang</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {filteredEvents.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                Tidak ada event yang tersedia dengan filter ini.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-[#F7F8FF] border-b border-[#E6E9F4]">
-                      <th 
-                        className="p-4 text-left text-sm font-medium text-[#041765] cursor-pointer"
-                        onClick={() => handleSort('start_date')}
-                      >
-                        <div className="flex items-center gap-1">
-                          Tanggal Mulai
-                          {getSortIcon('start_date')}
-                        </div>
-                      </th>
-                      <th 
-                        className="p-4 text-left text-sm font-medium text-[#041765] cursor-pointer"
-                        onClick={() => handleSort('end_date')}
-                      >
-                        <div className="flex items-center gap-1">
-                          Tanggal Berakhir
-                          {getSortIcon('end_date')}
-                        </div>
-                      </th>
-                      <th 
-                        className="p-4 text-left text-sm font-medium text-[#041765] cursor-pointer"
-                        onClick={() => handleSort('angkatan')}
-                      >
-                        <div className="flex items-center gap-1">
-                          Angkatan
-                          {getSortIcon('angkatan')}
-                        </div>
-                      </th>
-                      <th className="p-4 text-left text-sm font-medium text-[#041765]">
-                        Mata Pelajaran
-                      </th>
-                      <th 
-                        className="p-4 text-left text-sm font-medium text-[#041765] cursor-pointer"
-                        onClick={() => handleSort('status')}
-                      >
-                        <div className="flex items-center gap-1">
-                          Status
-                          {getSortIcon('status')}
-                        </div>
-                      </th>
-                      <th 
-                        className="p-4 text-left text-sm font-medium text-[#041765] cursor-pointer"
-                        onClick={() => handleSort('submissions_count')}
-                      >
-                        <div className="flex items-center gap-1">
-                          Pendaftar
-                          {getSortIcon('submissions_count')}
-                        </div>
-                      </th>
-                      <th className="p-4 text-left text-sm font-medium text-[#041765]">
-                        Submisi
-                      </th>
-                      <th className="p-4 text-left text-sm font-medium text-[#041765]">
-                        Aksi
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getCurrentEvents().map((event) => (
-                      <tr key={event.id} className="border-b border-[#E6E9F4] hover:bg-gray-50">
-                        <td className="p-4">
-                          <div className="flex items-center gap-2 text-sm text-[#041765]">
-                            <Calendar size={16} className="text-[#586AB3]" />
-                            <span>{formatDate(event.start_date)}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2 text-sm text-[#041765]">
-                            <Calendar size={16} className="text-[#586AB3]" />
-                            <span>{formatDate(event.end_date)}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm text-[#041765] font-medium">
-                            Angkatan {event.angkatan || '-'}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex flex-col gap-1">
-                            <div className="text-sm text-[#041765]">
-                              <span className="font-medium">Opsi 1:</span> {event.matpel.tier1_option1.nama || '-'} / {event.matpel.tier1_option2.nama || '-'}
-                            </div>
-                            <div className="text-sm text-[#041765]">
-                              <span className="font-medium">Opsi 2:</span> {event.matpel.tier2_option1.nama || '-'} / {event.matpel.tier2_option2.nama || '-'}
-                            </div>
-                            <div className="text-sm text-[#041765]">
-                              <span className="font-medium">Opsi 3:</span> {event.matpel.tier3_option1.nama || '-'} / {event.matpel.tier3_option2.nama || '-'}
-                            </div>
-                            <div className="text-sm text-[#041765]">
-                              <span className="font-medium">Opsi 4:</span> {event.matpel.tier4_option1.nama || '-'} / {event.matpel.tier4_option2.nama || '-'}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          {getStatusBadge(event.status)}
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2 text-sm text-[#041765]">
-                            <Users size={16} className="text-[#586AB3]" />
-                            <span>{event.submissions_count} siswa</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Button 
-                            variant="default" 
-                            size="default"
-                            className="bg-[#041765] text-white hover:bg-[#041765]/90 px-4 py-2"
-                            onClick={() => router.push(`/linimasa/${event.id}/submisi`)}
-                          >
-                            <ClipboardList size={16} className="mr-2" />
-                            Lihat Submisi
-                          </Button>
-                        </td>
-                        <td className="p-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <span className="sr-only">Buka menu</span>
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div>
-                                      <DropdownMenuItem 
-                                        onClick={() => handleUpdate(event.id)}
-                                        disabled={!isEventEditable(event)}
-                                        className={!isEventEditable(event) ? "opacity-50 cursor-not-allowed" : ""}
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        <span>Edit</span>
-                                      </DropdownMenuItem>
-                                    </div>
-                                  </TooltipTrigger>
-                                  {!isEventEditable(event) && (
-                                    <TooltipContent>
-                                      <p>{getEditTooltipMessage(event)}</p>
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
-                              </TooltipProvider>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div>
-                                      <DropdownMenuItem 
-                                        onClick={() => openDeleteDialog(event)}
-                                        disabled={!isEventEditable(event)}
-                                        className={!isEventEditable(event) ? "opacity-50 cursor-not-allowed text-red-600" : "text-red-600 focus:text-red-600"}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>Hapus</span>
-                                      </DropdownMenuItem>
-                                    </div>
-                                  </TooltipTrigger>
-                                  {!isEventEditable(event) && (
-                                    <TooltipContent>
-                                      <p>{getDeleteTooltipMessage(event)}</p>
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
-                              </TooltipProvider>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {/* Pagination Controls */}
-                <div className="flex items-center justify-between p-4 border-t border-[#E6E9F4]">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Tampilkan</span>
-                    <Select
-                      value={itemsPerPage.toString()}
-                      onValueChange={handleItemsPerPageChange}
-                    >
-                      <SelectTrigger className="h-8 w-[70px]">
-                        <SelectValue placeholder={itemsPerPage} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5</SelectItem>
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="25">25</SelectItem>
-                        <SelectItem value="50">50</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <span className="text-sm text-gray-500">dari {filteredEvents.length} data</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handlePageChange(page)}
-                          className={`h-8 w-8 p-0 ${
-                            currentPage === page ? "bg-[#041765] text-white" : ""
-                          }`}
-                        >
-                          {page}
-                        </Button>
-                      ))}
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="default"
+            onClick={refreshData}
+            className="mr-2"
+          >
+            Refresh Data
+          </Button>
+          <Button 
+            variant="default" 
+            size="default"
+            className="bg-[#041765] text-white hover:bg-[#041765]/90"
+            onClick={() => router.push('/admin/linimasa/tambah')}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Linimasa
+          </Button>
+        </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Menghapus..." : "Ya, Hapus"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+        </div>
+      </div>
+      <CardContent className="p-0">
+        <DataTable 
+          columns={linimasaColumns} 
+          data={events} 
+          refreshTrigger={refreshTrigger}
+        />
+      </CardContent>
     </div>
   );
 } 
