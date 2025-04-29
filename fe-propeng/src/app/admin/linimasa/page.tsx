@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { DataTable } from "@/components/ui/dt-lihat-linimasa/data-table";
 import { linimasaColumns } from "@/components/ui/dt-lihat-linimasa/columns";
-import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
+// import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 interface MatpelOption {
   id: number;
@@ -51,6 +51,8 @@ interface Event {
 type SortField = 'start_date' | 'end_date' | 'angkatan' | 'status' | 'submissions_count';
 type SortDirection = 'asc' | 'desc';
 
+
+const LINIMASA_UPDATED_EVENT = "linimasa_updated";
 const customToast = {
   success: (title: string, description: string) => {
     toast.success(title, {
