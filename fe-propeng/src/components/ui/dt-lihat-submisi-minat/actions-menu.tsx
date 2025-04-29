@@ -12,6 +12,11 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+const columnLabels: Record<string, string> = {
+  submittedAt: "Waktu Perubahan Terakhir",
+  siswa: "Nama Siswa"
+  // Tambahkan mapping lain jika perlu
+};
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
@@ -44,13 +49,14 @@ export function DataTableViewOptions<TData>({
           .map((column) => {
             return (
               <DropdownMenuCheckboxItem
-                key={column.id}
-                className="capitalize"
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {column.id}
-              </DropdownMenuCheckboxItem>
+  key={column.id}
+  className="capitalize"
+  checked={column.getIsVisible()}
+  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+>
+  {columnLabels[column.id] || column.id}
+</DropdownMenuCheckboxItem>
+
             );
           })}
       </DropdownMenuContent>

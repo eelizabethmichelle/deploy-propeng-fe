@@ -4,9 +4,9 @@ import { Cross2Icon, ArrowDownIcon, ArrowUpIcon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTableFacetedFilter } from "@/components/ui/dt-lihat-matpel/filters_clear";
+import { DataTableFacetedFilter } from "@/components/ui/dt-lihat-submisi-minat/filters_clear";
 import { useState } from "react";
-import { DataTableViewOptions } from "@/components/ui/dt-lihat-matpel/actions-menu";
+import { DataTableViewOptions } from "@/components/ui/dt-lihat-submisi-minat/actions-menu";
 import { TrashIcon, Check } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -31,7 +31,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
     ...new Set(allRows.map((row) => String(row.original.status)))
   ].map((status) => ({
     value: status,
-    label: status === "Active" ? "Aktif" : "Tidak Aktif",
+    label: status === "Active" ? "Aktif" : "Butuh persetujuan",
     icon: status === "Active" ? ArrowUpIcon : ArrowDownIcon
   }));
 
@@ -139,15 +139,15 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           placeholder="Cari nama siswa"
           value={table.getState().globalFilter ?? ""}
           onChange={(event) => table.setGlobalFilter(event.target.value)}
-          className="h-8 w-[150px] lg:w-[500px]"
+          className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("status") && (
+        {/* {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Status"
             options={uniqueStatus}
           />
-        )}
+        )} */}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -159,6 +159,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           </Button>
         )}
       </div>
+            <DataTableViewOptions table={table} />
     </div>
   );
 }

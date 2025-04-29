@@ -541,7 +541,7 @@ export default function UpdateLinimasa() {
       <Toaster />
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
-          <CardTitle>Edit Linimasa Pengajuan
+          <CardTitle>Edit Linimasa Pendaftaran
           Mata Pelajaran Minat</CardTitle>
           <CardDescription>Perbarui Kegiatan Seleksi untuk pemilihan mata pelajaran</CardDescription>
         </CardHeader>
