@@ -26,7 +26,7 @@ interface UserProfile {
   nisn: string;
   nisp: string;
   angkatan: number;
-  status: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,7 +120,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-gray-500">Status</p>
-              <p className="text-blue-900">{user.status ? "Aktif" : "Tidak Aktif"}</p>
+              <p className="text-blue-900">{user.isActive ? "Aktif" : "Tidak Aktif"}</p>
             </div>
             <div>
               <p className="text-gray-500">Dibuat Pada Tanggal</p>

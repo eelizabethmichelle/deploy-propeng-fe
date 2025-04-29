@@ -6,7 +6,7 @@ import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { XCircle, Ban, Loader2, Save, Edit, RotateCcw, AlertTriangle } from 'lucide-react'; // Impor AlertTriangle
-import { DataTableViewOptions } from './actions-menu'; // Pastikan path ini benar
+// import { DataTableViewOptions } from './actions-menu'; // Pastikan path ini benar
 import { GradeTableRowData, FilterOption } from './schema';
 import { toast } from 'sonner'; // Masih bisa digunakan untuk notifikasi lain
 import { DataTableFacetedFilter } from './filters-clear';
@@ -140,9 +140,9 @@ export function GradeDataTableToolbar({
                             <DialogTrigger asChild>
                                 {/* Tombol yang membuka dialog */}
                                 <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 border-destructive text-destructive hover:bg-destructive/10"
+                                    variant="destructive"
+                                    // size="sm"
+                                    // className="h-8 border-destructive text-destructive hover:bg-destructive/10"
                                     // Tombol ini di-disable jika tidak ada baris dipilih,
                                     // atau jika sedang edit baris lain, atau sedang menyimpan semua, atau sedang mereset
                                     disabled={selectedRowCount === 0 || isRowEditing || isSavingAll || isResetting}
@@ -171,11 +171,11 @@ export function GradeDataTableToolbar({
                                 <DialogFooter>
                                     {/* Tombol Batal (menggunakan DialogClose) */}
                                     <DialogClose asChild>
-                                        <Button variant="outline">Batal</Button>
+                                        <Button variant="secondary">Batal</Button>
                                     </DialogClose>
                                     {/* Tombol Konfirmasi */}
                                     <Button
-                                        variant="destructive"
+                                        variant="default"
                                         onClick={handleConfirmReset} // Panggil handler konfirmasi
                                         disabled={isResetting} // Disable juga tombol ini saat proses reset berjalan
                                     >
@@ -201,7 +201,7 @@ export function GradeDataTableToolbar({
                     </>
                 )}
                 {/* Tombol View Options */}
-                <DataTableViewOptions table={table} />
+                {/* <DataTableViewOptions table={table} /> */}
             </div>
         </div>
     );

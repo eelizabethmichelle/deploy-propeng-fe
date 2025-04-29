@@ -42,11 +42,7 @@ export default function ProfileLayout({
       { label: "Profil Saya", href: "/profil" },
       { label: "Teacher", current: true },
     ];
-  } else if (pathname === "/profil") {
-    breadcrumbs = [
-      { label: "ProfilSaya", current: true },
-    ];
-  }
+  } 
 
   return (
     <html lang="en">

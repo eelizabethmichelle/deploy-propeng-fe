@@ -29,7 +29,7 @@ const GradeCell = ({ row, column, table }: CellContext<GradeTableRowData, unknow
     const isSaving = meta.isSavingRow === studentId || meta.isSavingAll;
     const currentValue = meta.grades?.[studentId]?.[componentId];
     const displayValueForInput = currentValue === null || currentValue === undefined ? '' : currentValue.toString();
-    const displayValueReadonly = formatNumberOrDash(currentValue as number | null | undefined, 0);
+    const displayValueReadonly = formatNumberOrDash(currentValue as number | null | undefined, 2);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;

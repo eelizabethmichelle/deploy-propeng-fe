@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { DataTable } from "@/components/ui/dt-lihat-linimasa/data-table";
 import { linimasaColumns } from "@/components/ui/dt-lihat-linimasa/columns";
-// import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 interface MatpelOption {
   id: number;
