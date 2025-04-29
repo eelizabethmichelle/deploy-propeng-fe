@@ -42,7 +42,7 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
       cell: ({ row }) => {
         const value = row.getValue("status") as string;
         return (
-          <span className={value === "Sudah Diulas" ? "text-green-600" : "text-yellow-600"}>
+          <span className={value === "Sudah Ditinjau" ? "text-green-600" : "text-yellow-600"}>
             {value}
           </span>
         );
