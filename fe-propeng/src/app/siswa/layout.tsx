@@ -30,6 +30,15 @@ export default function SiswaLayout({
       { label: "Pengajuan Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
       { label: "Daftar" },
     ],
+    "/guru/kelas": [{ label: "Manajemen Kelas" }],
+    "/guru/kelas/absensi": [
+      { label: "Manajemen Kelas", href: "/guru/kelas" },
+      { label: "Absensi" },
+    ],
+    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
+    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
+    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
+    "/guru/raport": [{ label: "Raport Siswa" }],
   }
 
   // Generate breadcrumbs based on current pathname
