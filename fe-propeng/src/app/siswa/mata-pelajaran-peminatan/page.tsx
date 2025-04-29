@@ -180,7 +180,8 @@ export default function Page() {
           ) : (
             <>
               <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2">
-                <p><strong>Tanggal Pendaftaran:</strong> {new Date(submisi.submitted_at).toLocaleString()}</p>
+                <p><strong>Waktu Perubahan Terakhir:</strong> </p>
+                <p>{new Date(submisi.submitted_at).toLocaleString()}</p>
                 <p><strong>Mata pelajaran yang dipilih</strong> </p>
                 <p><strong>1:</strong> {submisi.tier1 ? submisi.tier1_nama_option2 : submisi.tier1_nama_option1} — {statusText(submisi.statustier1)}</p>
                 <p><strong>2:</strong> {submisi.tier2 ? submisi.tier2_nama_option2 : submisi.tier2_nama_option1} — {statusText(submisi.statustier2)}</p>
