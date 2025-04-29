@@ -51,7 +51,6 @@ interface Event {
 type SortField = 'start_date' | 'end_date' | 'angkatan' | 'status' | 'submissions_count';
 type SortDirection = 'asc' | 'desc';
 
-
 const LINIMASA_UPDATED_EVENT = "linimasa_updated";
 const customToast = {
   success: (title: string, description: string) => {

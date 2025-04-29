@@ -28,22 +28,6 @@ export default function GuruLayout({
 
   // Merged breadcrumb maps
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/guru/kelas": [{ label: "Manajemen Kelas" }],
-    "/guru/kelas/absensi": [
-      { label: "Manajemen Kelas", href: "/guru/kelas" },
-      { label: "Absensi" },
-    ],
-    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/raport": [{ label: "Raport Siswa" }],
-    "/siswa/mata-pelajaran-peminatan/daftar": [
-      { label: "Pendaftaran Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
-      { label: "Daftar" },
-    ],
-    "/siswa/mata-pelajaran-peminatan": [
-      { label: "Pendaftaran Mata Pelajaran Peminatan"},
-    ],
   };
 
   // Generate breadcrumbs based on current pathname
