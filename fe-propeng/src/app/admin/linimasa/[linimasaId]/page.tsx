@@ -98,7 +98,7 @@ export default function SubmisiMinatPage() {
             id: item.id,
             siswa: item.nama_siswa,
             submittedAt: new Date(item.submitted_at).toLocaleString(),
-            status: isAllReviewed ? "Sudah Diulas" : "Butuh Persetujuan",
+            status: isAllReviewed ? "Sudah Ditinjau" : "Butuh Ditinjau",
           };
         });
 

@@ -192,7 +192,7 @@ export default function Page() {
 
 
               {[submisi.statustier1, submisi.statustier2, submisi.statustier3, submisi.statustier4].some((s) => s === null) ? (
-                <p className="text-yellow-600 mt-2">Pendaftaran Anda sedang diulas oleh wali kelas.</p>
+                <p className="text-yellow-600 mt-2">Pendaftaran Anda sedang ditinjau oleh wali kelas.</p>
               ) : (
                 <>
                   <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2 mt-2">
@@ -200,7 +200,7 @@ export default function Page() {
                     <p>{submisi.note ? submisi.note : "Tidak ada catatan."}</p>
                   </div>
                   <p className="text-green-600 mt-2">
-                    Pendaftaran Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
+                    Pendaftaran Anda telah ditinjau dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
                   </p>
 
                 </>
