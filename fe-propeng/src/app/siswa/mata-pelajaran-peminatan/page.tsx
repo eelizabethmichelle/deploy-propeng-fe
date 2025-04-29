@@ -180,17 +180,18 @@ export default function Page() {
           ) : (
             <>
               <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2">
-                <p><strong>Tanggal Pengajuan:</strong> {new Date(submisi.submitted_at).toLocaleString()}</p>
-                <p><strong>Tier 1:</strong> {submisi.tier1 ? submisi.tier1_nama_option2 : submisi.tier1_nama_option1} — {statusText(submisi.statustier1)}</p>
-                <p><strong>Tier 2:</strong> {submisi.tier2 ? submisi.tier2_nama_option2 : submisi.tier2_nama_option1} — {statusText(submisi.statustier2)}</p>
-                <p><strong>Tier 3:</strong> {submisi.tier3 ? submisi.tier3_nama_option2 : submisi.tier3_nama_option1} — {statusText(submisi.statustier3)}</p>
-                <p><strong>Tier 4:</strong> {submisi.tier4 ? submisi.tier4_nama_option2 : submisi.tier4_nama_option1} — {statusText(submisi.statustier4)}</p>
+                <p><strong>Tanggal Pendaftaran:</strong> {new Date(submisi.submitted_at).toLocaleString()}</p>
+                <p><strong>Mata pelajaran yang dipilih</strong> </p>
+                <p><strong>1:</strong> {submisi.tier1 ? submisi.tier1_nama_option2 : submisi.tier1_nama_option1} — {statusText(submisi.statustier1)}</p>
+                <p><strong>2:</strong> {submisi.tier2 ? submisi.tier2_nama_option2 : submisi.tier2_nama_option1} — {statusText(submisi.statustier2)}</p>
+                <p><strong>3:</strong> {submisi.tier3 ? submisi.tier3_nama_option2 : submisi.tier3_nama_option1} — {statusText(submisi.statustier3)}</p>
+                <p><strong>4:</strong> {submisi.tier4 ? submisi.tier4_nama_option2 : submisi.tier4_nama_option1} — {statusText(submisi.statustier4)}</p>
               </div>
 
 
 
               {[submisi.statustier1, submisi.statustier2, submisi.statustier3, submisi.statustier4].some((s) => s === null) ? (
-                <p className="text-yellow-600 mt-2">Pengajuan Anda sedang diulas oleh wali kelas.</p>
+                <p className="text-yellow-600 mt-2">Pendaftaran Anda sedang diulas oleh wali kelas.</p>
               ) : (
                 <>
                   <div className="text-left text-sm text-gray-600 border rounded-lg p-4 bg-white space-y-2 mt-2">
@@ -198,7 +199,7 @@ export default function Page() {
                     <p>{submisi.note ? submisi.note : "Tidak ada catatan."}</p>
                   </div>
                   <p className="text-green-600 mt-2">
-                    Pengajuan Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
+                    Pendaftaran Anda telah diulas dan Anda telah terdaftar ke mata pelajaran yang bersangkutan.
                   </p>
 
                 </>

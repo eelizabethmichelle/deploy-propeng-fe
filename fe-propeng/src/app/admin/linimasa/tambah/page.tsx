@@ -467,7 +467,7 @@ export default function CreateLinimasa() {
       <Toaster />
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
-          <CardTitle>Tambah Linimasa Pengajuan
+          <CardTitle>Tambah Linimasa Pendaftaran
           Mata Pelajaran Minat</CardTitle>
           <CardDescription>Buat linimasa baru untuk pemilihan mata pelajaran</CardDescription>
         </CardHeader>

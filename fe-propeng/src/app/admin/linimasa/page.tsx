@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { DataTable } from "@/components/ui/dt-lihat-linimasa/data-table";
 import { linimasaColumns } from "@/components/ui/dt-lihat-linimasa/columns";
-// import { LINIMASA_UPDATED_EVENT } from "@/lib/events";
 
 interface MatpelOption {
   id: number;
@@ -50,6 +49,7 @@ interface Event {
 
 type SortField = 'start_date' | 'end_date' | 'angkatan' | 'status' | 'submissions_count';
 type SortDirection = 'asc' | 'desc';
+
 const LINIMASA_UPDATED_EVENT = "linimasa_updated";
 const customToast = {
   success: (title: string, description: string) => {
@@ -342,7 +342,7 @@ export default function LinimasaPage() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <h2 className="text-3xl font-semibold tracking-tight">
-          Manajemen Linimasa Pengajuan Mata Pelajaran Peminatan
+          Manajemen Linimasa Pendafataran Mata Pelajaran Peminatan
           </h2>
           <p className="text-muted-foreground">
           Daftar event dan jadwal pemilihan mata pelajaran
