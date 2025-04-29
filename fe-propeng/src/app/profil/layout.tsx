@@ -127,7 +127,7 @@ export default function ProfileLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Profil</BreadcrumbPage>
+                  <BreadcrumbPage>Halaman Utama</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

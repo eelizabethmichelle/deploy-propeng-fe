@@ -360,7 +360,7 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
       </section>
 
       {/* === START: Profile Section === */}
-      <h3 className="text-lg font-semibold mb-4">Profil Saya</h3>
+      <h3 className="text-lg font-semibold mb-4">Halaman Utama Siswa</h3>
 
       {/* Removed max-width to fill page */}
       <Card className="w-full">
