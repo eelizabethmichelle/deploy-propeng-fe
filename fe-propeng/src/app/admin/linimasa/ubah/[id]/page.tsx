@@ -448,6 +448,31 @@ export default function UpdateLinimasa() {
     fetchMatpelOptions();
   }, [router, form, selectedTahunAjaran]);
 
+  // Function to filter out already selected mata pelajaran options
+  const getFilteredOptions = (currentFieldIndex: number) => {
+    const allSelectedValues = form.getValues("matpels");
+    console.log(`Filtering options for field ${currentFieldIndex}. All selected:`, allSelectedValues);
+    
+    // Filter matpels that aren't selected in other fields
+    return matpelOptions.filter(option => {
+      // If this option is already selected in the current field, allow it
+      if (allSelectedValues[currentFieldIndex] === option.id) {
+        return true;
+      }
+      
+      // Otherwise, check if it's selected in any other field
+      const isSelectedElsewhere = allSelectedValues.some((value, index) => 
+        index !== currentFieldIndex && 
+        value !== null && 
+        value !== undefined && 
+        value > 0 && 
+        value === option.id
+      );
+      
+      return !isSelectedElsewhere;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -507,7 +532,7 @@ export default function UpdateLinimasa() {
       const responseData = await response.json();
       console.log("Update response:", responseData);
 
-      if (response.ok && responseData.status === 200) {
+      if (response.ok && (responseData.status === 200 || responseData.status === 201)) {
         customToast.success("Berhasil Memperbarui Linimasa", "Linimasa berhasil diperbarui");
         
         if (typeof window !== "undefined") {
@@ -778,7 +803,7 @@ export default function UpdateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions.map((matpel) => (
+                                    {getFilteredOptions(pairIndex * 2).map((matpel) => (
                                       <SelectItem
                                         key={matpel.id}
                                         value={matpel.id.toString()}
@@ -836,7 +861,7 @@ export default function UpdateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions.map((matpel) => (
+                                    {getFilteredOptions(pairIndex * 2 + 1).map((matpel) => (
                                       <SelectItem
                                         key={matpel.id}
                                         value={matpel.id.toString()}
@@ -880,12 +905,10 @@ export default function UpdateLinimasa() {
 
               <div className="flex justify-between items-center gap-2 pt-4">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2"
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
-                  <ArrowLeft className="h-4 w-4" />
                   Kembali
                 </Button>
 

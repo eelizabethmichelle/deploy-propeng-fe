@@ -349,14 +349,14 @@ export default function LinimasaPage() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button 
+          {/* <Button 
             variant="outline" 
             size="default"
             onClick={refreshData}
             className="mr-2"
           >
             Refresh Data
-          </Button>
+          </Button> */}
           <Button 
             variant="default" 
             size="default"
