@@ -810,9 +810,6 @@ const CapaianEditor = ({ type }: { type: 'pengetahuan' | 'keterampilan' }) => {
              {/* Tampilkan error capaian jika ada */}
              {capaianError && ( <div className="p-3 mb-4 bg-destructive/10 border border-destructive/30 rounded-md text-destructive text-sm"> Gagal memuat/menyimpan deskripsi capaian kompetensi: {capaianError} </div> )}
 
-            {/* ======================================================== */}
-            {/* BAGIAN INFORMASI BOBOT BARU                             */}
-            {/* ======================================================== */}
              <div className="space-y-4">
                  {/* --- Peringatan Bobot (Dipisah) --- */}
                  {/* Peringatan untuk Pengetahuan */}
