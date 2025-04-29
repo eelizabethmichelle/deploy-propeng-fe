@@ -13,7 +13,12 @@ import { CalendarDatePicker } from "@/components/ui/calendar-date-picker";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export const linimasaColumns: ColumnDef<Schema>[] = [
+// Define the type for column meta data
+interface ColumnMeta {
+  position?: "right" | "left";
+}
+
+export const linimasaColumns: ColumnDef<Schema, any>[] = [
   // {
   //   id: "select",
   //   header: ({ table }) => (
@@ -38,32 +43,6 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
   //   enableSorting: false,
   //   enableHiding: false,
   // },
-  {
-    accessorKey: "matpel",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Mata Pelajaran" />
-    ),
-    cell: ({ row }) => {
-      const matpel = row.getValue("matpel") as any;
-      return (
-        <div className="flex flex-col gap-1">
-          <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 1:</span> {matpel.tier1_option1.nama || '-'} / {matpel.tier1_option2.nama || '-'}
-          </div>
-          <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 2:</span> {matpel.tier2_option1.nama || '-'} / {matpel.tier2_option2.nama || '-'}
-          </div>
-          <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 3:</span> {matpel.tier3_option1.nama || '-'} / {matpel.tier3_option2.nama || '-'}
-          </div>
-          <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 4:</span> {matpel.tier4_option1.nama || '-'} / {matpel.tier4_option2.nama || '-'}
-          </div>
-        </div>
-      );
-    },
-    size: 400,
-  },
   {
     accessorKey: "start_date",
     header: ({ column }) => (
@@ -108,6 +87,33 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
         <span>Angkatan {row.getValue("angkatan")}</span>
       </div>
     ),
+    size: 100,
+  },
+  {
+    accessorKey: "matpel",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Mata Pelajaran" />
+    ),
+    cell: ({ row }) => {
+      const matpel = row.getValue("matpel") as any;
+      return (
+        <div className="flex flex-col gap-1">
+          <div className="text-sm text-[#041765]">
+            <span className="font-medium">Opsi 1:</span> {matpel.tier1_option1.nama || '-'} / {matpel.tier1_option2.nama || '-'}
+          </div>
+          <div className="text-sm text-[#041765]">
+            <span className="font-medium">Opsi 2:</span> {matpel.tier2_option1.nama || '-'} / {matpel.tier2_option2.nama || '-'}
+          </div>
+          <div className="text-sm text-[#041765]">
+            <span className="font-medium">Opsi 3:</span> {matpel.tier3_option1.nama || '-'} / {matpel.tier3_option2.nama || '-'}
+          </div>
+          <div className="text-sm text-[#041765]">
+            <span className="font-medium">Opsi 4:</span> {matpel.tier4_option1.nama || '-'} / {matpel.tier4_option2.nama || '-'}
+          </div>
+        </div>
+      );
+    },
+    size: 400,
   },
   {
     accessorKey: "submissions_count",
@@ -162,6 +168,6 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
     enablePinning: true,
     meta: {
       position: "right"
-    }
+    } as ColumnMeta
   },
 ]; 

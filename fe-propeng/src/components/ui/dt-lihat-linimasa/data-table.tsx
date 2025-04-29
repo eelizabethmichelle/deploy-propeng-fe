@@ -28,6 +28,11 @@ import {
 import { DataTablePagination } from "@/components/ui/dt-lihat-linimasa/pagination";
 import { DataTableToolbar } from "@/components/ui/dt-lihat-linimasa/filters";
 
+// Define the column meta type
+interface ColumnMeta {
+  position?: "right" | "left";
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -75,6 +80,11 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  // Helper function to check if a column should be fixed to the right
+  const isFixedToRight = (columnDef: any) => {
+    return (columnDef.meta as ColumnMeta)?.position === "right";
+  };
+
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table as any} />
@@ -84,7 +94,7 @@ export function DataTable<TData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  const isRight = header.column.columnDef.meta?.position === "right";
+                  const isRight = isFixedToRight(header.column.columnDef);
                   return (
                     <TableHead
                       className={`px-4 py-2 ${isRight ? 'sticky right-0 bg-white shadow-sm z-10' : ''}`}
@@ -114,7 +124,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => {
-                    const isRight = cell.column.columnDef.meta?.position === "right";
+                    const isRight = isFixedToRight(cell.column.columnDef);
                     return (
                       <TableCell 
                         className={`px-4 py-2 ${isRight ? 'sticky right-0 bg-white shadow-sm z-10' : ''}`}

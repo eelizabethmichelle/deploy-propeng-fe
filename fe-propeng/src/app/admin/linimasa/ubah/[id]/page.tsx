@@ -905,12 +905,10 @@ export default function UpdateLinimasa() {
 
               <div className="flex justify-between items-center gap-2 pt-4">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2"
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
-                  <ArrowLeft className="h-4 w-4" />
                   Kembali
                 </Button>
 
