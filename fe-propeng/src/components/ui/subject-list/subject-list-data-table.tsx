@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { SubjectSummary } from "./schema";
 import { subjectListColumns } from "./subject-list-columns"; // Impor definisi kolom
 import { SubjectListToolbar } from './subject-list-table-toolbar';
+import { DataTablePagination } from './pagination';
 
 // Tipe FilterOption (bisa diimpor dari schema atau didefinisikan di sini/atas)
 interface FilterOption { label: string; value: string; icon?: React.ComponentType<{ className?: string }>; }
@@ -140,6 +141,7 @@ export function SubjectListDataTable({
           Next
         </Button>
       </div> */}
+                  <DataTablePagination table={table} />
     </div>
   );
 }

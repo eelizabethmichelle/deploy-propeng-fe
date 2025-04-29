@@ -6,7 +6,7 @@ import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { XCircle, Ban, Loader2, Save, Edit, RotateCcw, AlertTriangle } from 'lucide-react'; // Impor AlertTriangle
-import { DataTableViewOptions } from './actions-menu'; // Pastikan path ini benar
+// import { DataTableViewOptions } from './actions-menu'; // Pastikan path ini benar
 import { GradeTableRowData, FilterOption } from './schema';
 import { toast } from 'sonner'; // Masih bisa digunakan untuk notifikasi lain
 import { DataTableFacetedFilter } from './filters-clear';
@@ -201,7 +201,7 @@ export function GradeDataTableToolbar({
                     </>
                 )}
                 {/* Tombol View Options */}
-                <DataTableViewOptions table={table} />
+                {/* <DataTableViewOptions table={table} /> */}
             </div>
         </div>
     );

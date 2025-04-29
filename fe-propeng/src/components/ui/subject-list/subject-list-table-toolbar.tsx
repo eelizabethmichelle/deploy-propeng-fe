@@ -111,9 +111,9 @@ export function SubjectListToolbar({
       </div>
 
       {/* View Options (Sama) */}
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <DataTableViewOptions table={table} />
-      </div>
+      </div> */}
     </div>
   );
 }
