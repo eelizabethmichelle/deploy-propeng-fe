@@ -545,7 +545,7 @@ export function GradeEntryDataTable({
         return (
             <div className="flex flex-col items-center justify-center text-center p-8 border rounded-md min-h-[450px] bg-card text-card-foreground shadow-sm"> {/* Mungkin perlu menambah min-h */}
                 {/* === GANTI IKON DENGAN GAMBAR === */}
-                <div className="relative w-60 h-60 md:w-72 md:h-72 mb-6"> {/* Sesuaikan ukuran jika perlu */}
+                {/* <div className="relative w-60 h-60 md:w-72 md:h-72 mb-6">
                     <NextImage
                         src="/images/tambah-komponen.png"
                         alt="Ilustrasi belum ada komponen penilaian"
@@ -553,7 +553,7 @@ export function GradeEntryDataTable({
                         height={250} // Example fixed height
                         className="mb-6" // Keep margin if needed
                     />
-                </div>
+                </div> */}
                 <h2 className="text-xl font-semibold mb-2">Belum Ada Komponen Penilaian</h2>
                 <p className="text-muted-foreground mb-6 max-w-md">
                     Ibu/Bapak belum menambahkan komponen penilaian pada mata pelajaran ini. Buat komponen penilaian dulu lalu bisa lanjut masukkan nilai, ya!

@@ -140,9 +140,9 @@ export function GradeDataTableToolbar({
                             <DialogTrigger asChild>
                                 {/* Tombol yang membuka dialog */}
                                 <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 border-destructive text-destructive hover:bg-destructive/10"
+                                    variant="destructive"
+                                    // size="sm"
+                                    // className="h-8 border-destructive text-destructive hover:bg-destructive/10"
                                     // Tombol ini di-disable jika tidak ada baris dipilih,
                                     // atau jika sedang edit baris lain, atau sedang menyimpan semua, atau sedang mereset
                                     disabled={selectedRowCount === 0 || isRowEditing || isSavingAll || isResetting}
@@ -171,11 +171,11 @@ export function GradeDataTableToolbar({
                                 <DialogFooter>
                                     {/* Tombol Batal (menggunakan DialogClose) */}
                                     <DialogClose asChild>
-                                        <Button variant="outline">Batal</Button>
+                                        <Button variant="secondary">Batal</Button>
                                     </DialogClose>
                                     {/* Tombol Konfirmasi */}
                                     <Button
-                                        variant="destructive"
+                                        variant="default"
                                         onClick={handleConfirmReset} // Panggil handler konfirmasi
                                         disabled={isResetting} // Disable juga tombol ini saat proses reset berjalan
                                     >

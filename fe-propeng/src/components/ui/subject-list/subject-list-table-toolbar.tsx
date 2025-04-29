@@ -57,10 +57,19 @@ export function SubjectListToolbar({
         {academicYearColumn && uniqueAcademicYearOptions && uniqueAcademicYearOptions.length > 0 && (
             <DataTableFacetedFilter
                 column={academicYearColumn}
-                title="Thn. Ajaran"
+                title="Tahun Ajaran"
                 options={uniqueAcademicYearOptions}
             />
         )}
+
+        {componentsColumn && uniqueComponentOptions.length > 0 && (
+             <DataTableFacetedFilter
+                column={componentsColumn}
+                title="Komponen Penilaian"
+                options={uniqueComponentOptions}
+            />
+         )}
+
 
         {detailedStatus && (
           <DataTableFacetedFilter
@@ -87,13 +96,6 @@ export function SubjectListToolbar({
         )} */}
 
 
-         {componentsColumn && uniqueComponentOptions.length > 0 && (
-             <DataTableFacetedFilter
-                column={componentsColumn}
-                title="Komponen"
-                options={uniqueComponentOptions}
-            />
-         )}
 
         {/* Tombol Reset Filter (Sama) */}
         {isFiltered && (

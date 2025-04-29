@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,6 +88,8 @@ export default function InputNilaiPage() {
     const [isPreviewLoading, setIsPreviewLoading] = useState(false);
     const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
     const router = useRouter(); // <-- Inisialisasi router
+    const pengetahuanRef = useRef<HTMLTextAreaElement>(null);
+    const keterampilanRef = useRef<HTMLTextAreaElement>(null);
 
     // --- Ekstraksi subjectId ---
     useEffect(() => {
@@ -275,22 +277,26 @@ export default function InputNilaiPage() {
     }, [subjectId]);
 
     // --- Handler untuk tombol Simpan per tipe ---
-     const onSaveChangesClick = async (type: 'pengetahuan' | 'keterampilan') => {
+    const onSaveChangesClick = async (type: 'pengetahuan' | 'keterampilan') => {
         let payload: { pengetahuan?: string; keterampilan?: string } = {};
         let success = false;
+        let currentValue = ''; // Nilai dari ref
+
         if (type === 'pengetahuan') {
-            // Hanya simpan jika ada perubahan
-            if (editedPengetahuanDesc !== (initialCapaianData?.pengetahuan?.deskripsi || '')) {
-                 payload = { pengetahuan: editedPengetahuanDesc };
+            currentValue = pengetahuanRef.current?.value ?? ''; // <-- Baca dari ref
+            // Bandingkan dengan data awal, bukan state sementara
+            if (currentValue !== (initialCapaianData?.pengetahuan?.deskripsi || '')) {
+                 payload = { pengetahuan: currentValue };
                  success = await handleSaveCapaian(payload);
-                 if (success) setIsEditingPengetahuan(false); // Tutup mode edit jika sukses
+                 if (success) setIsEditingPengetahuan(false);
             } else {
                  toast.info("Tidak ada perubahan pada deskripsi Pengetahuan.");
-                 setIsEditingPengetahuan(false); // Tutup mode edit meskipun tidak ada perubahan
+                 setIsEditingPengetahuan(false);
             }
         } else { // type === 'keterampilan'
-             if (editedKeterampilanDesc !== (initialCapaianData?.keterampilan?.deskripsi || '')) {
-                 payload = { keterampilan: editedKeterampilanDesc };
+             currentValue = keterampilanRef.current?.value ?? ''; // <-- Baca dari ref
+             if (currentValue !== (initialCapaianData?.keterampilan?.deskripsi || '')) {
+                 payload = { keterampilan: currentValue };
                  success = await handleSaveCapaian(payload);
                  if (success) setIsEditingKeterampilan(false);
             } else {
@@ -302,12 +308,16 @@ export default function InputNilaiPage() {
 
     // --- Handler untuk tombol Batal Edit ---
     const onCancelEditClick = (type: 'pengetahuan' | 'keterampilan') => {
+        // Saat batal, reset nilai textarea dari data awal secara manual
         if (type === 'pengetahuan') {
-            // Kembalikan ke nilai awal yang disimpan
-            setEditedPengetahuanDesc(initialCapaianData?.pengetahuan?.deskripsi || '');
+            if (pengetahuanRef.current) {
+                pengetahuanRef.current.value = initialCapaianData?.pengetahuan?.deskripsi || '';
+            }
             setIsEditingPengetahuan(false);
         } else {
-            setEditedKeterampilanDesc(initialCapaianData?.keterampilan?.deskripsi || '');
+            if (keterampilanRef.current) {
+                keterampilanRef.current.value = initialCapaianData?.keterampilan?.deskripsi || '';
+            }
             setIsEditingKeterampilan(false);
         }
     };
@@ -451,7 +461,7 @@ export default function InputNilaiPage() {
                     const rawScore = gradesData[student.id]?.[comp.id] ?? null;
                     let displayScore = '-';
                     if (typeof rawScore === 'number' && !isNaN(rawScore)) {
-                        displayScore = rawScore.toFixed(0); // Tampilkan tanpa desimal
+                        displayScore = rawScore.toFixed(2); // Tampilkan tanpa desimal
                         componentScores[comp.id].push(rawScore); // Kumpulkan untuk statistik
                     }
                     studentRow.push({ content: displayScore, styles: { halign: 'center' as HAlignType } });
@@ -494,9 +504,9 @@ export default function InputNilaiPage() {
             const footerRowStyles = { halign: 'right' as HAlignType, fontStyle: 'bold' as FontStyle, fontSize: 8 };
             const footerLabelStyles = { halign: 'left' as HAlignType, fontStyle: 'bold' as FontStyle, fontSize: 8 };
             const foot: RowInput[] = [
-                 [{ content: 'Rata-rata', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.avg[comp.id], 1), styles: footerRowStyles })), { content: formatNumberOrDash(stats.avg['final'], 1), styles: footerRowStyles }],
-                 [{ content: 'Minimum', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.min[comp.id], 0), styles: footerRowStyles })), { content: formatNumberOrDash(stats.min['final'], 1), styles: footerRowStyles }],
-                 [{ content: 'Maksimum', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.max[comp.id], 0), styles: footerRowStyles })), { content: formatNumberOrDash(stats.max['final'], 1), styles: footerRowStyles }]
+                 [{ content: 'Rata-rata', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.avg[comp.id], 2), styles: footerRowStyles })), { content: formatNumberOrDash(stats.avg['final'], 2), styles: footerRowStyles }],
+                 [{ content: 'Minimum', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.min[comp.id], 2), styles: footerRowStyles })), { content: formatNumberOrDash(stats.min['final'], 2), styles: footerRowStyles }],
+                 [{ content: 'Maksimum', colSpan: 2, styles: footerLabelStyles }, ...componentsForTable.map(comp => ({ content: formatNumberOrDash(stats.max[comp.id], 2), styles: footerRowStyles })), { content: formatNumberOrDash(stats.max['final'], 2), styles: footerRowStyles }]
             ];
 
             // Pengaturan Lebar Kolom (Sesuaikan jika perlu)
@@ -636,19 +646,19 @@ export default function InputNilaiPage() {
 
 
     // --- Helper Komponen untuk Edit/View Capaian (Internal) ---
-    const CapaianEditor = ({ type }: { type: 'pengetahuan' | 'keterampilan' }) => {
+const CapaianEditor = ({ type }: { type: 'pengetahuan' | 'keterampilan' }) => {
         const isEditing = type === 'pengetahuan' ? isEditingPengetahuan : isEditingKeterampilan;
-        const editedDesc = type === 'pengetahuan' ? editedPengetahuanDesc : editedKeterampilanDesc;
-        const setEditedDesc = type === 'pengetahuan' ? setEditedPengetahuanDesc : setEditedKeterampilanDesc;
+        // Hapus state/setter `editedDesc`
         const setIsEditing = type === 'pengetahuan' ? setIsEditingPengetahuan : setIsEditingKeterampilan;
         const initialDesc = type === 'pengetahuan' ? (initialCapaianData?.pengetahuan?.deskripsi || '') : (initialCapaianData?.keterampilan?.deskripsi || '');
         const typeLabel = type === 'pengetahuan' ? 'Pengetahuan' : 'Keterampilan';
+        const currentRef = type === 'pengetahuan' ? pengetahuanRef : keterampilanRef;
+
 
         return (
             <div className="space-y-2">
                 <div className="flex justify-between items-center mb-1">
-                    <Label className="text-sm font-medium">{typeLabel}</Label> {/* Ganti font weight */}
-                    {/* Tombol Edit hanya muncul jika tidak sedang loading dan tidak sedang edit */}
+                    <Label className="text-sm font-medium">{typeLabel}</Label>
                     {!isCapaianLoading && !isEditing && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:text-primary" onClick={() => setIsEditing(true)} disabled={isSavingCapaian}>
                             <Edit className="h-4 w-4" /> <span className="sr-only text-sm">Edit {typeLabel}</span>
@@ -656,31 +666,33 @@ export default function InputNilaiPage() {
                     )}
                 </div>
 
-                {/* Tampilkan skeleton jika capaian sedang loading */}
                 {isCapaianLoading ? (
                     <div className="h-16 bg-muted rounded animate-pulse"></div>
                  ) : isEditing ? (
-                    // --- Mode Edit ---
+                    // --- Mode Edit (UNCONTROLLED dengan Ref) ---
                     <div className='space-y-2'>
                         <Textarea
-                            id={`capaian-${type}`}
+                            ref={currentRef} // <-- Gunakan ref
+                            id={`capaian-${type}-html`}
                             placeholder={`Masukkan deskripsi capaian ${type.toLowerCase()}...`}
-                            value={editedDesc}
-                            onChange={(e) => setEditedDesc(e.target.value)}
-                            className="min-h-[12px] text-xs" // Sesuaikan tinggi dan ukuran font
+                            // HAPUS value prop
+                            // HAPUS onChange prop
+                            defaultValue={initialDesc} // <-- Set nilai awal dengan defaultValue
+                            className="min-h-[12px] text-xs border p-2 rounded"
                             disabled={isSavingCapaian}
                             autoFocus
+                            dir="ltr" // <-- Bisa tetap ada untuk jaga-jaga
                         />
                         <div className='flex items-center justify-end gap-2'>
                             <Button variant="ghost" size="sm" onClick={() => onCancelEditClick(type)} disabled={isSavingCapaian} className='h-8 px-3'> <X className="mr-1 h-4 w-4" /> Batal </Button>
-                            <Button size="sm" onClick={() => onSaveChangesClick(type)} disabled={isSavingCapaian || editedDesc === initialDesc} className='h-8 px-3'> {isSavingCapaian ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />} Simpan </Button>
+                            <Button size="sm" onClick={() => onSaveChangesClick(type)} disabled={isSavingCapaian} className='h-8 px-3'> {isSavingCapaian ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />} Simpan </Button>
                         </div>
                     </div>
                 ) : (
                     // --- Mode Tampilan ---
-                    // Tampilkan teks deskripsi atau pesan placeholder
-                    <p className={`text-xs text-gray-600 min-h-[12px] whitespace-pre-wrap py-1 ${editedDesc ? '' : 'text-muted-foreground italic'}`}>
-                        {editedDesc || '(Klik ikon pensil untuk menambahkan deskripsi)'}
+                    // Baca dari initialCapaianData karena tidak ada state sementara
+                    <p className={`text-xs text-gray-600 min-h-[12px] whitespace-pre-wrap py-1 ${initialCapaianData?.[type]?.deskripsi ? '' : 'text-muted-foreground italic'}`}>
+                        {initialCapaianData?.[type]?.deskripsi || '(Klik ikon pensil untuk menambahkan deskripsi)'}
                     </p>
                 )}
             </div>
@@ -824,9 +836,10 @@ export default function InputNilaiPage() {
                                      {isPengetahuanWeightOk ? 'Aman' : 'Perlu Koreksi'} {/* Teks Status */}
                                  </span>
                              </div>
-                         </div>{isPengetahuanWeightOk ? (
+                        </div>
+                        {isPengetahuanWeightOk ? (
                         // Tampilan jika Bobot Pengetahuan OK (100%) - KARTU HIJAU
-                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-sm flex items-start gap-2">
+                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-xs flex items-start gap-2">
                             <Check className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600" /> {/* Ganti ikon & warna */}
                             <div>
                                 {/* Teks disesuaikan untuk kondisi OK */}
@@ -835,11 +848,18 @@ export default function InputNilaiPage() {
                         </div>
                     ) : (
                         // Tampilan jika Bobot Pengetahuan TIDAK OK - KARTU KUNING
-                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-sm flex items-start gap-2">
-                            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-xs flex items-start gap-2">
+                            
+                                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                                    <div>
+
                             <div>
-                                Total bobot komponen penilaian Pengetahuan: ({totalWeightPengetahuan.toFixed(0)}%). Pastikan jumlah bobot = 100%.
+                                Total bobot komponen penilaian Pengetahuan: ({totalWeightPengetahuan.toFixed(0)}%).
                             </div>
+                             <div>
+                                Pastikan jumlah bobot = 100%.
+                            </div>
+                                    </div>
                         </div>
                     )}
                      </div>
@@ -864,7 +884,7 @@ export default function InputNilaiPage() {
                         </div>
                         {isKeterampilanWeightOk ? (
                         // Tampilan jika Bobot Keterampilan OK (100%) - KARTU HIJAU
-                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-sm flex items-start gap-2">
+                        <div className="p-3 bg-green-100/60 border border-green-300/80 rounded-md text-green-800 text-xs flex items-start gap-2">
                             <Check className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600" /> {/* Ganti ikon & warna */}
                             <div>
                                  {/* Teks disesuaikan untuk kondisi OK */}
@@ -873,7 +893,7 @@ export default function InputNilaiPage() {
                         </div>
                     ) : (
                         // Tampilan jika Bobot Keterampilan TIDAK OK - KARTU KUNING
-                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-sm flex items-start gap-2">
+                        <div className="p-3 bg-yellow-100/60 border border-yellow-300/80 rounded-md text-yellow-800 text-xs flex items-start gap-2">
                             <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                             <div>
                                 <div>
@@ -888,26 +908,15 @@ export default function InputNilaiPage() {
                     )}
                      </div>
                  </div>
-                 {/* Akhir Kartu Bobot */}
-                 {/* Tombol Atur Komponen (Tetap Sama, menggunakan variant="secondary" dari kode Anda) */}
              </div>
-            {/* ======================================================== */}
-            {/* AKHIR BAGIAN INFORMASI BOBOT BARU                     */}
-            {/* ======================================================== */}
 
 
-            {/* ====================================================================== */}
-            {/* BAGIAN EDIT/VIEW CAPAIAN KOMPETENSI                                   */}
-            {/* ====================================================================== */}
             <div className="p-4 border rounded-md bg-background shadow-sm space-y-4">
                  <h3 className="text-sm font-semibold border-b pb-2 mb-4">Capaian Kompetensi</h3>
                  <CapaianEditor type="pengetahuan" />
                  <hr className=" border-dashed"/>
                  <CapaianEditor type="keterampilan" />
             </div>
-            {/* ====================================================================== */}
-            {/* AKHIR BAGIAN EDIT/VIEW CAPAIAN KOMPETENSI                             */}
-            {/* ====================================================================== */}
 
 
             {/* Area TABS (HANYA berisi tabel nilai) */}
