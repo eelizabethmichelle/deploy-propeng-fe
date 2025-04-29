@@ -25,9 +25,9 @@ export default function SiswaLayout({
   // Breadcrumb maps for student routes
   const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
     "/siswa/laporannilaiabsen": [{ label: "Laporan Nilai dan Kehadiran Siswa" }],
-    "/siswa/mata-pelajaran-peminatan": [{ label: "Pengajuan Mata Pelajaran Peminatan" }],
+    "/siswa/mata-pelajaran-peminatan": [{ label: "Pendaftaran Mata Pelajaran Peminatan" }],
     "/siswa/mata-pelajaran-peminatan/daftar": [
-      { label: "Pengajuan Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
+      { label: "Pendaftaran Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
       { label: "Daftar" },
     ],
     "/guru/kelas": [{ label: "Manajemen Kelas" }],
