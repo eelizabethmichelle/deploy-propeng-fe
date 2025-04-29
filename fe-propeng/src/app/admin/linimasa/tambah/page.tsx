@@ -434,12 +434,11 @@ export default function CreateLinimasa() {
       });
 
       const responseData = await response.json();
-      console.log("Response data:", responseData);
+      console.log("Create response:", responseData);
 
-      if (response.ok && responseData.status === 200) {
+      if (response.ok && (responseData.status === 200 || responseData.status === 201)) {
         customToast.success("Berhasil Membuat Linimasa", "Linimasa berhasil dibuat");
         
-        // Dispatch event to refresh the list
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event(LINIMASA_UPDATED_EVENT));
         }
@@ -694,10 +693,9 @@ export default function CreateLinimasa() {
                                 <FormLabel>Mata Pelajaran {pairIndex * 2 + 1} *</FormLabel>
                                 <Select
                                   onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2, numValue);
+                                    handleMatpelChange(pairIndex * 2, parseInt(value));
                                   }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
+                                  value={field.value.toString()}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -705,16 +703,14 @@ export default function CreateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2))
-                                      .map((matpel) => (
-                                        <SelectItem
-                                          key={matpel.id}
-                                          value={matpel.id.toString()}
-                                        >
-                                          {matpel.nama}
-                                        </SelectItem>
-                                      ))}
+                                    {getFilteredOptions(pairIndex * 2).map((matpel) => (
+                                      <SelectItem
+                                        key={matpel.id}
+                                        value={matpel.id.toString()}
+                                      >
+                                        {matpel.nama}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -756,10 +752,9 @@ export default function CreateLinimasa() {
                                 <FormLabel>Mata Pelajaran {pairIndex * 2 + 2} *</FormLabel>
                                 <Select
                                   onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2 + 1, numValue);
+                                    handleMatpelChange(pairIndex * 2 + 1, parseInt(value));
                                   }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
+                                  value={field.value.toString()}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -767,16 +762,14 @@ export default function CreateLinimasa() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2 + 1))
-                                      .map((matpel) => (
-                                        <SelectItem
-                                          key={matpel.id}
-                                          value={matpel.id.toString()}
-                                        >
-                                          {matpel.nama}
-                                        </SelectItem>
-                                      ))}
+                                    {getFilteredOptions(pairIndex * 2 + 1).map((matpel) => (
+                                      <SelectItem
+                                        key={matpel.id}
+                                        value={matpel.id.toString()}
+                                      >
+                                        {matpel.nama}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -816,12 +809,10 @@ export default function CreateLinimasa() {
               <div className="flex justify-between items-center gap-2 pt-4">
                 {/* Tombol Kembali */}
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2"
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
-                  <ArrowLeft className="h-4 w-4" />
                   Kembali
                 </Button>
 

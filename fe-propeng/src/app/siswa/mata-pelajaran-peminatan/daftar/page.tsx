@@ -238,7 +238,7 @@ export default function PendaftaranPage() {
     className="w-auto px-6" 
     onClick={() => router.back()}
   >
-    Batal
+    Kembali
   </Button>
   <div className="flex-1 flex justify-end">
     <Button className="w-2/3" onClick={handleSubmit}>

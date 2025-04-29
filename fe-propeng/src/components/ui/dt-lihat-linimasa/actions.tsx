@@ -132,59 +132,53 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
 
   return (
     <>
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-[#041765] text-white hover:bg-[#041765]/90"
-          onClick={() => router.push(`/admin/linimasa/${data.id}`)}
-        >
-          <ClipboardList size={14} className="mr-1" />
-          Lihat Submisi
-        </Button>
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-              disabled={loading}
-            >
-              <DotsHorizontalIcon className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem 
-              onClick={() => { 
-                router.push(`/admin/linimasa/ubah/${data.id}`);
-                setDropdownOpen(false);
-              }}
-              disabled={loading}
-            >
-              <Pencil size={14} className="mr-2" />
-              Ubah
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => {
-                setDeleteDialogOpen(true);
-                setDropdownOpen(false);
-              }}
-              disabled={loading}
-              className="text-red-600"
-            >
-              <Trash2 size={14} className="mr-2" />
-              Hapus
-            </DropdownMenuItem>
-            {/* <DialogTrigger asChild>
-              <DropdownMenuItem className="text-red-600">
-              <Trash2 size={14} className="mr-2" />
-              Hapus
-              </DropdownMenuItem>
-            </DialogTrigger> */}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            disabled={loading}
+          >
+            <DotsHorizontalIcon className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem 
+            onClick={() => { 
+              router.push(`/admin/linimasa/${data.id}`);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+          >
+            <ClipboardList size={14} className="mr-2" />
+            Lihat Submisi
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => { 
+              router.push(`/admin/linimasa/ubah/${data.id}`);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+          >
+            <Pencil size={14} className="mr-2" />
+            Ubah
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => {
+              setDeleteDialogOpen(true);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+            className="text-red-600"
+          >
+            <Trash2 size={14} className="mr-2" />
+            Hapus
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
   <DialogContent className="sm:max-w-md">

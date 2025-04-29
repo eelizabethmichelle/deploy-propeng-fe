@@ -14,83 +14,30 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const linimasaColumns: ColumnDef<Schema>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-0.5"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "start_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tanggal Mulai" />
-    ),
-    cell: ({ row }) => {
-      const date = row.getValue("start_date") as string;
-      const formattedDate = format(parseISO(date), "d MMMM yyyy", { locale: id });
-      
-      return (
-        <div className="flex items-center gap-2">
-          <Input
-            type="date"
-            value={date.split('T')[0]}
-            readOnly
-            className="w-[200px]"
-          />
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "end_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tanggal Berakhir" />
-    ),
-    cell: ({ row }) => {
-      const date = row.getValue("end_date") as string;
-      const formattedDate = format(parseISO(date), "d MMMM yyyy", { locale: id });
-      
-      return (
-        <div className="flex items-center gap-2">
-          <Input
-            type="date"
-            value={date.split('T')[0]}
-            readOnly
-            className="w-[200px]"
-          />
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "angkatan",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Angkatan" />
-    ),
-    cell: ({ row }) => (
-      <div className="flex w-[100px] items-center">
-        <span>Angkatan {row.getValue("angkatan")}</span>
-      </div>
-    ),
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() && "indeterminate")
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //       className="translate-y-0.5"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //       className="translate-y-0.5"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "matpel",
     header: ({ column }) => (
@@ -115,6 +62,52 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
         </div>
       );
     },
+    size: 400,
+  },
+  {
+    accessorKey: "start_date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tanggal Mulai" />
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("start_date") as string;
+      return (
+        <div className="flex items-center">
+          <span className="text-sm">
+            {format(parseISO(date), "dd/MM/yyyy", { locale: id })}
+          </span>
+        </div>
+      );
+    },
+    size: 120,
+  },
+  {
+    accessorKey: "end_date",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tanggal Berakhir" />
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("end_date") as string;
+      return (
+        <div className="flex items-center">
+          <span className="text-sm">
+            {format(parseISO(date), "dd/MM/yyyy", { locale: id })}
+          </span>
+        </div>
+      );
+    },
+    size: 120,
+  },
+  {
+    accessorKey: "angkatan",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Angkatan" />
+    ),
+    cell: ({ row }) => (
+      <div className="flex w-[100px] items-center">
+        <span>Angkatan {row.getValue("angkatan")}</span>
+      </div>
+    ),
   },
   {
     accessorKey: "submissions_count",
@@ -127,6 +120,7 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
         <span>{row.getValue("submissions_count")} siswa</span>
       </div>
     ),
+    size: 120,
   },
   {
     accessorKey: "status",
@@ -155,6 +149,7 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
       );
     },
     filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    size: 150,
   },
   {
     id: "actions",
@@ -163,6 +158,10 @@ export const linimasaColumns: ColumnDef<Schema>[] = [
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
-    size: 250,
+    size: 100,
+    enablePinning: true,
+    meta: {
+      position: "right"
+    }
   },
 ]; 
