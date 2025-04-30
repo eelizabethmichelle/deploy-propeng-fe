@@ -213,7 +213,7 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
                 return (
                     <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
                         <span className={cn("font-medium", labelColorClass)}>{label}:</span>
-                        <span className="text-muted-foreground italic">Belum Dibuat</span>
+                        <span className="text-muted-foreground">Belum Dibuat</span>
                     </div>
                 );
             }

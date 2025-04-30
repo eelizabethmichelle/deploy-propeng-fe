@@ -826,12 +826,12 @@ const CapaianEditor = ({ type }: { type: 'pengetahuan' | 'keterampilan' }) => {
                              <div className="flex items-baseline gap-2 mt-0.5">
                                  <span className="text-xl font-bold">{totalWeightPengetahuan.toFixed(0)}%</span>
                                  {/* Indikator Status Bobot P */}
-                                 <span className={`text-xs font-medium ${isPengetahuanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isPengetahuanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />} {/* Icon */}
+                                 {/* <span className={`text-xs font-medium ${isPengetahuanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
+                                     {isPengetahuanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />} 
                                  </span>
                                  <span className={`text-xs font-medium ${isPengetahuanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isPengetahuanWeightOk ? 'Aman' : 'Perlu Koreksi'} {/* Teks Status */}
-                                 </span>
+                                     {isPengetahuanWeightOk ? 'Aman' : 'Perlu Koreksi'}
+                                 </span> */}
                              </div>
                         </div>
                         {isPengetahuanWeightOk ? (
@@ -871,12 +871,12 @@ const CapaianEditor = ({ type }: { type: 'pengetahuan' | 'keterampilan' }) => {
                              <div className="flex items-baseline gap-2 mt-0.5">
                                  <span className="text-xl font-bold">{totalWeightKeterampilan.toFixed(0)}%</span>
                                   {/* Indikator Status Bobot K */}
-                                  <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isKeterampilanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />} {/* Icon */}
+                                  {/* <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
+                                     {isKeterampilanWeightOk ? <Minus size={12} /> : <ArrowUpDown size={12} />}
                                  </span>
                                  <span className={`text-xs font-medium ${isKeterampilanWeightOk ? 'text-green-600' : 'text-yellow-600'}`}>
-                                     {isKeterampilanWeightOk ? 'Aman' : 'Perlu Koreksi'} {/* Teks Status */}
-                                 </span>
+                                     {isKeterampilanWeightOk ? 'Aman' : 'Perlu Koreksi'}
+                                 </span> */}
                              </div>
                         </div>
                         {isKeterampilanWeightOk ? (

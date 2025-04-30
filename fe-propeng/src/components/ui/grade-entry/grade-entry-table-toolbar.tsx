@@ -125,7 +125,7 @@ export function GradeDataTableToolbar({
                 {isEditingAll ? (
                     <>
                         {/* Tombol saat mode Edit Semua */}
-                        <span className='text-sm text-muted-foreground hidden md:inline italic'>Mode Edit Semua...</span>
+                        <span className='text-sm text-muted-foreground hidden md:inline italic'>Anda sedang mengedit nilai siswa...</span>
                         <Button variant="outline" size="sm" className="h-8" onClick={onCancelAll} disabled={isSavingAll || isResetting}>
                             <Ban className="mr-2 h-4 w-4" /> Batal Semua
                         </Button>

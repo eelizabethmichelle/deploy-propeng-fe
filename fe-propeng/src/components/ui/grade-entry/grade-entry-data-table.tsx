@@ -583,11 +583,6 @@ export function GradeEntryDataTable({
             </div>
         );
     }
-    // ============================================================
-    // === JIKA ADA KOMPONEN, LANJUT RENDER TABEL ===
-    // ============================================================
-
-   // --- Render Tabel Utama (TANPA STICKY) ---
     return (
         <div className="space-y-4">
             {/* Toolbar Tabel */}
@@ -652,15 +647,12 @@ export function GradeEntryDataTable({
                                              // Tidak perlu kalkulasi sticky offset lagi
                                             return (
                                                 <TableCell key={cell.id}
-                                                    // --- 👇 HAPUS prop 'style' untuk sticky positioning ---
                                                     style={{
                                                         width: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : undefined,
                                                         minWidth: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : '100px',
                                                     }}
-                                                    // --- 👇 HAPUS kelas background kondisional sticky ---
                                                     className={cn(
                                                         'px-2 py-1 h-11 align-middle text-xs',
-                                                        // Beri background di TableRow saja sudah cukup
                                                         cell.column.id === 'finalScore' && 'text-center font-medium',
                                                         cell.column.id === 'actions' && 'text-center'
                                                     )} >
@@ -684,7 +676,7 @@ export function GradeEntryDataTable({
                     {/* === TAMBAHKAN TABLE FOOTER (<tfoot>) === */}
                     {/* ========================================== */}
                     {statistics && ( // Hanya render footer jika statistik ada
-                        <tfoot className="bg-muted/30 font-medium text-xs border-t">
+                        <tfoot className="bg-muted/30 font-medium text-sm border-t">
                             {/* Kita definisikan 3 baris footer secara manual di sini */}
                             {/* Baris Rata-rata */}
                             <TableRow>
@@ -729,7 +721,7 @@ export function GradeEntryDataTable({
                                 </TableCell>
                                 {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
                                 {assessmentComponents.map(comp => (
-                                     <TableCell key={`max-foot-${comp.id}`} className="px-2 py-1.5 text-center">
+                                     <TableCell key={`max-foot-${comp.id}`} className="text-center">
                                          {formatNumberOrDash(statistics.max[comp.id], 2)}
                                      </TableCell>
                                 ))}
