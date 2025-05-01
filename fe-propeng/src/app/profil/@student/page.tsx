@@ -313,7 +313,7 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
                     id="attendance-code"
                     type="text"
                     placeholder="Masukkan kode presensi"
-                    className="w-full p-3 border-2 border-[#E1E2E8] rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
+                    className="w-full p-3 border-2 border-[#E1E2E8] rounded-lg text-base"
                     value={attendanceCode}
                     onChange={(e) => setAttendanceCode(e.target.value)}
                     onKeyDown={(e) => {
