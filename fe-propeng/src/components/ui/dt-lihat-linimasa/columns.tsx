@@ -99,16 +99,16 @@ export const linimasaColumns: ColumnDef<Schema, any>[] = [
       return (
         <div className="flex flex-col gap-1">
           <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 1:</span> {matpel.tier1_option1.nama || '-'} / {matpel.tier1_option2.nama || '-'}
+            <span className="font-medium">Pilihan Peminatan 1:</span> {matpel.tier1_option1.nama || '-'} / {matpel.tier1_option2.nama || '-'}
           </div>
           <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 2:</span> {matpel.tier2_option1.nama || '-'} / {matpel.tier2_option2.nama || '-'}
+            <span className="font-medium">Pilihan Peminatan 2:</span> {matpel.tier2_option1.nama || '-'} / {matpel.tier2_option2.nama || '-'}
           </div>
           <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 3:</span> {matpel.tier3_option1.nama || '-'} / {matpel.tier3_option2.nama || '-'}
+            <span className="font-medium">Pilihan Peminatan 3:</span> {matpel.tier3_option1.nama || '-'} / {matpel.tier3_option2.nama || '-'}
           </div>
           <div className="text-sm text-[#041765]">
-            <span className="font-medium">Opsi 4:</span> {matpel.tier4_option1.nama || '-'} / {matpel.tier4_option2.nama || '-'}
+            <span className="font-medium">Pilihan Peminatan 4:</span> {matpel.tier4_option1.nama || '-'} / {matpel.tier4_option2.nama || '-'}
           </div>
         </div>
       );
