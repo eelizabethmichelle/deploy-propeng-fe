@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CalendarCheck, CheckSquare, GraduationCap, Info, Check, CheckCircle, Clock, X, XCircle, MousePointerClick } from "lucide-react";
+import { CalendarCheck, CheckSquare, GraduationCap, Info, Check, CheckCircle, Clock, X, XCircle, MousePointerClick, HeartPulse } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
@@ -557,13 +557,15 @@ export default function Page() {
     const isSelected = isCellSelected(studentId, date);
     const baseClasses = "flex items-center justify-center w-10 h-10 rounded-md text-sm cursor-pointer";
 
-
     const displayDate = new Date(date).getDate().toString().padStart(2, '0');
 
     if (!status) {
       return (
         <div
-          className={`${baseClasses} border border-[#041765] ${isSelected ? "bg-[#F7F8FF] ring-2 ring-blue-500" : "hover:bg-gray-50"}`}
+          className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${
+            isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
+          }`}
+          style={isSelected ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined}
           onClick={(e) => {
             e.stopPropagation();
             toggleCellSelection(studentId, date);
@@ -588,26 +590,27 @@ export default function Page() {
 
     switch (status) {
       case 'Hadir':
-        bgColor = "bg-[#586AB3] text-white";
+        bgColor = "bg-[#22C55E] text-white";
         icon = <Check size={14} />;
         break;
       case 'Sakit':
-        bgColor = "bg-[#EA2F32] text-white";
-        icon = <XCircle size={14} />;
+        bgColor = "bg-[#9B51E0] text-white";
+        icon = <HeartPulse size={14} />;
         break;
       case 'Izin':
         bgColor = "bg-[#FFC804] text-[#041765]";
         icon = <Clock size={14} />;
         break;
       case 'Alfa':
-        bgColor = "bg-[#9B51E0] text-white";
+        bgColor = "bg-[#EA2F32] text-white";
         icon = <X size={14} />;
         break;
     }
 
     return (
       <div
-        className={`${baseClasses} ${bgColor} ${isSelected ? "ring-2 ring-blue-500" : "hover:opacity-90"} flex items-center justify-center`}
+        className={`${baseClasses} ${bgColor} flex items-center justify-center`}
+        style={isSelected ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined}
         onClick={(e) => {
           e.stopPropagation();
           toggleCellSelection(studentId, date);
@@ -639,7 +642,7 @@ export default function Page() {
         <div className="text-xs font-medium text-white bg-[#586FC0] py-0.5 px-1 rounded-md w-full text-center">{displayDate}</div>
         <MousePointerClick
           size={16}
-          className={`${isAllSelected ? "text-blue-500" : "text-gray-400"} transition-colors`}
+          className="text-gray-400 transition-colors"
         />
       </div>
     );
@@ -826,7 +829,7 @@ export default function Page() {
                         {/* Legenda Warna */}
                         <div className="flex flex-wrap items-center gap-4 mb-6">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#586AB3] rounded"></div>
+                            <div className="w-6 h-6 bg-[#22C55E] rounded"></div>
                             <span className="text-sm">Hadir</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -834,11 +837,13 @@ export default function Page() {
                             <span className="text-sm">Izin</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#EA2F32] rounded"></div>
+                            <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center">
+                              <HeartPulse size={14} className="text-white" />
+                            </div>
                             <span className="text-sm">Sakit</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#9B51E0] rounded"></div>
+                            <div className="w-6 h-6 bg-[#EA2F32] rounded"></div>
                             <span className="text-sm">Alfa</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -866,9 +871,12 @@ export default function Page() {
                                 {attendanceDates.map((date, i) => (
                                   <div key={i} className="flex-shrink-0 p-1">
                                     <div
-                                      className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border border-[#041765] cursor-pointer ${students.length > 0 && students.every(student =>
-                                        selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
-                                      ) ? "bg-[#F7F8FF] ring-2 ring-blue-500" : "hover:bg-gray-100"}`}
+                                      className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border-0 cursor-pointer hover:bg-gray-100`}
+                                      style={
+                                        students.length > 0 && students.every(student =>
+                                          selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
+                                        ) ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined
+                                      }
                                       onClick={() => toggleDateSelection(date)}
                                     >
                                       {formatDateHeader(date)}
@@ -923,8 +931,7 @@ export default function Page() {
                         {/* Info Seleksi & Tombol */}
                         <div className="flex justify-between mt-4">
                           <p className="text-sm text-[#041765]">
-                            {/* Pastikan cek jika attendanceDates atau students kosong untuk hindari NaN */}
-                            {selectedCells.length} sel dari {(attendanceDates?.length || 0) * (students?.length || 0)} dipilih.
+                            {selectedCells.length} sel dipilih dari {(attendanceDates?.length || 0) * (students?.length || 0)} total
                           </p>
                           <div className="flex gap-2">
                             {selectedCells.length > 0 && (
@@ -932,58 +939,17 @@ export default function Page() {
                                 className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF] text-red-500"
                                 onClick={clearSelections}
                               >
-                                Clear Selection
+                                Hapus Seleksi
                               </button>
                             )}
                             <button
                               className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF]"
-                              onClick={fetchAttendanceData} // Tetap bisa refresh meskipun data kosong
+                              onClick={fetchAttendanceData}
                             >
                               Refresh
                             </button>
                           </div>
                         </div>
-
-                        {/* Opsi Edit Massal (jika ada sel dipilih) */}
-                        {selectedCells.length > 0 && (
-                          <div className="mt-4 border border-[#E6E9F4] rounded-lg p-4">
-                            <div className="font-medium text-sm mb-2">Ubah status kehadiran untuk {selectedCells.length} tanggal yang dipilih:</div>
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                              {/* Tombol ubah status Hadir */}
-                              <button
-                                className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md"
-                                onClick={() => updateAttendanceStatus(selectedCells[0].studentId, selectedCells[0].date, 'Hadir', true)} // Asumsi perlu studentId & date dari sel pertama untuk trigger
-                              >
-                                <CheckCircle size={16} className="text-[#586AB3]" />
-                                <span>Ubah Menjadi Hadir</span>
-                              </button>
-                              {/* Tombol ubah status Izin */}
-                              <button
-                                className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md"
-                                onClick={() => updateAttendanceStatus(selectedCells[0].studentId, selectedCells[0].date, 'Izin', true)}
-                              >
-                                <Clock size={16} className="text-[#FFC804]" />
-                                <span>Ubah Menjadi Izin</span>
-                              </button>
-                              {/* Tombol ubah status Sakit */}
-                              <button
-                                className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md"
-                                onClick={() => updateAttendanceStatus(selectedCells[0].studentId, selectedCells[0].date, 'Sakit', true)}
-                              >
-                                <XCircle size={16} className="text-[#EA2F32]" />
-                                <span>Ubah Menjadi Sakit</span>
-                              </button>
-                              {/* Tombol ubah status Alfa */}
-                              <button
-                                className="flex items-center gap-2 p-2 text-sm hover:bg-[#F7F8FF] rounded-md"
-                                onClick={() => updateAttendanceStatus(selectedCells[0].studentId, selectedCells[0].date, 'Alfa', true)}
-                              >
-                                <X size={16} className="text-[#F06480]" /> {/* Mungkin maksudnya text-[#9B51E0]? sesuaikan dengan legenda */}
-                                <span>Ubah Menjadi Alfa</span> {/* Sesuaikan teks jika perlu */}
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
@@ -1021,7 +987,7 @@ export default function Page() {
                 selectedCells.length > 0
               )}
             >
-              <CheckCircle size={16} className="text-[#586AB3]" />
+              <CheckCircle size={16} className="text-[#22C55E]" />
               <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Hadir</span>
             </button>
 
@@ -1047,7 +1013,7 @@ export default function Page() {
                 selectedCells.length > 0
               )}
             >
-              <XCircle size={16} className="text-[#EA2F32]" />
+              <HeartPulse size={16} className="text-[#9B51E0]" />
               <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Sakit</span>
             </button>
 
@@ -1060,7 +1026,7 @@ export default function Page() {
                 selectedCells.length > 0
               )}
             >
-              <X size={16} className="text-[#F06480]" />
+              <X size={16} className="text-[#EA2F32]" />
               <span className="text-[#02124C] whitespace-nowrap">Ubah Menjadi Tidak hadir</span>
             </button>
           </div>

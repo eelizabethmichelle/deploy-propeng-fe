@@ -780,122 +780,127 @@ export default function UpdateLinimasa() {
                   </div>
                 ) : (
                   <>
-                    {Array.from({ length: 4 }).map((_, pairIndex) => (
-                      <div key={pairIndex} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-md">
+                    {/* Display mata pelajaran options vertically */}
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="p-4 border rounded-md">
                         <div className="space-y-4">
-                          <h4 className="font-medium">Opsi 1</h4>
-                          <FormField
-                            control={form.control}
-                            name={`matpels.${pairIndex * 2}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mata Pelajaran {pairIndex * 2 + 1} *</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    handleMatpelChange(pairIndex * 2, parseInt(value));
-                                  }}
-                                  value={field.value.toString()}
-                                  disabled={hasSubmissions}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Pilih mata pelajaran" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {getFilteredOptions(pairIndex * 2).map((matpel) => (
-                                      <SelectItem
-                                        key={matpel.id}
-                                        value={matpel.id.toString()}
-                                      >
-                                        {matpel.nama}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`capacity.${pairIndex * 2}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Kapasitas {pairIndex * 2 + 1} *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
-                                    onChange={(e) => {
-                                      const value = parseInt(e.target.value);
-                                      field.onChange(value < 1 ? 1 : value);
+                          <h4 className="font-medium">Pilihan Pelajaran Peminatan {index + 1}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name={`matpels.${index * 2}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Mata Pelajaran Peminatan {index * 2 + 1} *</FormLabel>
+                                  <Select
+                                    onValueChange={(value) => {
+                                      handleMatpelChange(index * 2, parseInt(value));
                                     }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                                    value={field.value.toString()}
+                                    disabled={hasSubmissions}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Pilih mata pelajaran" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {getFilteredOptions(index * 2).map((matpel) => (
+                                        <SelectItem
+                                          key={matpel.id}
+                                          value={matpel.id.toString()}
+                                        >
+                                          {matpel.nama}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Opsi 2</h4>
-                          <FormField
-                            control={form.control}
-                            name={`matpels.${pairIndex * 2 + 1}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mata Pelajaran {pairIndex * 2 + 2} *</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    handleMatpelChange(pairIndex * 2 + 1, parseInt(value));
-                                  }}
-                                  value={field.value.toString()}
-                                  disabled={hasSubmissions}
-                                >
+                            <FormField
+                              control={form.control}
+                              name={`capacity.${index * 2}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 1}</FormLabel>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Pilih mata pelajaran" />
-                                    </SelectTrigger>
+                                    <Input 
+                                      type="number" 
+                                      {...field} 
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        // Ensure value is at least 1
+                                        field.onChange(value < 1 ? 1 : value);
+                                      }}
+                                    />
                                   </FormControl>
-                                  <SelectContent>
-                                    {getFilteredOptions(pairIndex * 2 + 1).map((matpel) => (
-                                      <SelectItem
-                                        key={matpel.id}
-                                        value={matpel.id.toString()}
-                                      >
-                                        {matpel.nama}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                          <FormField
-                            control={form.control}
-                            name={`capacity.${pairIndex * 2 + 1}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Kapasitas {pairIndex * 2 + 2} *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
-                                    onChange={(e) => {
-                                      const value = parseInt(e.target.value);
-                                      field.onChange(value < 1 ? 1 : value);
+                          {/* Second subject for each peminatan */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <FormField
+                              control={form.control}
+                              name={`matpels.${index * 2 + 1}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Mata Pelajaran Peminatan {index * 2 + 2} *</FormLabel>
+                                  <Select
+                                    onValueChange={(value) => {
+                                      handleMatpelChange(index * 2 + 1, parseInt(value));
                                     }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    value={field.value.toString()}
+                                    disabled={hasSubmissions}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Pilih mata pelajaran" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {getFilteredOptions(index * 2 + 1).map((matpel) => (
+                                        <SelectItem
+                                          key={matpel.id}
+                                          value={matpel.id.toString()}
+                                        >
+                                          {matpel.nama}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name={`capacity.${index * 2 + 1}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 2}</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      {...field} 
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        // Ensure value is at least 1
+                                        field.onChange(value < 1 ? 1 : value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -915,7 +920,7 @@ export default function UpdateLinimasa() {
                 <Button
                   variant="default"
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={!isFormValid || isSubmitting}
                 >
                   <Save className="h-5 w-5 mr-2" />
                   {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
