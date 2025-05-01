@@ -277,83 +277,63 @@ export default function ProfilePageStudent({ user_id }: { user_id: number }) {
     <div className="p-4 md:p-6 lg:p-8 bg-white min-h-screen w-full">
       {/* === Presensi Section === */}
       <section className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Presensi</h3>
+        <h3 className="text-lg font-semibold mb-4">Presensi</h3>
 
-        {/* Card wrapper for Presensi section - Removed max-width to fill page */}
-        <Card className="w-full shadow-sm">
-          <CardContent className="p-4 md:p-5">
-            {/* Original conditional logic block */}
+
+        {/* Card wrapper for Presensi section */}
+        <Card className="w-full shadow-sm border rounded-xl overflow-hidden">
+          <CardContent className="p-6">
             {user.sudahAbsen === "Hadir" ? (
-              /* Disabled version - Styled like wireframe confirmation */
-              <div className="flex items-left gap-4 opacity-80">
-                <div className="flex-shrink-0 p-3 bg-green-100 rounded-full">
+              /* Attendance already submitted state */
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0 w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <Check className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-base font-medium text-green-700">Sudah Absen</span>
                   <span className="text-sm text-gray-500">{getTodayDate()}</span>
-                  <span className="text-xs text-green-600 font-medium mt-1">Presensi hari ini telah tercatat.</span>
+                  <span className="text-sm text-green-600 mt-1">Presensi hari ini telah tercatat.</span>
                 </div>
               </div>
             ) : (
-              /* Interactive version - Triggers Dialog - Styled like wireframe */
-              <Dialog>
-                <DialogTrigger asChild>
-                  {/* Clickable trigger area styled like the wireframe */}
-                  <div className="flex items-left gap-3 cursor-pointer hover:bg-gray-50 p-3 -m-3 rounded-lg transition-colors">
-                    <div className="flex-shrink-0 p-3 bg-blue-100 rounded-full">
-                      <ArrowRight className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-blue-800">Isi Presensi</p>
-                      <p className="text-sm text-gray-500">{getTodayDate()}</p>
-                    </div>
+              /* Direct form implementation matching the image */
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center gap-6">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <ArrowRight className="w-5 h-5 text-blue-600" />
                   </div>
-                </DialogTrigger>
+                  <div className="flex flex-col">
+                    <p className="text-m font-small text-blue-900">Isi Presensi</p>
+                    <p className="text-gray-500">{getTodayDate()}</p>
+                  </div>
+                </div>
 
-                {/* Attendance Code Modal - UNCHANGED from your provided code */}
-                <DialogContent className="sm:max-w-md p-0 bg-transparent border-none">
-                  <div className="bg-white border border-[#E1E2E8] rounded-lg p-6 flex flex-col gap-6 w-full max-w-[466px] mx-auto">
-                    <div className="flex flex-col gap-3 w-full">
-                      <div className="flex items-left w-full">
-                        <DialogTitle className="text-[#051E81] text-2xl font-normal">Kode Absen</DialogTitle>
-                      </div>
-                      <div className="w-full">
-                        <Label htmlFor="attendance-code" className="sr-only">
-                          Kode Absen
-                        </Label>
-                        {/* Original input element */}
-                        <input
-                          id="attendance-code"
-                          placeholder="Kode Absen"
-                          className="w-full p-2.5 border border-[#E1E2E8] rounded-lg text-sm"
-                          value={attendanceCode}
-                          onChange={(e) => setAttendanceCode(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !isSubmitting) {
-                              submitAttendanceCode()
-                            }
-                          }}
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-full">
-                      {/* Original button element */}
-                      <button
-                        className="w-full bg-[#05218E] hover:bg-[#041E75] text-white font-bold py-2 px-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={submitAttendanceCode}
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? "Mengirim..." : "Submit"}
-                      </button>
-                    </div>
-                  </div>
-                  <DialogClose id="dialog-close-absen" className="hidden" asChild>
-                    <button aria-label="Close"></button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
+                <div className="mt-4 w-full">
+                  <input
+                    id="attendance-code"
+                    type="text"
+                    placeholder="Masukkan kode presensi"
+                    className="w-full p-3 border-2 border-[#E1E2E8] rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all"
+                    value={attendanceCode}
+                    onChange={(e) => setAttendanceCode(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !isSubmitting) {
+                        submitAttendanceCode()
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    autoFocus
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  onClick={submitAttendanceCode}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Mengirim..." : "Kirim"}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
