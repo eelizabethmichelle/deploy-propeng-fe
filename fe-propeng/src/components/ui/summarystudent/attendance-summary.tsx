@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import type { AttendanceSummaryData } from "./schema"
 
 interface AttendanceSummaryTableProps {
@@ -10,11 +10,11 @@ interface AttendanceSummaryTableProps {
 export function AttendanceSummaryTable({ data, isLoading, error }: AttendanceSummaryTableProps) {
   const isAvailable = !isLoading && !error && data?.rekap_kehadiran
 
-  // Get values for each attendance type, or empty string if not present or zero
+  // Get values for each attendance type, defaulting to "0" if not present or zero
   const getSafeValue = (type: string): string => {
-    if (!isAvailable) return ""
+    if (!isAvailable) return "0"
     const value = (data?.rekap_kehadiran as any)[type]
-    return value && value > 0 ? value.toString() : ""
+    return value && value > 0 ? value.toString() : "0"
   }
 
   const sakitValue = getSafeValue("Sakit")
@@ -36,16 +36,22 @@ export function AttendanceSummaryTable({ data, isLoading, error }: AttendanceSum
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell className="font-medium">Sakit</TableCell>
-                <TableCell className="text-left">{sakitValue && `${sakitValue} hari`}</TableCell>
+                <TableCell className="flex justify-between items-center">
+                  <span className="font-medium">Sakit</span>
+                  <span>{sakitValue} hari</span>
+                </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">Izin</TableCell>
-                <TableCell className="text-left">{izinValue && `${izinValue} hari`}</TableCell>
+                <TableCell className="flex justify-between items-center">
+                  <span className="font-medium">Izin</span>
+                  <span>{izinValue} hari</span>
+                </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">Tanpa Keterangan</TableCell>
-                <TableCell className="text-left">{alfaValue && `${alfaValue} hari`}</TableCell>
+                <TableCell className="flex justify-between items-center">
+                  <span className="font-medium">Tanpa Keterangan</span>
+                  <span>{alfaValue} hari</span>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>

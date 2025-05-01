@@ -1,7 +1,14 @@
 // src/components/ui/summarystudent/schema.ts
 import { z } from 'zod';
 
-// Tipe untuk detail kelas
+// Student Info
+
+export interface StudentInfo {
+  id: string;
+  username: string;
+  nama: string;
+}
+
 export interface KelasInfo {
   nama: string;
   tahun_ajaran: string;
