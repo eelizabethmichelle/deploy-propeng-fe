@@ -6,7 +6,7 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TrashIcon, Plus } from "lucide-react";
+import { TrashIcon, Plus, Check, AlertTriangle, Info } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -34,6 +34,7 @@ interface DataTableToolbarProps {
   reloadTrigger: number;
   triggerReload: () => void;
   title: String;
+  totalBobotKomponen: number;
 }
 
 export function DataTableToolbar({
@@ -42,6 +43,7 @@ export function DataTableToolbar({
   reloadTrigger,
   triggerReload,
   title,
+  totalBobotKomponen
 }: DataTableToolbarProps) {
   const router = useRouter();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -58,6 +60,30 @@ export function DataTableToolbar({
     title === "Pengetahuan" ? "Pengetahuan" : "Keterampilan"
   );  
   const [komponenList, setKomponenList] = useState<any[]>([]);
+
+  const TotalBobotInfo = ({ totalBobot, tipe }: { totalBobot: number, tipe: String }) => (
+    <div
+      className={`w-full mt-2 inline-flex items-start gap-2 rounded-md px-3 py-2 text-sm font-medium shadow-sm border ${
+        totalBobot === 100
+          ? "bg-green-100 text-green-700 border-green-300"
+          : "bg-yellow-100 text-yellow-800 border-yellow-300"
+      }`}
+    >
+      {totalBobot === 100 ? (
+        <Check className="h-4 w-4 mt-0.5" />
+      ) : (
+        <AlertTriangle className="h-4 w-4 mt-0.5" />
+      )}
+      <div>
+        Total Bobot Komponen Penilaian {tipe}: {totalBobot}%
+        {totalBobot !== 100 && (
+          <div className="text-sm font-normal italic">
+            Pastikan jumlah bobot = 100%
+          </div>
+        )}
+      </div>
+    </div>
+  ); 
 
   const customToast = {
     success: (title: string, description: string) => {
@@ -194,7 +220,7 @@ export function DataTableToolbar({
       setNamaKomponen("");
       setBobotKomponen("");
       setTipeKomponen("Pengetahuan");
-      customToast.success("Komponen Penilaian berhasil ditambahkan", "Komponen Penilaian berhaisl ditambahkan");
+      customToast.success("Komponen Penilaian berhasil ditambahkan", "Komponen Penilaian berhasil ditambahkan");
       triggerReload();
     } catch (error) {
       customToast.error("Gagal menambahkan Komponen Penilaian", error instanceof Error ? error.message : "Terjadi kesalahan ketika menambahkan Komponen Penilaian");
@@ -206,7 +232,6 @@ export function DataTableToolbar({
       <Toaster />
       <div className="flex flex-wrap items-center justify-between">
         <h2 className="text-xl font-semibold">Komponen {title}</h2>
-
         <div className="flex items-center gap-2">
           {/* Hapus */}
           {selectedRowsCount > 0 && (
@@ -257,7 +282,13 @@ export function DataTableToolbar({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Tambah Komponen Penilaian {title}</DialogTitle>
+                <DialogTitle>Tambah Komponen Penilaian</DialogTitle>
+                <div className="flex items-start space-x-2 pt-1">
+                  <Info className="text-blue-500 mt-0.5 h-4 w-4" />
+                  <p className="text-sm text-muted-foreground">
+                    Tipe Komponen: <span className="font-medium text-foreground">{tipeKomponen}</span>
+                  </p>
+                </div>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex flex-col space-y-1">
@@ -294,30 +325,6 @@ export function DataTableToolbar({
                     onChange={(e) => setBobotKomponen(e.target.value)}
                   />
                 </div>
-
-                <div className="flex flex-col space-y-2 pt-2">
-                  <label className="text-sm font-medium">Tipe Komponen</label>
-                  <RadioGroup
-                    name="jenisKomponen"
-                    value={tipeKomponen}
-                    onValueChange={setTipeKomponen}
-                    className="flex space-x-4"
-                    disabled
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Pengetahuan" id="pengetahuan" />
-                      <label htmlFor="pengetahuan" className="text-sm">
-                        Pengetahuan
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Keterampilan" id="keterampilan" />
-                      <label htmlFor="keterampilan" className="text-sm">
-                        Keterampilan
-                      </label>
-                    </div>
-                  </RadioGroup>
-                </div>
               </div>
               <DialogFooter className="pt-4">
                 <DialogClose asChild>
@@ -331,6 +338,7 @@ export function DataTableToolbar({
             </DialogContent>
           </Dialog>
         </div>
+        <TotalBobotInfo totalBobot={totalBobotKomponen} tipe={tipeKomponen}/>
       </div>
     </>
   );
