@@ -130,26 +130,36 @@ export default function StudentReportPage() {
             // --- School Header ---
             let currentY = pageMargin;
 
-            // // Add school logo (Assuming logo.png exists and is valid)
-            // const logoWidth = 25;
-            // const logoHeight = 25;
-            // try {
-            //     // Make sure /images/logo.png is accessible from the public folder
-            //     doc.addImage(
-            //         "/images/logo.png",
-            //         "PNG",
-            //         pageMargin,
-            //         currentY,
-            //         logoWidth,
-            //         logoHeight,
-            //     );
-            // } catch (error) {
-            //     console.error("Error adding logo image:", error);
-            //     // Handle error, maybe draw placeholder text
-            //     doc.setTextColor(255, 0, 0);
-            //     doc.text("Logo Error", pageMargin, currentY + logoHeight / 2);
-            //     doc.setTextColor(0); // Reset color
-            // }
+            // --- Add school logo (JPG Method) ---
+            const logoWidth = 25; // Adjust if needed for the JPG aspect ratio
+            const logoHeight = 25; // Adjust if needed for the JPG aspect ratio
+            // ***** CHANGE 1: Update the path *****
+            const logoPath = "/logoini.jpg"; // Path to your JPG in the public folder
+
+            try {
+                // Use addImage with the JPG path and format
+                doc.addImage(
+                    logoPath,
+                    // ***** CHANGE 2: Update the format *****
+                    'JPEG', // Use 'JPEG' or 'JPG'
+                    pageMargin,
+                    currentY,
+                    logoWidth,
+                    logoHeight
+                );
+                console.log(`Added JPG logo from: ${logoPath}`); // Log success
+            } catch (error) {
+                console.error("Error adding JPG logo:", error);
+                // Handle error (e.g., if JPG is corrupt or not found)
+                doc.setTextColor(255, 0, 0);
+                doc.setFontSize(8);
+                doc.text("Logo Gagal Dimuat", pageMargin, currentY + logoHeight / 2, { baseline: 'middle' });
+                doc.setTextColor(0);
+            }
+            // --- End Logo Section ---
+
+            const headerTextStartY = currentY + 5;
+            const headerEndY = currentY + logoHeight;
 
             // School name in blue
             doc.setTextColor("#05218E");
@@ -446,14 +456,56 @@ export default function StudentReportPage() {
     }, [gradesDataFromApi, pdfOrientation, pdfPaperSize, generatePdfDocument, isPdfOptionsDialogOpen]);
 
     useEffect(() => { if (isPdfOptionsDialogOpen) { handleGeneratePreview(); } else { setPdfPreviewUrl(null); } }, [pdfOrientation, pdfPaperSize, isPdfOptionsDialogOpen, handleGeneratePreview]);
-
     const handleActualDownload = useCallback(() => {
-        if (!gradesDataFromApi?.nilai_siswa || gradesDataFromApi.nilai_siswa.length === 0) { toast.warning("Data nilai belum dimuat atau kosong."); return; } setIsDownloadingPdf(true);
+        // ... (checks and setup) ...
         setTimeout(() => {
-            try { const doc = generatePdfDocument(pdfOrientation, pdfPaperSize); if (doc) { const cN = gradesDataFromApi.kelas?.nama?.replace(/\s+/g, '_') || 'kls'; const dT = new Date().toISOString().slice(0, 10); doc.save(`Laporan_Nilai_${cN}_${dT}_${pdfOrientation}_${pdfPaperSize}.pdf`); toast.success("Unduhan dimulai..."); setIsPdfOptionsDialogOpen(false); } else { throw new Error("Gagal membuat PDF."); } }
-            catch (pdfError) { console.error("[PDF Download] Error:", pdfError); toast.error(`Gagal unduh PDF: ${pdfError instanceof Error ? pdfError.message : 'Error'}`); } finally { setIsDownloadingPdf(false); }
+            try {
+                const doc = generatePdfDocument(pdfOrientation, pdfPaperSize);
+                if (doc) {
+                    // --- FILENAME CONSTRUCTION ---
+                    const studentInfo = gradesDataFromApi?.siswa_info;
+                    const kelasInfo = gradesDataFromApi?.kelas;
+
+                    // Get raw names, provide default if null/undefined
+                    const rawStudentName = studentInfo?.nama || "Siswa";
+                    const rawClassName = kelasInfo?.nama || "Kelas";
+
+                    // Define characters invalid in most file systems
+                    const invalidCharsRegex = /[\\/:\*\?"<>\|]/g; // Matches \ / : * ? " < > |
+
+                    // Sanitize names: remove invalid chars, trim whitespace
+                    // Keep spaces within the name
+                    const sanitizedStudentName = rawStudentName
+                        .replace(invalidCharsRegex, "") // Remove invalid chars
+                        .trim(); // Remove leading/trailing spaces
+
+                    const sanitizedClassName = rawClassName
+                        .replace(invalidCharsRegex, "") // Remove invalid chars
+                        .trim(); // Remove leading/trailing spaces
+
+                    const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+                    // Construct the filename using sanitized names (spaces preserved)
+                    const filename = `Rapor_${sanitizedStudentName}_${sanitizedClassName}_${dateStr}.pdf`;
+                    console.log("Generated filename:", filename); // Log the final name for debugging
+
+                    doc.save(filename);
+                    // --- END FILENAME CONSTRUCTION ---
+
+                    toast.success("Unduhan dimulai...");
+                    setIsPdfOptionsDialogOpen(false);
+                } else {
+                    toast.error("Gagal membuat PDF: Data tidak lengkap.");
+                }
+            } catch (pdfError) {
+                console.error("[PDF Download] Error:", pdfError);
+                toast.error(`Gagal unduh PDF: ${pdfError instanceof Error ? pdfError.message : 'Error'}`);
+            } finally {
+                setIsDownloadingPdf(false);
+            }
         }, 50);
     }, [gradesDataFromApi, pdfOrientation, pdfPaperSize, generatePdfDocument]);
+
 
 
     const isLoading = isLoadingGrades || isLoadingAttendance;
