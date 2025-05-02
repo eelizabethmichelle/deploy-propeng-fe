@@ -838,7 +838,6 @@ export default function Page() {
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center">
-                              <HeartPulse size={14} className="text-white" />
                             </div>
                             <span className="text-sm">Sakit</span>
                           </div>
