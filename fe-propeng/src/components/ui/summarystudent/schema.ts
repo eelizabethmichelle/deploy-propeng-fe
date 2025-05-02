@@ -7,12 +7,15 @@ export interface StudentInfo {
   id: string;
   username: string;
   nama: string;
+  nisn: string; 
 }
 
 export interface KelasInfo {
   nama: string;
+  wali_kelas: string;
+  wali_kelas_nisp: string;
   tahun_ajaran: string;
-  angkatan: number | null; // Allow null if angkatan might be missing
+  angkatan: number | null;
 }
 export const kelasInfoSchema = z.object({
   nama: z.string(),
@@ -64,21 +67,18 @@ export const subjectGradeFromApiSchema = z.object({
 
 // Tipe untuk keseluruhan data nilai siswa dari API
 export interface StudentGradesDataFromApi {
-  siswa_info: { // Add student info if present
-      id: string;
-      username: string;
-      nama: string;
-  };
-  kelas?: KelasInfo | null;
+  siswa_info: StudentInfo; // Use the full StudentInfo interface
+  kelas: KelasInfo | null; // Use the full KelasInfo interface
   nilai_siswa: SubjectGradeFromApi[];
 }
 export const studentGradesDataFromApiSchema = z.object({
-   siswa_info: z.object({
-       id: z.string(),
-       username: z.string(),
-       nama: z.string(),
-   }),
-  kelas: kelasInfoSchema.nullable().optional(),
+  siswa_info: z.object({ // Define the full student info schema
+    id: z.string(),
+    username: z.string(),
+    nama: z.string(),
+    nisn: z.string(), // Add nisn
+  }),
+  kelas: kelasInfoSchema.nullable(), // Use the full kelas info schema
   nilai_siswa: z.array(subjectGradeFromApiSchema),
 });
 

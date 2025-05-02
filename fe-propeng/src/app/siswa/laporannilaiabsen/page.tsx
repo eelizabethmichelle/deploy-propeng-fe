@@ -238,22 +238,34 @@ export default function StudentReportPage() {
             currentY += 10; // Add some space after the title
 
             const studentName = studentInfo?.nama || "N/A";
+            const studentNisn = studentInfo?.username || "N/A";
             const className = kelasInfo?.nama || "N/A";
             const year = kelasInfo?.tahun_ajaran || "N/A";
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
 
-            // ***** CHANGE HERE *****
-            // Use pageMargin for the x-coordinate to align left
-            doc.text(`Nama: ${studentName}`, pageMargin, currentY);
-            currentY += 5; // Move down for the next line
-            doc.text(`Kelas: ${className}`, pageMargin, currentY);
-            currentY += 5; // Move down for the next line
-            doc.text(`Tahun Ajaran: ${year}`, pageMargin, currentY);
-            // ***** END CHANGE *****
+            // Define the X coordinate for the right column
+            const rightColumnX = pageWidth - pageMargin;
+            const rowSpacing = 5; // Define vertical spacing between rows
 
-            currentY += 10; // Add space before the first table
+            // --- Row 1: Nama (Left) | Kelas (Right) ---
+            const yRow1 = currentY; // Store Y for this row
+            doc.text(`Nama: ${studentName}`, pageMargin, yRow1);
+            // Use align: 'right' for the right column text
+            doc.text(`Kelas: ${className}`, rightColumnX, yRow1, { align: 'right' });
+
+            // --- Row 2: NISN (Left) | Tahun Ajaran (Right) ---
+            const yRow2 = yRow1 + rowSpacing; // Calculate Y for the next row
+            doc.text(`NISN: ${studentNisn}`, pageMargin, yRow2);
+            // Use align: 'right' for the right column text
+            doc.text(`Tahun Ajaran: ${year}`, rightColumnX, yRow2, { align: 'right' });
+
+            // Update currentY to be below the entire block
+            currentY = yRow2 + rowSpacing; // Add spacing below the last row
+
+            // Add a bit more space before the tables start
+            currentY += 10;
 
             // Use the same formatScore helper
             const formatScore = (score: number | null): string =>
@@ -420,22 +432,48 @@ export default function StudentReportPage() {
                 currentY += 5;
             }
 
-            // --- Add Signature Area (Example) ---
-            const signatureAreaHeight = 40;
+            // --- Signature Area ---
+            const signatureAreaHeight = 60; // Increase height slightly for more info
             if (currentY + signatureAreaHeight > pageHeight - pageMargin) {
                 doc.addPage();
                 currentY = pageMargin;
             }
 
-            // Position signature block towards the right
-            const signatureX = pageWidth - pageMargin - 60; // Adjust width (60mm) as needed
-            currentY += 20; // Space before signature
+            // Get Wali Kelas info and Date
+            const waliKelasName = kelasInfo?.wali_kelas || "N/A"; // Use the correct key from your API response ('wali_kelas')
+            const waliKelasNisp = kelasInfo?.wali_kelas_nisp || "N/A"; // Use the correct key from your API response ('wali_kelas_nisp')
+            const today = new Date();
+            // Format date as DD MMMM YYYY in Indonesian
+            const formattedDate = today.toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+
+            // Define starting Y for signature blocks (remains the same)
+            const signatureStartY = currentY + 15;
+            const signatureLineY = signatureStartY + 25;
+            const signatureNameY = signatureLineY + 5;
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(0);
 
-            // You might want another signature block for the teacher/principal on the left
+            // --- Define X coordinates for Left and Right ---
+            const leftSignatureX = pageMargin;
+            const rightSignatureX = pageWidth - pageMargin - 40; // Adjust width (60mm) as needed
+
+            // --- Right Block: Wali Kelas ---
+            // Use rightSignatureX
+            // Assuming the city is Cikarang, adjust if needed
+            doc.text(`Cikarang, ${formattedDate}`, rightSignatureX, signatureStartY);
+            doc.text("Wali Kelas,", rightSignatureX, signatureStartY + 5);
+            // Signature line placeholder (optional)
+            // doc.line(rightSignatureX, signatureLineY - 2, rightSignatureX + 50, signatureLineY - 2);
+            doc.text(waliKelasName, rightSignatureX, signatureLineY);
+            doc.text(`NISP. ${waliKelasNisp}`, rightSignatureX, signatureNameY);
+
+
+            // Update currentY to below the signature area
+            currentY = signatureNameY + 10;
 
             return doc;
         },
