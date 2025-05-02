@@ -123,7 +123,7 @@ export default function SubmisiMinatPage() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <h2 className="text-3xl font-semibold tracking-tight">
-            Submisi Pendaftaran Mata Pelajaran Peminatan Siswa
+            Pendaftar Mata Pelajaran Peminatan
           </h2>
           <p className="text-muted-foreground">Admin dapat mengubah status penerimaan mata pelajaran peminatan siswa</p>
         </div>

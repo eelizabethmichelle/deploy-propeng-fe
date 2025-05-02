@@ -617,7 +617,22 @@ export default function UpdateLinimasa() {
                                   const localDate = new Date(date.setHours(12));
                                   const formattedDate = 
                                     `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
-                                  field.onChange(formattedDate);
+                                  
+                                  const currentEndDate = form.getValues("end_date");
+                                  
+                                  if (currentEndDate) {
+                                    // Check if new start date is after end date
+                                    const startDate = new Date(formattedDate);
+                                    const endDate = new Date(currentEndDate);
+                                    
+                                    if (startDate >= endDate) {
+                                      customToast.error("Validasi Tanggal", "Tanggal mulai tidak boleh sama atau setelah tanggal selesai");
+                                    } else {
+                                      field.onChange(formattedDate);
+                                    }
+                                  } else {
+                                    field.onChange(formattedDate);
+                                  }
                                 } else {
                                   field.onChange("");
                                 }
@@ -832,8 +847,16 @@ export default function UpdateLinimasa() {
                                       {...field} 
                                       onChange={(e) => {
                                         const value = parseInt(e.target.value);
-                                        // Ensure value is at least 1
-                                        field.onChange(value < 1 ? 1 : value);
+                                        // Ensure value is at least 1 and at most 50
+                                        if (value < 1) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas minimum adalah 1");
+                                          field.onChange(1);
+                                        } else if (value > 100) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas maksimum adalah 100");
+                                          field.onChange(100);
+                                        } else {
+                                          field.onChange(value);
+                                        }
                                       }}
                                     />
                                   </FormControl>
@@ -891,8 +914,16 @@ export default function UpdateLinimasa() {
                                       {...field} 
                                       onChange={(e) => {
                                         const value = parseInt(e.target.value);
-                                        // Ensure value is at least 1
-                                        field.onChange(value < 1 ? 1 : value);
+                                        // Ensure value is at least 1 and at most 50
+                                        if (value < 1) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas minimum adalah 1");
+                                          field.onChange(1);
+                                        } else if (value > 100) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas maksimum adalah 100");
+                                          field.onChange(100);
+                                        } else {
+                                          field.onChange(value);
+                                        }
                                       }}
                                     />
                                   </FormControl>

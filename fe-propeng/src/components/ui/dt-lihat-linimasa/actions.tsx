@@ -152,7 +152,7 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
             disabled={loading}
           >
             <ClipboardList size={14} className="mr-2" />
-            Lihat Submisi
+            Lihat Pendaftar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem 

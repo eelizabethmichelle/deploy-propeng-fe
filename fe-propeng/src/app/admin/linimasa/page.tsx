@@ -345,7 +345,7 @@ export default function LinimasaPage() {
           Manajemen Linimasa Pendafataran Mata Pelajaran Peminatan
           </h2>
           <p className="text-muted-foreground">
-          Daftar event dan jadwal pemilihan mata pelajaran
+          Daftar Seleksi Kegiatan dan Jadwal pemilihan mata pelajaran
           </p>
         </div>
         <div className="flex space-x-2">
