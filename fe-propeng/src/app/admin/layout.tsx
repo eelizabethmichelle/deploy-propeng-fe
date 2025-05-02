@@ -57,7 +57,7 @@ export default function AdminLayout({
     ],
     "/admin/linimasa/[linimasaId]": [
       { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+      { label: "Pendaftar" },
     ],
   };
 
@@ -78,13 +78,13 @@ export default function AdminLayout({
     const eventId = parts[3];
     breadcrumbs = [
       { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi", href: `/admin/linimasa/${eventId}` },
+      { label: "Pendaftar", href: `/admin/linimasa/${eventId}` },
       { label: "Persetujuan" },
     ];
   } else if (pathname.includes("/admin/linimasa")) {
     breadcrumbs = [
       { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+      { label: "Pendaftar" },
     ];
   }
   
