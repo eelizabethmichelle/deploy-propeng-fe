@@ -840,7 +840,7 @@ export default function UpdateLinimasa() {
                               name={`capacity.${index * 2}`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 1}</FormLabel>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 1} *</FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 
@@ -907,7 +907,7 @@ export default function UpdateLinimasa() {
                               name={`capacity.${index * 2 + 1}`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 2}</FormLabel>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 2} *</FormLabel>
                                   <FormControl>
                                     <Input 
                                       type="number" 

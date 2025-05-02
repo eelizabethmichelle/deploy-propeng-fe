@@ -565,7 +565,7 @@ export default function Page() {
           className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${
             isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
           }`}
-          style={isSelected ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined}
+          style={isSelected ? { boxShadow: '0 0 0 3px #3b82f6, 0 0 0 5px white' } : undefined}
           onClick={(e) => {
             e.stopPropagation();
             toggleCellSelection(studentId, date);
@@ -610,7 +610,7 @@ export default function Page() {
     return (
       <div
         className={`${baseClasses} ${bgColor} flex items-center justify-center`}
-        style={isSelected ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined}
+        style={isSelected ? { boxShadow: '0 0 0 3px #3b82f6, 0 0 0 5px white' } : undefined}
         onClick={(e) => {
           e.stopPropagation();
           toggleCellSelection(studentId, date);
@@ -846,10 +846,6 @@ export default function Page() {
                             <div className="w-6 h-6 bg-[#EA2F32] rounded"></div>
                             <span className="text-sm">Alfa</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#AEB0B5] rounded"></div>
-                            <span className="text-sm">Hari Libur</span>
-                          </div>
                         </div>
 
                         {/* Tabel Absensi */}
@@ -875,7 +871,7 @@ export default function Page() {
                                       style={
                                         students.length > 0 && students.every(student =>
                                           selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
-                                        ) ? { boxShadow: '0 0 0 2px #3b82f6, 0 0 0 4px white' } : undefined
+                                        ) ? { boxShadow: '0 0 0 3px #3b82f6, 0 0 0 5px white' } : undefined
                                       }
                                       onClick={() => toggleDateSelection(date)}
                                     >
