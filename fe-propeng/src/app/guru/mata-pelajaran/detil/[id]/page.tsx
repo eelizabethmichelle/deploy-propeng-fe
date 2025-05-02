@@ -218,15 +218,16 @@ export default function MatpelDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Table 1 */}
                 <div className="space-y-4">
-                    <DataTableKomponen 
+                    <DataTableKomponen
                     data={komponenPengetahuan} 
                     columns={komponenColumns({ reloadTrigger, triggerReload })}
                     mataPelajaran={matpelId as string}
                     reloadTrigger={reloadTrigger}
                     triggerReload={triggerReload}
                     title={"Pengetahuan"}
+                    totalBobotKomponen={totalBobotPengetahuan}
                     />
-                    <TotalBobotInfo totalBobot={totalBobotPengetahuan} tipe={"Pengetahuan"}/>
+                    {/* <TotalBobotInfo totalBobot={totalBobotPengetahuan} tipe={"Pengetahuan"}/> */}
                 </div>
 
                 {/* Table 2 */}
@@ -238,8 +239,9 @@ export default function MatpelDetailPage() {
                     reloadTrigger={reloadTrigger}
                     triggerReload={triggerReload}
                     title={"Keterampilan"}
+                    totalBobotKomponen={totalBobotKeterampilan}
                     />
-                    <TotalBobotInfo totalBobot={totalBobotKeterampilan} tipe={"Keterampilan"}/>
+                    {/* <TotalBobotInfo totalBobot={totalBobotKeterampilan} tipe={"Keterampilan"}/> */}
                 </div>
             </div>
 
