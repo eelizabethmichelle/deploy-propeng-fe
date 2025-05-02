@@ -226,10 +226,11 @@ export default function SubmisiDetailPage() {
             <Input disabled value={data.id_siswa}   className="bg-gray-200" />
           </div> */}
 
-          <div>
-            <Label>Nama Siswa</Label>
-            <Input disabled value={data.nama_siswa}  />
-          </div>
+<div className="text-sm text-gray-700 bg-gray-100 p-6 rounded-lg space-y-1">
+              <p><span className="font-semibold">Nama Pendaftar   :</span> {data.nama_siswa}</p>
+              <p><span className="font-semibold">Waktu Perubahan Terakhir   :</span> {new Date(data.submitted_at).toLocaleString()}</p>
+
+            </div>
           
 
           <div className="space-y-3">
