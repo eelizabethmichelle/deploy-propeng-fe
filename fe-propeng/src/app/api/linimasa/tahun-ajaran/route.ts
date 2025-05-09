@@ -14,10 +14,10 @@ export async function GET(request: Request) {
     }
     
     try {
-        console.log(`http://${API_BASE_URL}/api/matpel/`);
+        console.log(`${API_BASE_URL}/api/matpel/`);
         console.log(tahunAjaran);
         console.log("DISINI \n\n\n\n\nn\n\n\n\n\n\ntahun-ajaran");
-        const res = await fetch(`http://${API_BASE_URL}/api/matpel/tahun-ajaran/${tahunAjaran}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/matpel/tahun-ajaran/${tahunAjaran}/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

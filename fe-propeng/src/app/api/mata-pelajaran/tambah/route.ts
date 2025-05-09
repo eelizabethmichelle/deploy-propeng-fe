@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  const res = await fetch(`http://${API_BASE_URL}/api/matpel/create/`, {
+  const res = await fetch(`${API_BASE_URL}/api/matpel/create/`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${token}`,

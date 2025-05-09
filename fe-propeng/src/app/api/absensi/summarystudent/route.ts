@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     // --- URL Backend Langsung (TANPA searchParams) ---
-    const backendUrl = `http://${API_BASE_URL}/api/absen/student/summary`; // Path sesuai user
+    const backendUrl = `${API_BASE_URL}/api/absen/student/summary`; // Path sesuai user
     // Jika backend memerlukan trailing slash, tambahkan:
-    // const backendUrl = `http://${API_BASE_URL}/api/absen/student/summary/`;
+    // const backendUrl = `${API_BASE_URL}/api/absen/student/summary/`;
 
     console.log(`[API Route /api/absensi/summarystudent] Fetching from: ${backendUrl}`); // Log URL yang dituju
 

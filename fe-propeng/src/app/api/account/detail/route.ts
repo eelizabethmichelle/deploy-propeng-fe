@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     }
     
     try {
-        const profileRes = await fetch(`http://${API_BASE_URL}/api/auth/profile/${userId}`, {
+        const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

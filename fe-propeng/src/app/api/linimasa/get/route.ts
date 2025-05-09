@@ -14,9 +14,9 @@ export async function GET(request: Request) {
     }
     
     try {
-        console.log(`http://${API_BASE_URL}/api/linimasa/`);
+        console.log(`${API_BASE_URL}/api/linimasa/`);
 
-        const res = await fetch(`http://${API_BASE_URL}/api/linimasa/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/linimasa/${id}/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

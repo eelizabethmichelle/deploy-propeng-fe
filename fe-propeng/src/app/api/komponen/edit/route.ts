@@ -11,7 +11,7 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
         const payload: any = { namaKomponen, bobotKomponen };
 
         // Lakukan request ke Django backend
-        const res = await fetch(`http://${API_BASE_URL}/api/komponen/update/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/komponen/update/${id}/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/kode/${classId}/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/kode/${classId}/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

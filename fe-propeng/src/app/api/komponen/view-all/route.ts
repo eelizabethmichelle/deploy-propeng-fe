@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const res = await fetch(`http://${API_BASE_URL}/api/komponen/`, {
+        const res = await fetch(`${API_BASE_URL}/api/komponen/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

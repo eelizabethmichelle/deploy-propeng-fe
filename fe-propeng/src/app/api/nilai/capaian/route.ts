@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) { // Remove params from signatur
 
     try {
         // Panggil endpoint Django untuk GET capaian
-        const djangoUrl = `http://${API_BASE_URL}/api/capaiankompetensi/${subjectId}/`;
+        const djangoUrl = `${API_BASE_URL}/api/capaiankompetensi/${subjectId}/`;
         console.log(`[API Route /api/capaian] Forwarding GET request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = { 'Authorization': `Bearer ${token}` };
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) { // Remove params from signatu
         }
 
         // Panggil endpoint Django untuk POST capaian
-        const djangoUrl = `http://${API_BASE_URL}/api/capaiankompetensi/${subjectId}/`;
+        const djangoUrl = `${API_BASE_URL}/api/capaiankompetensi/${subjectId}/`;
         console.log(`[API Route /api/capaian] Forwarding POST request to Django: ${djangoUrl}`);
 
         const djangoHeaders: HeadersInit = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };

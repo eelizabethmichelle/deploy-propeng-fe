@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
     try {
         // Fetch user profile
-        const result = await fetch(`http://${API_BASE_URL}/api/nilai/subjects/`, {
+        const result = await fetch(`${API_BASE_URL}/api/nilai/subjects/`, {
         // const result = await fetch(`http://localhost:8000/api/nilai/subjects/`, {
             method: "GET",
             headers: {

@@ -14,9 +14,9 @@ export async function GET(request: Request) {
     }
     
     try {
-        console.log(`http://${API_BASE_URL}/api/linimasa/delete/${id}`);
+        console.log(`${API_BASE_URL}/api/linimasa/delete/${id}`);
 
-        const res = await fetch(`http://${API_BASE_URL}/api/linimasa/delete/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/linimasa/delete/${id}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -57,9 +57,9 @@ export async function DELETE(request: Request) {
     }
     
     try {
-        console.log(`http://${API_BASE_URL}/api/linimasa/delete/${id}`);
+        console.log(`${API_BASE_URL}/api/linimasa/delete/${id}`);
 
-        const res = await fetch(`http://${API_BASE_URL}/api/linimasa/delete/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/linimasa/delete/${id}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,

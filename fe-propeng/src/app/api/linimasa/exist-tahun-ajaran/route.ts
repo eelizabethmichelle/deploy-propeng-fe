@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     console.log("DISIN I COOOOKKK\n\n\n\n\n\nWOOWOW");
     try {
         console.log("DISINI");
-        const res = await fetch(`http://${API_BASE_URL}/api/linimasa/tahun-ajaran/`, {
+        const res = await fetch(`${API_BASE_URL}/api/linimasa/tahun-ajaran/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

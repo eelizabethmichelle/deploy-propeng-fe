@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
         const { idKelas, idSiswa, kodeAbsen } = await request.json();
 
-        const res = await fetch(`http://${API_BASE_URL}/api/absen/absen-submit/`, {
+        const res = await fetch(`${API_BASE_URL}/api/absen/absen-submit/`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
