@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Step 1: Get authenticated user data
-    const authRes = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+    const authRes = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 2: Fetch mata pelajaran for the teacher
-    const matpelRes = await fetch(`http://${API_BASE_URL}/api/matpel/by-teacher/${teacherId}`, {
+    const matpelRes = await fetch(`${API_BASE_URL}/api/matpel/by-teacher/${teacherId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

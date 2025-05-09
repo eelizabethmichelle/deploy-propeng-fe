@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(`http://${API_BASE_URL}/api/auth/list_teacher/`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/list_teacher/`, {
       headers: { "Authorization": `Bearer ${token}` },
     });
 

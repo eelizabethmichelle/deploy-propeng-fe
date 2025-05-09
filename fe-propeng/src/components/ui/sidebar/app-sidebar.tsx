@@ -272,22 +272,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isLoading } = useAuth();
 
   // Show loading state
-  if (isLoading) {
-    return (
-      <Sidebar collapsible="icon" {...props}>
-        <SidebarHeader>
-          <TeamSwitcher teams={data.teams} />
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="p-4 text-center">Loading sidebar...</div>
-        </SidebarContent>
-        <SidebarFooter>
-          <NavUser user={data.user} />
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Sidebar collapsible="icon" {...props}>
+  //       <SidebarHeader>
+  //         <TeamSwitcher teams={data.teams} />
+  //       </SidebarHeader>
+  //       <SidebarContent>
+  //         <div className="p-4 text-center">Loading sidebar...</div>
+  //       </SidebarContent>
+  //       <SidebarFooter>
+  //         <NavUser user={data.user} />
+  //       </SidebarFooter>
+  //       <SidebarRail />
+  //     </Sidebar>
+  //   );
+  // }
 
   // User not authenticated or no role
   if (!user) {

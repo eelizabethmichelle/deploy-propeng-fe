@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   console.log(eventId)
 
   try {
-    const res = await fetch(`http://${API_BASE_URL}/api/linimasa/submisi/${eventId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/linimasa/submisi/${eventId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

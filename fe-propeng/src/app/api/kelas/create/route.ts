@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const requestData = await request.json();
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/create/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/create/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

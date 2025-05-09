@@ -22,9 +22,9 @@ export async function GET(request: Request) {
     try {
         // return NextResponse.json({ message: {url: url, pathSegments: pathSegments, userId: userId, fetchUrl: `http://127.0.0.1:8000/api/auth/profile/${userId}`} }, { status: 401 });
         
-        console.log(`http://${API_BASE_URL}/api/auth/profile/${userId}`);
+        console.log(`${API_BASE_URL}/api/auth/profile/${userId}`);
         // Fetch user profile
-        const profileRes = await fetch(`http://${API_BASE_URL}/api/auth/profile/${userId}`, {
+        const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

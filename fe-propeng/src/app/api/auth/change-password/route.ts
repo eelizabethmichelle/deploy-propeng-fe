@@ -15,7 +15,7 @@ export async function PUT(request: Request) {
         }
 
         // Kirim request ke Django
-        const response = await fetch(`http://${API_BASE_URL}/api/auth/change-password/`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/change-password/`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
