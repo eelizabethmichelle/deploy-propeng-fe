@@ -14,11 +14,21 @@ import { ArrowRight, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast, Toaster } from "sonner"
 import type { ColumnDef } from "@tanstack/react-table"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
 interface Student { id: string; name: string; class: string }
-interface Component { id: string; weight: number }
+interface Component { id: string; name: string; weight: number; type: string }
+
 interface GradeData {
   students: Student[]
   assessmentComponents: Component[]
@@ -39,6 +49,8 @@ export default function Page() {
   const [gradeData, setGradeData] = useState<GradeData | null>(null)
   const [loadingSubjects, setLoadingSubjects] = useState(true)
   const [loadingGrades, setLoadingGrades] = useState(false)
+  const [studentIdsInClass, setStudentIdsInClass] = useState<string[]>([])
+
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
   useEffect(() => {
@@ -47,21 +59,39 @@ export default function Page() {
       setLoadingSubjects(false)
       return
     }
-    fetch("/api/nilai/subjects", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+  
+    fetch("/api/kelas/saya", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    })
       .then(async (res) => {
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.message || `(${res.status})`)
         }
-        return res.json() as Promise<Subject[]>
+        return res.json()
       })
       .then((data) => {
-        setSubjects(data)
-        if (data[0]) setSubjectId(data[0].id)
+        const kelasData = data.data?.[0] // ambil kelas pertama
+        if (!kelasData) {
+          throw new Error("Tidak ada data kelas.")
+        }
+        const matpelUnik = kelasData.mata_pelajaran_unik || []
+        setSubjects(
+          matpelUnik.map((m: any) => ({
+            id: String(m.id),
+            name: m.nama,
+            kode: m.kode,
+            kategori: m.kategori,
+          }))
+        )
+        const siswaInKelas = (kelasData.siswa || []).map((s: any) => String(s.id))
+        setStudentIdsInClass(siswaInKelas)
+        if (matpelUnik[0]) setSubjectId(String(matpelUnik[0].id))
       })
-      .catch((e: any) => toast.error(e.message || "Gagal memuat daftar mata pelajaran"))
+      .catch((e: any) => toast.error(e.message || "Gagal memuat mata pelajaran unik"))
       .finally(() => setLoadingSubjects(false))
-  }, [token])
+  }, [token])  
 
   useEffect(() => {
     if (!subjectId || !token) return
@@ -82,7 +112,6 @@ export default function Page() {
       .finally(() => setLoadingGrades(false))
   }, [subjectId, token])
 
-  // Calculate per-component averages
   const { avgPengetahuan, avgKeterampilan } = useMemo(() => {
     if (!gradeData) return { avgPengetahuan: 0, avgKeterampilan: 0 }
     const penScores: number[] = []
@@ -100,7 +129,6 @@ export default function Page() {
     }
   }, [gradeData])
 
-  // Status counts
   const needsGuidanceCount = gradeData
     ? gradeData.students.filter((stu) => {
         const grades = gradeData.initialGrades[stu.id] || {}
@@ -125,58 +153,70 @@ export default function Page() {
       {
         accessorKey: "status",
         header: "Status",
-        cell: ({ getValue }) =>
-          getValue<string>().includes("atas") ? (
-            <Badge variant="secondary">{getValue<string>()}</Badge>
+        cell: ({ getValue }) => {
+          const value = getValue<string>()
+          return value === "Lulus KKM" ? (
+            <Badge variant="secondary">{value}</Badge>
           ) : (
-            <Badge className="bg-yellow-100 text-yellow-800">{getValue<string>()}</Badge>
-          ),
+            <Badge className="bg-red-100 text-red-800">{value}</Badge>
+          )
+        },        
       },
     ],
     []
   )
 
+  console.log(studentIdsInClass)
   const rows: GradeRow[] = gradeData
-    ? gradeData.students.map((stu, i) => {
+    ? gradeData.students
+    .filter((stu) => studentIdsInClass.includes(stu.id)) 
+    .map((stu, i) => {
         const grades = gradeData.initialGrades[stu.id] || {}
         const pen = grades["1"] ?? 0
         const ket = grades["2"] ?? 0
-        const status = pen >= avgPengetahuan && ket >= avgKeterampilan
-          ? "Di atas Rata-Rata"
-          : "Di bawah Rata-Rata"
+        // const status = pen >= avgPengetahuan && ket >= avgKeterampilan
+        //   ? "Di atas Rata-Rata"
+        //   : "Di bawah Rata-Rata"
+        const status = pen >= 75 && ket >= 75
+  ? "Lulus KKM"
+  : "Butuh Bimbingan"
         return { no: i + 1, name: stu.name, pengetahuan: pen, keterampilan: ket, status }
       })
     : []
 
+  const getGradeDistribution = (rows: GradeRow[]) => {
+    const ranges = [
+      { label: "<51", min: 0, max: 50 },
+      { label: "51-60", min: 51, max: 60 },
+      { label: "61-70", min: 61, max: 70 },
+      { label: "71-80", min: 71, max: 80 },
+      { label: "81-90", min: 81, max: 90 },
+      { label: "91-100", min: 91, max: 100 },
+    ]
+    return ranges.map((range) => {
+      const keterampilan = rows.filter((r) =>
+        r.keterampilan >= range.min && r.keterampilan <= range.max
+      ).length
+      const pengetahuan = rows.filter((r) =>
+        r.pengetahuan >= range.min && r.pengetahuan <= range.max
+      ).length
+      return { range: range.label, keterampilan, pengetahuan }
+    })
+  }
+
   return (
     <div className="p-6 space-y-8">
       <Toaster position="top-right" />
-
-      {/* Score cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-yellow-50">
-          <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
-            <ArrowRight className="w-8 h-8 text-yellow-500" />
-            <div>
-              <p className="text-sm text-yellow-700">Siswa Butuh Bimbingan</p>
-              <p className="text-2xl font-semibold">{needsGuidanceCount} Siswa</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-blue-50">
-          <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
-            <Users className="w-8 h-8 text-blue-500" />
-            <div>
-              <p className="text-sm text-blue-700">Total Siswa</p>
-              <p className="text-2xl font-semibold">{rows.length} Siswa</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filter + Table */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Daftar Nilai Siswa</h1>
+  
+      {/* Title + Subtext + Filter */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Daftar Nilai Siswa</h1>
+          <div className="text-sm text-gray-600 mt-1">
+            <p>KKM Nilai: 75</p>
+            {/* <p>Rata-rata Pengetahuan: {avgPengetahuan.toFixed(0)} | Rata-rata Keterampilan: {avgKeterampilan.toFixed(0)}</p> */}
+          </div>
+        </div>
         <Select
           value={subjectId}
           onValueChange={setSubjectId}
@@ -196,18 +236,56 @@ export default function Page() {
           </SelectContent>
         </Select>
       </div>
-
+  
       {loadingGrades ? (
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-          <DataTable columns={columns} data={rows} />
-          <div className="mt-4 text-sm text-gray-600">
-            <p>Rata-rata Nilai Pengetahuan: {avgPengetahuan.toFixed(0)}</p>
-            <p>Rata-rata Nilai Keterampilan: {avgKeterampilan.toFixed(0)}</p>
+          {/* Chart */}
+          {rows.length > 0 && (
+            <div className="mt-2">
+              <h2 className="text-lg font-semibold mb-4">Distribusi Nilai</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={getGradeDistribution(rows)} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="range" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="pengetahuan" fill="#3b82f6" name="Nilai Pengetahuan" />
+                  <Bar dataKey="keterampilan" fill="#facc15" name="Nilai Keterampilan" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+  
+          {/* Score cards */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <Card className="bg-yellow-50">
+              <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
+                <ArrowRight className="w-8 h-8 text-yellow-500" />
+                <div>
+                  <p className="text-sm text-yellow-700">Siswa Butuh Bimbingan</p>
+                  <p className="text-2xl font-semibold">{needsGuidanceCount} Siswa</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-blue-50">
+              <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
+                <Users className="w-8 h-8 text-blue-500" />
+                <div>
+                  <p className="text-sm text-blue-700">Total Siswa</p>
+                  <p className="text-2xl font-semibold">{rows.length} Siswa</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+  
+          {/* Table */}
+          <div className="mt-6">
+            <DataTable columns={columns} data={rows} />
           </div>
         </>
       )}
     </div>
-  )
+  )  
 }
