@@ -342,7 +342,7 @@ export default function LinimasaPage() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col">
           <h2 className="text-3xl font-semibold tracking-tight">
-          Manajemen Linimasa Pendaftaran Mata Pelajaran Peminatan
+          Manajemen Pendaftaran Mata Pelajaran Peminatan
           </h2>
           <p className="text-muted-foreground">
           Daftar Seleksi Kegiatan dan Jadwal pemilihan mata pelajaran
