@@ -23,8 +23,8 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
   const presentStatuses = new Set(allRows.map(r => r.original.status));
 
   const statusOptions = [
-    { value: "Di bawah Rata-Rata", label: "Di bawah Rata-Rata", icon: ArrowDownIcon },
-    { value: "Di atas Rata-Rata",  label: "Di atas Rata-Rata",  icon: ArrowUpIcon   },
+    { value: "Di bawah KKM", label: "Di bawah KKM", icon: ArrowDownIcon },
+    { value: "Di atas KKM",  label: "Di atas KKM",  icon: ArrowUpIcon   },
   ].filter(o => presentStatuses.has(o.value));
 
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -34,7 +34,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       <Toaster />
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Input
-          placeholder="Cari nama mata pelajaran, nama guru, atau kode mata pelajaran"
+          placeholder="Cari nama siswa"
           value={table.getState().globalFilter ?? ""}
           onChange={e => table.setGlobalFilter(e.target.value)}
           className="h-8 w-[150px] lg:w-[500px]"

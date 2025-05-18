@@ -29,6 +29,13 @@ interface Subject { id: string; name: string }
 interface Student { id: string; name: string; class: string }
 interface Component { id: string; name: string; weight: number; type: string }
 
+interface Kelas {
+  id: number
+  namaKelas: string
+  tahunAjaran: number
+  waliKelas: string
+}
+
 interface GradeData {
   students: Student[]
   assessmentComponents: Component[]
@@ -50,6 +57,8 @@ export default function Page() {
   const [loadingSubjects, setLoadingSubjects] = useState(true)
   const [loadingGrades, setLoadingGrades] = useState(false)
   const [studentIdsInClass, setStudentIdsInClass] = useState<string[]>([])
+  const [kelas, setKelas] = useState<Kelas>()
+
 
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
@@ -85,6 +94,12 @@ export default function Page() {
             kategori: m.kategori,
           }))
         )
+        setKelas({
+          namaKelas: data.data[0].namaKelas,
+          tahunAjaran: data.data[0].tahunAjaran,
+          waliKelas: data.data[0].waliKelas,
+          id: data.data[0].id,
+        })
         const siswaInKelas = (kelasData.siswa || []).map((s: any) => String(s.id))
         setStudentIdsInClass(siswaInKelas)
         if (matpelUnik[0]) setSubjectId(String(matpelUnik[0].id))
@@ -155,7 +170,7 @@ export default function Page() {
         header: "Status",
         cell: ({ getValue }) => {
           const value = getValue<string>()
-          return value === "Lulus KKM" ? (
+          return value === "Di atas KKM" ? (
             <Badge variant="secondary">{value}</Badge>
           ) : (
             <Badge className="bg-red-100 text-red-800">{value}</Badge>
@@ -178,8 +193,8 @@ export default function Page() {
         //   ? "Di atas Rata-Rata"
         //   : "Di bawah Rata-Rata"
         const status = pen >= 75 && ket >= 75
-  ? "Lulus KKM"
-  : "Butuh Bimbingan"
+  ? "Di atas KKM"
+  : "Di bawah KKM"
         return { no: i + 1, name: stu.name, pengetahuan: pen, keterampilan: ket, status }
       })
     : []
@@ -187,11 +202,10 @@ export default function Page() {
   const getGradeDistribution = (rows: GradeRow[]) => {
     const ranges = [
       { label: "<51", min: 0, max: 50 },
-      { label: "51-60", min: 51, max: 60 },
-      { label: "61-70", min: 61, max: 70 },
-      { label: "71-80", min: 71, max: 80 },
-      { label: "81-90", min: 81, max: 90 },
-      { label: "91-100", min: 91, max: 100 },
+      { label: "51-75", min: 51, max: 75 },
+      { label: "76-83", min: 76, max: 83 },
+      { label: "84-92", min: 84, max: 92 },
+      { label: "93-100", min: 93, max: 100 },
     ]
     return ranges.map((range) => {
       const keterampilan = rows.filter((r) =>
@@ -213,7 +227,7 @@ export default function Page() {
         <div>
           <h1 className="text-2xl font-semibold">Daftar Nilai Siswa</h1>
           <div className="text-sm text-gray-600 mt-1">
-            <p>KKM Nilai: 75</p>
+            <p><strong>Nama Kelas:</strong> {kelas?.namaKelas} | <strong>Tahun Ajaran:</strong> {kelas?.tahunAjaran} | <strong>Wali Kelas:</strong> {kelas?.waliKelas}</p>
             {/* <p>Rata-rata Pengetahuan: {avgPengetahuan.toFixed(0)} | Rata-rata Keterampilan: {avgKeterampilan.toFixed(0)}</p> */}
           </div>
         </div>
@@ -222,9 +236,15 @@ export default function Page() {
           onValueChange={setSubjectId}
           disabled={loadingSubjects}
         >
-          <SelectTrigger className="w-[240px]">
+         <SelectTrigger className="w-[240px]">
             <SelectValue
-              placeholder={loadingSubjects ? "Memuat…" : "Pilih Mata Pelajaran"}
+              placeholder={
+                loadingSubjects
+                  ? "Memuat…"
+                  : subjects.length === 0
+                  ? "Tidak ada mata pelajaran"
+                  : "Pilih Mata Pelajaran"
+              }
             />
           </SelectTrigger>
           <SelectContent>
@@ -244,7 +264,7 @@ export default function Page() {
           {/* Chart */}
           {rows.length > 0 && (
             <div className="mt-2">
-              <h2 className="text-lg font-semibold mb-4">Distribusi Nilai</h2>
+              <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={getGradeDistribution(rows)} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <XAxis dataKey="range" />
@@ -260,11 +280,11 @@ export default function Page() {
   
           {/* Score cards */}
           <div className="grid grid-cols-2 gap-4 mt-6">
-            <Card className="bg-yellow-50">
+            <Card className="bg-red-50">
               <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
-                <ArrowRight className="w-8 h-8 text-yellow-500" />
+                <ArrowRight className="w-8 h-8 text-red-500" />
                 <div>
-                  <p className="text-sm text-yellow-700">Siswa Butuh Bimbingan</p>
+                  <p className="text-sm text-red-700">Siswa Butuh Bimbingan</p>
                   <p className="text-2xl font-semibold">{needsGuidanceCount} Siswa</p>
                 </div>
               </CardContent>
