@@ -23,6 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
+import { useParams } from "next/navigation"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -39,6 +40,9 @@ interface Kelas {
 interface GradeData {
   students: Student[]
   assessmentComponents: Component[]
+  academicYear: string
+  teacherName: string
+  teacherNisp: string
   initialGrades: Record<string, Record<string, number>>
 }
 
@@ -51,7 +55,7 @@ type GradeRow = {
 }
 
 export default function Page() {
-  const [subjects, setSubjects] = useState<Subject[]>([])
+  const params = useParams();
   const [subjectId, setSubjectId] = useState<string>("")
   const [gradeData, setGradeData] = useState<GradeData | null>(null)
   const [loadingSubjects, setLoadingSubjects] = useState(true)
@@ -59,54 +63,18 @@ export default function Page() {
   const [studentIdsInClass, setStudentIdsInClass] = useState<string[]>([])
   const [kelas, setKelas] = useState<Kelas>()
 
-
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
   useEffect(() => {
-    if (!token) {
-      toast.error("Token otentikasi tidak ditemukan.")
-      setLoadingSubjects(false)
-      return
-    }
+    const matpelIdRaw = params.id;
+    const matpelId = Array.isArray(matpelIdRaw)
+      ? matpelIdRaw[matpelIdRaw.length - 1]
+      : matpelIdRaw
   
-    fetch("/api/kelas/saya", {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.message || `(${res.status})`)
-        }
-        return res.json()
-      })
-      .then((data) => {
-        const kelasData = data.data?.[0] // ambil kelas pertama
-        if (!kelasData) {
-          throw new Error("Tidak ada data kelas.")
-        }
-        const matpelUnik = kelasData.mata_pelajaran_unik || []
-        setSubjects(
-          matpelUnik.map((m: any) => ({
-            id: String(m.id),
-            name: m.nama,
-            kode: m.kode,
-            kategori: m.kategori,
-          }))
-        )
-        setKelas({
-          namaKelas: data.data[0].namaKelas,
-          tahunAjaran: data.data[0].tahunAjaran,
-          waliKelas: data.data[0].waliKelas,
-          id: data.data[0].id,
-        })
-        const siswaInKelas = (kelasData.siswa || []).map((s: any) => String(s.id))
-        setStudentIdsInClass(siswaInKelas)
-        if (matpelUnik[0]) setSubjectId(String(matpelUnik[0].id))
-      })
-      .catch((e: any) => toast.error(e.message || "Gagal memuat mata pelajaran unik"))
-      .finally(() => setLoadingSubjects(false))
-  }, [token])  
+    if (matpelId) {
+      setSubjectId(matpelId)
+    }
+  }, [params.id])
 
   useEffect(() => {
     if (!subjectId || !token) return
@@ -183,15 +151,10 @@ export default function Page() {
 
   console.log(studentIdsInClass)
   const rows: GradeRow[] = gradeData
-    ? gradeData.students
-    .filter((stu) => studentIdsInClass.includes(stu.id)) 
-    .map((stu, i) => {
+    ? gradeData.students.map((stu, i) => {
         const grades = gradeData.initialGrades[stu.id] || {}
         const pen = grades["1"] ?? 0
         const ket = grades["2"] ?? 0
-        // const status = pen >= avgPengetahuan && ket >= avgKeterampilan
-        //   ? "Di atas Rata-Rata"
-        //   : "Di bawah Rata-Rata"
         const status = pen >= 75 && ket >= 75
   ? "Di atas KKM"
   : "Di bawah KKM"
@@ -227,7 +190,7 @@ export default function Page() {
         <div>
           <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa</h1>
           <div className="text-sm text-gray-600 mt-1">
-            <p><strong>Nama Kelas:</strong> {kelas?.namaKelas} | <strong>Tahun Ajaran:</strong> {kelas?.tahunAjaran} | <strong>Wali Kelas:</strong> {kelas?.waliKelas}</p>
+            <p><strong>Tahun Ajaran:</strong> {gradeData?.academicYear} | <strong>Nama Guru:</strong> {gradeData?.teacherName}</p>
             {/* <p>Rata-rata Pengetahuan: {avgPengetahuan.toFixed(0)} | Rata-rata Keterampilan: {avgKeterampilan.toFixed(0)}</p> */}
           </div>
         </div>
@@ -236,24 +199,6 @@ export default function Page() {
           onValueChange={setSubjectId}
           disabled={loadingSubjects}
         >
-         <SelectTrigger className="w-[240px]">
-            <SelectValue
-              placeholder={
-                loadingSubjects
-                  ? "Memuat…"
-                  : subjects.length === 0
-                  ? "Tidak ada mata pelajaran"
-                  : "Pilih Mata Pelajaran"
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {subjects.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
         </Select>
       </div>
   
