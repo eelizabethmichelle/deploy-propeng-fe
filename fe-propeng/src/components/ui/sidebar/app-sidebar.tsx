@@ -128,7 +128,8 @@ const data = {
         ],
       },
       {
-        title: "Manajemen Linimasa",
+        // ganti ke ini lebih representatif, typography yg lain takes too much space
+        title: "Manajemen Peminatan",
         url: "#",
         icon: Newspaper,
         isActive: true,
