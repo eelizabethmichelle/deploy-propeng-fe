@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CalendarCheck, CheckSquare, GraduationCap, Info, Check, CheckCircle, Clock, X, XCircle, MousePointerClick, HeartPulse } from "lucide-react";
@@ -94,7 +94,9 @@ const monthNames = [
 const getMonthName = (month: number) => monthNames[month - 1] || "";
 
 export default function Page() {
+  const params = useParams();
   const router = useRouter();
+  const classId = params.id;
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [attendanceStats, setAttendanceStats] = useState<AttendanceStats>({
     presentCount: 0,
@@ -174,7 +176,7 @@ export default function Page() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken} Id ${classData.id}`,
+          "Authorization": `Bearer ${accessToken} Id ${classId}`,
         },
       });
       const data = await response.json();
@@ -207,11 +209,11 @@ export default function Page() {
         return;
       }
 
-      const response = await fetch(`/api/kelas/saya`, {
+      const response = await fetch(`/api/kelas/detailBaru`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token} id ${classId}`,
         },
       });
 
@@ -237,13 +239,13 @@ export default function Page() {
 
 
       const jsonData = await response.json();
-
-
+      console.log("debugging here")
+      console.log(jsonData)
       if (jsonData.status === 200) {
         if (!jsonData.data || jsonData.data.length === 0) {
           setClassData(null);
         } else {
-
+            
           setClassData(jsonData.data[0]);
 
 
@@ -696,7 +698,7 @@ export default function Page() {
       </div>
     );
   }
-
+  console.log(classData);
   if (!classData) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
