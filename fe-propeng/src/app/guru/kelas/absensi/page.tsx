@@ -85,6 +85,14 @@ interface ContextMenuPosition {
   date: string;
 }
 
+// Add month names for Indonesian
+const monthNames = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
+
+const getMonthName = (month: number) => monthNames[month - 1] || "";
+
 export default function Page() {
   const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
@@ -107,6 +115,7 @@ export default function Page() {
   const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
   const getFormattedTodayDate = () => { /* ... keep function ... */
     const today = new Date();
@@ -648,6 +657,32 @@ export default function Page() {
     );
   };
 
+  // Helper to get available months from attendanceDates
+  const getAvailableMonths = () => {
+    const months = new Set<number>();
+    attendanceDates.forEach(dateStr => {
+      const date = new Date(dateStr);
+      months.add(date.getMonth() + 1); // getMonth is 0-based
+    });
+    return Array.from(months).sort((a, b) => a - b);
+  };
+
+  // Filtered dates for the selected month
+  const filteredDates = attendanceDates.filter(dateStr => {
+    if (!selectedMonth) return true;
+    const date = new Date(dateStr);
+    return date.getMonth() + 1 === selectedMonth;
+  });
+
+  useEffect(() => {
+    // Set default selectedMonth to the first available month if not set
+    if (attendanceDates.length > 0 && selectedMonth === null) {
+      const firstMonth = new Date(attendanceDates[0]).getMonth() + 1;
+      setSelectedMonth(firstMonth);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendanceDates]);
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Memuat data...</div>;
   }
@@ -817,6 +852,22 @@ export default function Page() {
               <Card className="border-[#E1E2E8]">
                 <CardContent className="p-6">
                   {/* === AWAL KONDISIONAL === */}
+                  {/* Month Filter Dropdown */}
+                  <div className="mb-4 flex items-center gap-2">
+                    <label htmlFor="month-select" className="text-sm font-medium">Filter Bulan:</label>
+                    <select
+                      id="month-select"
+                      className="border rounded px-2 py-1"
+                      value={selectedMonth || ""}
+                      onChange={e => setSelectedMonth(e.target.value ? parseInt(e.target.value) : null)}
+                    >
+                      {getAvailableMonths().map(month => (
+                        <option key={month} value={month}>
+                          {getMonthName(month)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   {noAttendanceDataFound ? (
                     // Tampilkan pesan ini jika tidak ada data absensi
                     <div className="flex items-center justify-center h-40 text-gray-500">
@@ -855,15 +906,19 @@ export default function Page() {
                               Nama
                             </div>
                             <div className="flex flex-col">
-                              {attendanceDates.length > 0 && (
+                              {filteredDates.length > 0 && (
                                 <div className="flex border-b border-[#E6E9F4]">
                                   <div className="p-2 font-medium text-[#041765] text-center w-full">
-                                    {attendanceDates.length > 0 ? new Date(attendanceDates[0]).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : ''}
+                                    {selectedMonth
+                                      ? `${getMonthName(selectedMonth)} ${new Date(filteredDates[0]).getFullYear()}`
+                                      : filteredDates.length > 0
+                                        ? new Date(filteredDates[0]).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+                                        : ''}
                                   </div>
                                 </div>
                               )}
                               <div className="flex">
-                                {attendanceDates.map((date, i) => (
+                                {filteredDates.map((date, i) => (
                                   <div key={i} className="flex-shrink-0 p-1">
                                     <div
                                       className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border-0 cursor-pointer hover:bg-gray-100`}
@@ -888,7 +943,7 @@ export default function Page() {
                                 {student.name}
                               </div>
                               <div className="flex gap-1 p-1">
-                                {attendanceDates.map((date, i) => (
+                                {filteredDates.map((date, i) => (
                                   <div key={i} className="flex-shrink-0">
                                     {getAttendanceCell(student.attendanceByDate[date], date, student.id)}
                                   </div>
@@ -902,7 +957,7 @@ export default function Page() {
                               Kehadiran Harian
                             </div>
                             <div className="flex gap-1 p-1">
-                              {attendanceDates.map((date, i) => {
+                              {filteredDates.map((date, i) => {
                                 let present = 0, absent = 0, sick = 0, permission = 0;
                                 students.forEach(student => {
                                   const status = student.attendanceByDate[date];
@@ -926,7 +981,7 @@ export default function Page() {
                         {/* Info Seleksi & Tombol */}
                         <div className="flex justify-between mt-4">
                           <p className="text-sm text-[#041765]">
-                            {selectedCells.length} sel dipilih dari {(attendanceDates?.length || 0) * (students?.length || 0)} total
+                            {selectedCells.length} sel dipilih dari {(filteredDates?.length || 0) * (students?.length || 0)} total
                           </p>
                           <div className="flex gap-2">
                             {selectedCells.length > 0 && (
