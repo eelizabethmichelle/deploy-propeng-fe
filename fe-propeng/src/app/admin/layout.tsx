@@ -88,6 +88,21 @@ export default function AdminLayout({
     ];
   }
   
+  if (pathname === "/admin/evalguru/overview-tahunan") {
+    breadcrumbs = [
+      { label: "Evaluasi Guru" },
+    ];
+  }
+  
+  if (pathname.includes("/admin/evalguru/detail") ) {
+    const parts = pathname.split("/");
+    const guruId = parts[3];
+    const tahunAjaranId = parts[4];
+    breadcrumbs = [
+      { label: "Evaluasi Guru", href: "/admin/evalguru/overview-tahunan" },
+      { label: "Detail Skor Evaluasi" },
+    ];
+  } 
 
   if (pathname.includes("/admin/akun/detil")) {
     breadcrumbs = [
