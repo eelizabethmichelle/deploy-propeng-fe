@@ -25,6 +25,12 @@ import {
   SquareDivide,
   SquareTerminal,
   User,
+  School2Icon,
+  LucideFormInput,
+  StarsIcon,
+  TypeIcon,
+  BookMarked,
+  BookUser,
 } from "lucide-react"
 
 import { NavMain } from "@/components/ui/sidebar/nav-main"
@@ -32,6 +38,7 @@ import { NavProjects } from "@/components/ui/sidebar/nav-projects"
 import { NavUser } from "@/components/ui/sidebar/nav-user"
 import { TeamSwitcher } from "@/components/ui/sidebar/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
+import { StarFilledIcon } from "@radix-ui/react-icons";
 
 interface ProfileData {
   user_id: number;
@@ -145,6 +152,18 @@ const data = {
           }
         ],
       },
+      {
+        title: "Evaluasi Guru",
+        url: "#",
+        icon: BookUser,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "/admin/evalguru/overview-tahunan",
+          }
+        ],
+      },
     ],
     teacher: [
       {
@@ -200,6 +219,18 @@ const data = {
           {
             title: "Lihat Semua",
             url: "/guru/submisi-peminatan/",
+          }
+        ],
+      },
+      {
+        title: "Evaluasi Guru",
+        url: "#",
+        icon: BookUser,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
           }
         ],
       },
