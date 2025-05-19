@@ -959,7 +959,7 @@ export default function Page() {
                             <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
                               Kehadiran Harian
                             </div>
-                            <div className="flex gap-1 p-1">
+                            <div className="flex gap-2 p-1">
                               {filteredDates.map((date, i) => {
                                 let present = 0, absent = 0, sick = 0, permission = 0;
                                 students.forEach(student => {
@@ -972,8 +972,10 @@ export default function Page() {
                                 const total = students.length;
                                 const attendanceText = total > 0 ? `${present}/${total}` : '-';
                                 return (
-                                  <div key={i} className="w-10 h-10 flex items-center justify-center text-sm">
-                                    {attendanceText}
+                                  <div key={i} className="flex-shrink-0">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-md text-sm">
+                                      {attendanceText}
+                                    </div>
                                   </div>
                                 );
                               })}
