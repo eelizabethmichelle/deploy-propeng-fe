@@ -128,7 +128,8 @@ const data = {
         ],
       },
       {
-        title: "Manajemen Linimasa",
+        // ganti ke ini lebih representatif, typography yg lain takes too much space
+        title: "Manajemen Peminatan",
         url: "#",
         icon: Newspaper,
         isActive: true,
@@ -153,12 +154,16 @@ const data = {
         isActive: true,
         items: [
           {
-            title: "Mengelola Absensi",
+            title: "Absensi Kelas Aktif",
             url: "/guru/kelas/absensi",
           },
           {
             title: "Lihat Rekap Nilai",
             url: "/guru/kelas/rekap-nilai",
+          },
+          {
+            title: "Semua Kelas Saya",
+            url: "/guru/kelas/semua",
           }
         ],
       },

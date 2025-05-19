@@ -28,7 +28,7 @@ export function OverviewTahunanRowActions({ row }: OverviewTahunanRowActionsProp
   // tahun_ajaran di sini adalah string dari tahunnya, misal "2025"
   // Backend get_teacher_evaluation_detail_page (atau nama barunya)
   // sudah diubah untuk menerima tahun_ajaran_id sebagai nilai tahun (integer)
-  const detailPageUrl = `/admin/evaluasi-guru/detail-guru/${evaluasi.guru_id}?tahun_ajaran_id=${evaluasi.tahun_ajaran}`;
+  const detailPageUrl = `/admin/evalguru/detail/${evaluasi.guru_id}/${evaluasi.tahun_ajaran}`;
   // Ganti '/admin/evaluasi-guru/detail-guru/' dengan path routing frontend Anda yang benar
 
   return (
