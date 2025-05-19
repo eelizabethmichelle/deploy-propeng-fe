@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRef } from "react"
 
 import { useRouter } from "next/navigation"
@@ -260,11 +260,9 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // State variables for filtering
-  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().getMonth().toString())
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
   const [selectedWeek, setSelectedWeek] = useState<string>("0")
-  const [filteredDates, setFilteredDates] = useState<string[]>([])
-  const [todayDateString, setTodayDateString] = useState<string>("")
 
   // State variables for weekly data
   const [weeklyData, setWeeklyData] = useState<WeeklyAttendanceData | null>(null)
@@ -289,7 +287,42 @@ export default function Page() {
   const [monthlyAnalysis, setMonthlyAnalysis] = useState<MonthlyAnalysis | null>(null)
   const [isLoadingMonthly, setIsLoadingMonthly] = useState(false)
 
+  // Add this state declaration with other state variables
+  const [todayDateString, setTodayDateString] = useState<string>("");
+
+  // Add state for filtered dates
+  const [filteredDates2, setFilteredDates2] = useState<string[]>([]);
+
+  // For Rekap Kehadiran Peserta tab
+  const [selectedMonthAttendance, setSelectedMonthAttendance] = useState<string>("");
+  const filteredDatesAttendance = useMemo(() => {
+    if (!selectedMonthAttendance || selectedMonthAttendance === "all") {
+      return attendanceDates;
+    }
+    return attendanceDates.filter(dateStr => {
+      const date = new Date(dateStr);
+      return date.getMonth().toString() === selectedMonthAttendance;
+    });
+  }, [attendanceDates, selectedMonthAttendance]);
+
+  // For Dashboard Data Presensi Siswa tab
+  const [selectedMonthDashboard, setSelectedMonthDashboard] = useState<string>(new Date().getMonth().toString());
+  const filteredDatesDashboard = useMemo(() => {
+    return attendanceDates.filter(dateStr => {
+      const date = new Date(dateStr);
+      return date.getMonth() + 1 === parseInt(selectedMonthDashboard);
+    });
+  }, [attendanceDates, selectedMonthDashboard]);
+
   const GRID_HEIGHT = 320 - 40 // 40px reserved for bottom labels
+
+  const getMonthName = (month: number) => {
+    const monthNames = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    return monthNames[month] || "";
+  };
 
   const getFormattedTodayDate = () => {
     const today = new Date()
@@ -559,8 +592,8 @@ export default function Page() {
   useEffect(() => {
     if (attendanceDates.length > 0 && todayDateString) {
       // Filter to only show today's date
-      const filtered = attendanceDates.filter((dateStr) => dateStr === todayDateString)
-      setFilteredDates(filtered)
+      const filtered = attendanceDates
+      setFilteredDates2(filtered)
     }
   }, [attendanceDates, todayDateString])
 
@@ -829,6 +862,23 @@ export default function Page() {
   // Add this function to generate month options
   const getMonthOptions = () => {
     return [
+      { value: "7", label: "Agustus" },
+      { value: "8", label: "September" },
+      { value: "9", label: "Oktober" },
+      { value: "10", label: "November" },
+      { value: "11", label: "Desember" },
+      { value: "0", label: "Januari" },
+      { value: "1", label: "Februari" },
+      { value: "2", label: "Maret" },
+      { value: "3", label: "April" },
+      { value: "4", label: "Mei" },
+      { value: "5", label: "Juni" },
+      { value: "6", label: "Juli" },
+    ]
+  }
+
+  const getMonthOptionsdashboard = () => {
+    return [
       { value: "0", label: "Januari" },
       { value: "1", label: "Februari" },
       { value: "2", label: "Maret" },
@@ -843,6 +893,38 @@ export default function Page() {
       { value: "11", label: "Desember" },
     ]
   }
+
+  // Add this function to get available months from attendance data
+  const getAvailableMonthOptions = () => {
+    // If no attendance data, return empty array
+    if (!attendanceDates || attendanceDates.length === 0) {
+      return [{ value: "all", label: "Semua Bulan" }];
+    }
+    
+    // Extract unique month/year combinations from attendance dates
+    const uniqueMonths = new Map();
+    
+    attendanceDates.forEach(dateStr => {
+      const date = new Date(dateStr);
+      const monthValue = date.getMonth().toString();
+      const monthName = getMonthName(date.getMonth());
+      const yearStr = date.getFullYear().toString();
+      const key = `${monthValue}-${yearStr}`;
+      
+      if (!uniqueMonths.has(key)) {
+        uniqueMonths.set(key, {
+          value: monthValue,
+          label: `${monthName} ${yearStr}`
+        });
+      }
+    });
+    
+    // Convert Map to array and sort chronologically
+    const result = Array.from(uniqueMonths.values());
+    result.sort((a, b) => Number(a.value) - Number(b.value));
+    
+    return result;
+  };
 
   // Fetch yearly data
   const fetchYearlyData = async () => {
@@ -1156,6 +1238,27 @@ export default function Page() {
     }
   }, [classData])
 
+  // Remove the existing filteredDates declarations entirely
+  // Replace with a single memoized version that filters based on month selection
+  const filteredDates = useMemo(() => {
+    return attendanceDates.filter(dateStr => {
+      if (!selectedMonth || selectedMonth === "all") return true;
+      const date = new Date(dateStr);
+      return date.getMonth() + 1 === parseInt(selectedMonth);
+    });
+  }, [attendanceDates, selectedMonth]);
+
+  // Update the useEffect to set the initial month immediately after data loads
+  useEffect(() => {
+    if (attendanceDates.length > 0) {
+      const options = getAvailableMonthOptions();
+      if (options.length > 0) {
+        // Set the selected month immediately after data loads
+        setSelectedMonthAttendance(options[0].value);
+      }
+    }
+  }, [attendanceDates]);
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Memuat data...</div>
   }
@@ -1345,138 +1448,158 @@ export default function Page() {
             <div className="flex flex-col gap-6">
               <Card className="border-[#E1E2E8]">
                 <CardContent className="p-6">
-                  {/* === AWAL KONDISIONAL === */}
+                  {/* Month Filter Dropdown */}
+                  <div className="mb-4 flex items-center gap-2">
+                    <label htmlFor="month-select" className="text-sm font-medium">Filter Bulan:</label>
+                    <select
+                      id="month-select"
+                      className="border rounded px-2 py-1"
+                      value={selectedMonthAttendance}
+                      onChange={e => setSelectedMonthAttendance(e.target.value)}
+                    >
+                      {getAvailableMonthOptions().map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
                   {noAttendanceDataFound ? (
                     // Tampilkan pesan ini jika tidak ada data absensi
                     <div className="flex items-center justify-center h-40 text-gray-500">
                       Belum ada data absensi untuk kelas ini.
                     </div>
                   ) : (
-                    // Jika ada data (atau belum dicek/error lain), tampilkan konten tabel
-                    <div>
-                      {/* Legenda Warna */}
-                      <div className="flex flex-wrap items-center gap-4 mb-6">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#22C55E] rounded"></div>
-                          <span className="text-sm">Hadir</span>
+                    // Jika ada data, tampilkan tabel
+                    <div className="overflow-x-auto">
+                      <div className="min-w-max">
+                        {/* Legenda Warna */}
+                        <div className="flex flex-wrap items-center gap-4 mb-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-[#22C55E] rounded"></div>
+                            <span className="text-sm">Hadir</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-[#FFC804] rounded"></div>
+                            <span className="text-sm">Izin</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center">
+                            </div>
+                            <span className="text-sm">Sakit</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-[#EA2F32] rounded"></div>
+                            <span className="text-sm">Alfa</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#FFC804] rounded"></div>
-                          <span className="text-sm">Izin</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center"></div>
-                          <span className="text-sm">Sakit</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-[#EA2F32] rounded"></div>
-                          <span className="text-sm">Alfa</span>
-                        </div>
-                      </div>
 
-                      {/* Tabel Absensi dengan Fixed Headers dan Scrollable Content */}
-                      <div className="relative border border-[#E6E9F4] rounded-lg overflow-hidden z-0">
-                        <div className="overflow-auto" style={{ maxHeight: "600px", position: "relative", zIndex: 0 }}>
-                          <table className="min-w-full border-collapse table-fixed">
-                            <thead className="sticky top-0 z-30 bg-[#F7F8FF]">
-                              <tr>
-                                <th className="w-[180px] p-3 font-medium text-[#041765] border-r border-[#E6E9F4] text-left sticky left-0 z-40 bg-[#F7F8FF]">
-                                  Nama
-                                </th>
-                                {filteredDates.length > 0 && (
-                                  <th className="p-2 font-medium text-[#041765] text-left border-b border-[#E6E9F4]">
-                                    {getCurrentMonthName()}
-                                  </th>
-                                )}
-                              </tr>
-                              {filteredDates.length > 0 && (
-                                <tr className="bg-[#F7F8FF]">
-                                  <th className="w-[180px] border-r border-[#E6E9F4] sticky left-0 z-40 bg-[#F7F8FF]"></th>
-                                  {filteredDates.map((date, i) => (
-                                    <th key={i} className="p-1 text-left">
-                                      <div className="flex flex-col items-center justify-center w-10 h-10 rounded-md text-sm">
-                                        <div className="text-sm font-medium text-white bg-[#586FC0] py-1 px-2 rounded-md w-10 text-center">
-                                          {new Date(date).getDate().toString().padStart(2, "0")}
-                                        </div>
-                                      </div>
-                                    </th>
-                                  ))}
-                                </tr>
+                        {/* Tabel Absensi */}
+                        <div className="border border-[#E6E9F4] rounded-lg">
+                          {/* Header Tabel */}
+                          <div className="flex border-b border-[#041765] bg-[#F7F8FF]">
+                            <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
+                              Nama
+                            </div>
+                            <div className="flex flex-col">
+                              {filteredDatesAttendance.length > 0 && (
+                                <div className="flex border-b border-[#E6E9F4]">
+                                  <div className="p-2 font-medium text-[#041765] text-center w-full">
+                                    {`${getMonthName(parseInt(selectedMonthAttendance))} ${new Date(filteredDatesAttendance[0]).getFullYear()}`}
+                                  </div>
+                                </div>
                               )}
-                            </thead>
-                            <tbody>
-                              {students.map((student) => (
-                                <tr key={student.id} className="border-b border-[#E6E9F4]">
-                                  <td className="w-[180px] p-3 border-r border-[#E6E9F4] truncate sticky left-0 z-20 bg-white">
-                                    {student.name}
-                                  </td>
-                                  {filteredDates.map((date, i) => (
-                                    <td key={i} className="p-1 text-left">
-                                      {getAttendanceCell(student.attendanceByDate[date], date, student.id)}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                            <tfoot>
-                              <tr className="border-b border-[#E6E9F4]">
-                                <td className="w-[180px] p-3 font-medium text-[#041765] border-r border-[#E6E9F4] sticky left-0 z-20 bg-white">
-                                  Kehadiran Harian
-                                </td>
-                                {filteredDates.map((date, i) => {
-                                  let present = 0,
-                                    absent = 0,
-                                    sick = 0,
-                                    permission = 0
-                                  students.forEach((student) => {
-                                    const status = student.attendanceByDate[date]
-                                    if (status === "Hadir") present++
-                                    else if (status === "Alfa") absent++
-                                    else if (status === "Sakit") sick++
-                                    else if (status === "Izin") permission++
-                                  })
-                                  const total = students.length
-                                  const attendanceText = total > 0 ? `${present}/${total}` : "-"
-                                  return (
-                                    <td key={i} className="p-1 text-left">
-                                      <div className="w-10 h-10 flex items-center justify-center text-sm">
-                                        {attendanceText}
-                                      </div>
-                                    </td>
-                                  )
-                                })}
-                              </tr>
-                            </tfoot>
-                          </table>
+                              <div className="flex">
+                                {filteredDatesAttendance.map((date, i) => (
+                                  <div key={i} className="flex-shrink-0 p-1">
+                                    <div
+                                      className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border-0 cursor-pointer hover:bg-gray-100`}
+                                      style={
+                                        students.length > 0 && students.every(student =>
+                                          selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
+                                        ) ? { boxShadow: '0 0 0 3px #3b82f6, 0 0 0 5px white' } : undefined
+                                      }
+                                      onClick={() => toggleDateSelection(date)}
+                                    >
+                                      {formatDateHeader(date)}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Baris Siswa */}
+                          {students.map((student) => (
+                            <div key={student.id} className="flex border-b border-[#E6E9F4]">
+                              <div className="w-40 p-3 border-r border-[#E6E9F4] truncate">
+                                {student.name}
+                              </div>
+                              <div className="flex gap-2 p-1">
+                                {filteredDatesAttendance.map((date, i) => (
+                                  <div key={i} className="flex-shrink-0">
+                                    {getAttendanceCell(student.attendanceByDate[date], date, student.id)}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {/* Footer Tabel (Kehadiran Harian) */}
+                          <div className="flex border-b border-[#E6E9F4]">
+                            <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
+                              Kehadiran Harian
+                            </div>
+                            <div className="flex gap-2 p-1">
+                              {filteredDatesAttendance.map((date, i) => {
+                                let present = 0, absent = 0, sick = 0, permission = 0;
+                                students.forEach(student => {
+                                  const status = student.attendanceByDate[date];
+                                  if (status === 'Hadir') present++;
+                                  else if (status === 'Alfa') absent++;
+                                  else if (status === 'Sakit') sick++;
+                                  else if (status === 'Izin') permission++;
+                                });
+                                const total = students.length;
+                                const attendanceText = total > 0 ? `${present}/${total}` : '-';
+                                return (
+                                  <div key={i} className="flex-shrink-0">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-md text-sm">
+                                      {attendanceText}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Info Seleksi & Tombol */}
-                      <div className="flex justify-between mt-4">
-                        <p className="text-sm text-[#041765]">
-                          {selectedCells.length} sel dipilih dari{" "}
-                          {(filteredDates?.length || 0) * (students?.length || 0)} total
-                        </p>
-                        <div className="flex gap-2">
-                          {selectedCells.length > 0 && (
+                        {/* Info Seleksi & Tombol */}
+                        <div className="flex justify-between mt-4">
+                          <p className="text-sm text-[#041765]">
+                            {selectedCells.length} sel dipilih dari {(filteredDatesAttendance?.length || 0) * (students?.length || 0)} total
+                          </p>
+                          <div className="flex gap-2">
+                            {selectedCells.length > 0 && (
+                              <button
+                                className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF] text-red-500"
+                                onClick={clearSelections}
+                              >
+                                Hapus Seleksi
+                              </button>
+                            )}
                             <button
-                              className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF] text-red-500"
-                              onClick={clearSelections}
+                              className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF]"
+                              onClick={fetchAttendanceData}
                             >
-                              Hapus Seleksi
+                              Refresh
                             </button>
-                          )}
-                          <button
-                            className="px-4 py-2 text-sm border border-[#E6E9F4] rounded-md hover:bg-[#F7F8FF]"
-                            onClick={fetchAttendanceData}
-                          >
-                            Refresh
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
-                  {/* === AKHIR KONDISIONAL === */}
                 </CardContent>
               </Card>
             </div>
@@ -1501,7 +1624,7 @@ export default function Page() {
                             <SelectValue className="text-center" placeholder="Pilih Bulan" />
                           </SelectTrigger>
                           <SelectContent>
-                            {getMonthOptions().map((month) => (
+                            {getMonthOptionsdashboard().map((month) => (
                               <SelectItem key={month.value} value={month.value}>
                                 {month.label}
                               </SelectItem>
