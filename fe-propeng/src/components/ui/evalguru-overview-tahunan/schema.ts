@@ -41,7 +41,7 @@ export const variabelColumnsMap: { [key: string]: string } = {
   '2': 'Rerata Proses Pembelajaran',
   '3': 'Rerata Pengelolaan Kelas',
   '4': 'Rerata Evaluasi Pembelajaran',
-  '5': 'Rerata Pengalaman Belajar', 
+  // '5': 'Rerata Pengalaman Belajar', 
 };
 
 export const rentangNilaiOptions: FilterOption[] = [
