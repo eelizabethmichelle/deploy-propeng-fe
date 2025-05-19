@@ -92,14 +92,33 @@ const detailedIndikatorQuestionMap: { [variableId: string]: { [indicatorKey: str
 // --- End of static mappings ---
 
 const renderScore = (scoreString: string) => {
-    if (!scoreString || !scoreString.includes('/')) {
+    if (!scoreString || !scoreString.includes('/') || scoreString.trim() === "- / 5.00" || scoreString.trim() === "-") {
         return <span className="text-muted-foreground">{scoreString || "-"}</span>;
     }
+
     const parts = scoreString.split('/');
+    const scoreValueStr = parts[0].trim();
+    const numericScore = parseFloat(scoreValueStr);
+
+    let valueColorClass = "font-semibold"; // Default jika tidak numerik atau kondisi tidak terpenuhi
+
+    if (!isNaN(numericScore)) {
+        if (numericScore >= 4.0) {
+            valueColorClass = "text-green-600 dark:text-green-400 font-semibold";
+        } else if (numericScore >= 2.0) { // Skor antara 2.0 dan 3.99
+            valueColorClass = "text-orange-500 dark:text-orange-400 font-semibold";
+        } else { // Skor di bawah 2.0
+            valueColorClass = "text-red-600 dark:text-red-400 font-semibold";
+        }
+    } else if (scoreValueStr === "-") {
+         valueColorClass = "text-muted-foreground font-normal"; // Atau class lain untuk strip
+    }
+
+
     return (
         <>
-            <span className="text-primary font-semibold">{parts[0].trim()}</span>
-            <span className="text-muted-foreground"> / {parts[1].trim()}</span>
+            <span className={valueColorClass}>{scoreValueStr}</span>
+            <span className="text-muted-foreground"> / {parts[1] ? parts[1].trim() : "5.00"}</span>
         </>
     );
 };
