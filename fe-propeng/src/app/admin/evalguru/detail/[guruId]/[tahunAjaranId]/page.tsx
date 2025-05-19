@@ -207,7 +207,7 @@ export default function DetailEvaluasiGuruPage() {
         let currentY = pageMargin;
         const lineHeight = 7;
         const smallLineHeight = 5;
-        const schoolName = "Nama Sekolah Anda"; // Ganti dengan nama sekolah
+        const schoolName = "SMA Kristen Anglo"; // Ganti dengan nama sekolah
 
         doc.setFontSize(16); doc.setFont("helvetica", "bold");
         doc.text("Laporan Evaluasi Guru Tahunan", pageWidth / 2, currentY, { align: 'center' });
