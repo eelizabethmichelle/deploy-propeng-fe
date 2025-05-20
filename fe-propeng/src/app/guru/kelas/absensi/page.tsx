@@ -1,11 +1,13 @@
 "use client"
 import { useEffect, useState, useMemo } from "react"
+import React from "react"
+
 import { useRef } from "react"
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse } from "lucide-react"
+import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse, Search } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
@@ -20,6 +22,16 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface ClassData {
   id: number
@@ -236,6 +248,53 @@ interface MonthlyAnalysis {
   // ...other fields if needed
 }
 
+// New interfaces for monthly detail data
+interface WeeklySummary {
+  week_number: number
+  date_range: string
+  startDate: string
+  endDate: string
+  counts: {
+    Hadir: string
+    Sakit: string
+    Izin: string
+    Alfa: string
+  }
+  possible_days_in_week: number
+}
+
+interface StudentDetail {
+  id: number
+  name: string
+  nisn: string
+  monthly_percentage: number
+  monthly_counts: {
+    Hadir: string
+    Sakit: string
+    Izin: string
+    Alfa: string
+  }
+  weekly_summary: WeeklySummary[]
+}
+
+interface MonthlyDetailData {
+  kelas_info: {
+    id: number
+    namaKelas: string
+    waliKelas: string
+    totalSiswa: number
+  }
+  month_info: {
+    year: number
+    monthNumber: number
+    monthName: string
+    startDate: string
+    endDate: string
+    totalPossibleDaysInMonth: number
+  }
+  students_details: StudentDetail[]
+}
+
 export default function Page() {
   const router = useRouter()
   const [classData, setClassData] = useState<ClassData | null>(null)
@@ -260,9 +319,11 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // State variables for filtering
-  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().getMonth().toString())
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
   const [selectedWeek, setSelectedWeek] = useState<string>("0")
+  const [filteredDates, setFilteredDates] = useState<string[]>([])
+  const [todayDateString, setTodayDateString] = useState<string>("")
 
   // State variables for weekly data
   const [weeklyData, setWeeklyData] = useState<WeeklyAttendanceData | null>(null)
@@ -287,42 +348,21 @@ export default function Page() {
   const [monthlyAnalysis, setMonthlyAnalysis] = useState<MonthlyAnalysis | null>(null)
   const [isLoadingMonthly, setIsLoadingMonthly] = useState(false)
 
-  // Add this state declaration with other state variables
-  const [todayDateString, setTodayDateString] = useState<string>("");
+  // State variables for Detail Kehadiran Siswa
+  const [monthlyDetailData, setMonthlyDetailData] = useState<MonthlyDetailData | null>(null)
+  const [selectedMonthDetail, setSelectedMonthDetail] = useState<string>((new Date().getMonth() + 1).toString())
+  const [isLoadingMonthlyDetail, setIsLoadingMonthlyDetail] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
-  // Add state for filtered dates
-  const [filteredDates2, setFilteredDates2] = useState<string[]>([]);
-
-  // For Rekap Kehadiran Peserta tab
-  const [selectedMonthAttendance, setSelectedMonthAttendance] = useState<string>("");
-  const filteredDatesAttendance = useMemo(() => {
-    if (!selectedMonthAttendance || selectedMonthAttendance === "all") {
-      return attendanceDates;
-    }
-    return attendanceDates.filter(dateStr => {
-      const date = new Date(dateStr);
-      return date.getMonth().toString() === selectedMonthAttendance;
-    });
-  }, [attendanceDates, selectedMonthAttendance]);
-
-  // For Dashboard Data Presensi Siswa tab
-  const [selectedMonthDashboard, setSelectedMonthDashboard] = useState<string>(new Date().getMonth().toString());
-  const filteredDatesDashboard = useMemo(() => {
-    return attendanceDates.filter(dateStr => {
-      const date = new Date(dateStr);
-      return date.getMonth() + 1 === parseInt(selectedMonthDashboard);
-    });
-  }, [attendanceDates, selectedMonthDashboard]);
+  // State variables for Rekap Kehadiran
+  const [selectedMonthAttendance, setSelectedMonthAttendance] = useState<string>(new Date().getMonth().toString())
+  const [filteredDatesAttendance, setFilteredDatesAttendance] = useState<string[]>([])
 
   const GRID_HEIGHT = 320 - 40 // 40px reserved for bottom labels
-
-  const getMonthName = (month: number) => {
-    const monthNames = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
-    return monthNames[month] || "";
-  };
 
   const getFormattedTodayDate = () => {
     const today = new Date()
@@ -586,14 +626,15 @@ export default function Page() {
     if (classData) {
       fetchAttendanceData()
       fetchYearlyData()
+      fetchMonthlyDetailData()
     }
   }, [classData])
 
   useEffect(() => {
     if (attendanceDates.length > 0 && todayDateString) {
       // Filter to only show today's date
-      const filtered = attendanceDates
-      setFilteredDates2(filtered)
+      const filtered = attendanceDates.filter((dateStr) => dateStr === todayDateString)
+      setFilteredDates(filtered)
     }
   }, [attendanceDates, todayDateString])
 
@@ -762,8 +803,9 @@ export default function Page() {
     if (!status) {
       return (
         <div
-          className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
-            }`}
+          className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${
+            isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
+          }`}
           style={isSelected ? { boxShadow: "0 0 0 3px #3b82f6, 0 0 0 5px white" } : undefined}
           onClick={(e) => {
             e.stopPropagation()
@@ -862,23 +904,6 @@ export default function Page() {
   // Add this function to generate month options
   const getMonthOptions = () => {
     return [
-      { value: "7", label: "Agustus" },
-      { value: "8", label: "September" },
-      { value: "9", label: "Oktober" },
-      { value: "10", label: "November" },
-      { value: "11", label: "Desember" },
-      { value: "0", label: "Januari" },
-      { value: "1", label: "Februari" },
-      { value: "2", label: "Maret" },
-      { value: "3", label: "April" },
-      { value: "4", label: "Mei" },
-      { value: "5", label: "Juni" },
-      { value: "6", label: "Juli" },
-    ]
-  }
-
-  const getMonthOptionsdashboard = () => {
-    return [
       { value: "0", label: "Januari" },
       { value: "1", label: "Februari" },
       { value: "2", label: "Maret" },
@@ -893,38 +918,6 @@ export default function Page() {
       { value: "11", label: "Desember" },
     ]
   }
-
-  // Add this function to get available months from attendance data
-  const getAvailableMonthOptions = () => {
-    // If no attendance data, return empty array
-    if (!attendanceDates || attendanceDates.length === 0) {
-      return [{ value: "all", label: "Semua Bulan" }];
-    }
-    
-    // Extract unique month/year combinations from attendance dates
-    const uniqueMonths = new Map();
-    
-    attendanceDates.forEach(dateStr => {
-      const date = new Date(dateStr);
-      const monthValue = date.getMonth().toString();
-      const monthName = getMonthName(date.getMonth());
-      const yearStr = date.getFullYear().toString();
-      const key = `${monthValue}-${yearStr}`;
-      
-      if (!uniqueMonths.has(key)) {
-        uniqueMonths.set(key, {
-          value: monthValue,
-          label: `${monthName} ${yearStr}`
-        });
-      }
-    });
-    
-    // Convert Map to array and sort chronologically
-    const result = Array.from(uniqueMonths.values());
-    result.sort((a, b) => Number(a.value) - Number(b.value));
-    
-    return result;
-  };
 
   // Fetch yearly data
   const fetchYearlyData = async () => {
@@ -1130,8 +1123,8 @@ export default function Page() {
       const kelasId = classData?.id
       if (!token || !kelasId) return
 
-      console.log(`Fetching monthly analysis for month ${month + 1}, kelasId ${kelasId}`)
-      const response = await fetch(`/api/absensi/monthly-analysis?month=${month + 1}`, {
+      console.log(`Fetching monthly analysis for month ${month}, kelasId ${kelasId}`)
+      const response = await fetch(`/api/absensi/monthly-analysis?month=${month}`, {
         headers: {
           Authorization: `Bearer ${token} kelasId ${kelasId}`,
         },
@@ -1155,6 +1148,56 @@ export default function Page() {
       setIsLoadingMonthly(false)
     }
   }
+
+  // Fetch monthly detail data
+  const fetchMonthlyDetailData = async () => {
+    if (!classData) return
+
+    setIsLoadingMonthlyDetail(true)
+    try {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken")
+      const kelasId = classData.id
+
+      if (!token || !kelasId) {
+        toast.error("Sesi telah berakhir. Mohon login ulang")
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/absensi/monthly-detail?month=${selectedMonthDetail}`, {
+        headers: {
+          Authorization: `Bearer ${token} kelasId ${kelasId}`,
+        },
+      })
+
+      if (!response.ok) {
+        console.error(`Error fetching monthly detail: ${response.status}`)
+        setMonthlyDetailData(null)
+        return
+      }
+
+      const data = await response.json()
+      setMonthlyDetailData(data.data)
+    } catch (error) {
+      console.error("Error fetching monthly detail data:", error)
+      setMonthlyDetailData(null)
+    } finally {
+      setIsLoadingMonthlyDetail(false)
+    }
+  }
+
+  // Handle month change for detail view
+  const handleMonthChangeDetail = (value: string) => {
+    setSelectedMonthDetail(value)
+    setCurrentPage(1) // Reset to first page when changing month
+  }
+
+  // Effect to fetch monthly detail data when month changes
+  useEffect(() => {
+    if (classData) {
+      fetchMonthlyDetailData()
+    }
+  }, [selectedMonthDetail, classData])
 
   const handleMonthChangeOverview = (value: string) => {
     setSelectedMonthOverview(value)
@@ -1229,35 +1272,84 @@ export default function Page() {
 
   const handleMonthChangeAnalysis = (value: string) => {
     setSelectedMonthAnalysis(value)
-    fetchMonthlyAnalysis(Number(value))
+    fetchMonthlyAnalysis(Number(value) + 1)
   }
 
   useEffect(() => {
     if (classData) {
-      fetchMonthlyAnalysis(Number(selectedMonthAnalysis))
+      fetchMonthlyAnalysis(Number(selectedMonthAnalysis) + 1)
     }
   }, [classData])
 
-  // Remove the existing filteredDates declarations entirely
-  // Replace with a single memoized version that filters based on month selection
-  const filteredDates = useMemo(() => {
-    return attendanceDates.filter(dateStr => {
-      if (!selectedMonth || selectedMonth === "all") return true;
-      const date = new Date(dateStr);
-      return date.getMonth() + 1 === parseInt(selectedMonth);
-    });
-  }, [attendanceDates, selectedMonth]);
+  // Filter students based on search query
+  const filteredStudents = useMemo(() => {
+    if (!monthlyDetailData) return []
 
-  // Update the useEffect to set the initial month immediately after data loads
+    return monthlyDetailData.students_details.filter(
+      (student) =>
+        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.nisn.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+  }, [monthlyDetailData, searchQuery])
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage)
+  const paginatedStudents = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return filteredStudents.slice(startIndex, startIndex + itemsPerPage)
+  }, [filteredStudents, currentPage, itemsPerPage])
+
+  // View student detail
+  const viewStudentDetail = (student: StudentDetail) => {
+    setSelectedStudent(student)
+    setIsDetailModalOpen(true)
+  }
+
+  // Get month name from number
+  const getMonthName = (monthNumber: number) => {
+    const monthNames = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ]
+    return monthNames[monthNumber] || ""
+  }
+
+  // Function to get available month options
+  const getAvailableMonthOptions = () => {
+    return [
+      { value: "0", label: "Januari" },
+      { value: "1", label: "Februari" },
+      { value: "2", label: "Maret" },
+      { value: "3", label: "April" },
+      { value: "4", label: "Mei" },
+      { value: "5", label: "Juni" },
+      { value: "6", label: "Juli" },
+      { value: "7", label: "Agustus" },
+      { value: "8", label: "September" },
+      { value: "9", label: "Oktober" },
+      { value: "10", label: "November" },
+      { value: "11", label: "Desember" },
+    ]
+  }
+
   useEffect(() => {
+    // Update filteredDatesAttendance when selectedMonthAttendance changes
     if (attendanceDates.length > 0) {
-      const options = getAvailableMonthOptions();
-      if (options.length > 0) {
-        // Set the selected month immediately after data loads
-        setSelectedMonthAttendance(options[0].value);
-      }
+      const year = new Date().getFullYear() // Use current year
+      const filtered = filterDatesByMonth(attendanceDates, Number.parseInt(selectedMonthAttendance), year)
+      setFilteredDatesAttendance(filtered)
     }
-  }, [attendanceDates]);
+  }, [selectedMonthAttendance, attendanceDates])
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Memuat data...</div>
@@ -1282,7 +1374,7 @@ export default function Page() {
 
   // Main Render
   return (
-    <div className="p-6 relative z-0 overflow-x-hidden">
+    <div className="p-6 relative z-0">
       <div className="flex flex-col">
         {/* Class Header - More Prominent */}
         <div className="mb-2">
@@ -1291,7 +1383,7 @@ export default function Page() {
         </div>
 
         {/* Tabs Navigation */}
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs defaultValue="todo" className="w-full">
           <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[556px] h-[40px]">
             <TabsTrigger
               value="todo"
@@ -1303,7 +1395,7 @@ export default function Page() {
               value="attendance"
               className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
             >
-              Rekap Kehadiran Peserta
+              Rekap Kehadiran Bulanan
             </TabsTrigger>
             <TabsTrigger
               value="dashboard"
@@ -1450,21 +1542,23 @@ export default function Page() {
                 <CardContent className="p-6">
                   {/* Month Filter Dropdown */}
                   <div className="mb-4 flex items-center gap-2">
-                    <label htmlFor="month-select" className="text-sm font-medium">Filter Bulan:</label>
+                    <label htmlFor="month-select" className="text-sm font-medium">
+                      Filter Bulan:
+                    </label>
                     <select
                       id="month-select"
                       className="border rounded px-2 py-1"
                       value={selectedMonthAttendance}
-                      onChange={e => setSelectedMonthAttendance(e.target.value)}
+                      onChange={(e) => setSelectedMonthAttendance(e.target.value)}
                     >
-                      {getAvailableMonthOptions().map(option => (
+                      {getAvailableMonthOptions().map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
                     </select>
                   </div>
-                  
+
                   {noAttendanceDataFound ? (
                     // Tampilkan pesan ini jika tidak ada data absensi
                     <div className="flex items-center justify-center h-40 text-gray-500">
@@ -1485,8 +1579,7 @@ export default function Page() {
                             <span className="text-sm">Izin</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center">
-                            </div>
+                            <div className="w-6 h-6 bg-[#9B51E0] rounded flex items-center justify-center"></div>
                             <span className="text-sm">Sakit</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -1499,14 +1592,12 @@ export default function Page() {
                         <div className="border border-[#E6E9F4] rounded-lg">
                           {/* Header Tabel */}
                           <div className="flex border-b border-[#041765] bg-[#F7F8FF]">
-                            <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
-                              Nama
-                            </div>
+                            <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">Nama</div>
                             <div className="flex flex-col">
                               {filteredDatesAttendance.length > 0 && (
                                 <div className="flex border-b border-[#E6E9F4]">
                                   <div className="p-2 font-medium text-[#041765] text-center w-full">
-                                    {`${getMonthName(parseInt(selectedMonthAttendance))} ${new Date(filteredDatesAttendance[0]).getFullYear()}`}
+                                    {`${getMonthName(Number.parseInt(selectedMonthAttendance))} ${new Date(filteredDatesAttendance[0]).getFullYear()}`}
                                   </div>
                                 </div>
                               )}
@@ -1516,9 +1607,14 @@ export default function Page() {
                                     <div
                                       className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border-0 cursor-pointer hover:bg-gray-100`}
                                       style={
-                                        students.length > 0 && students.every(student =>
-                                          selectedCells.some(cell => cell.studentId === student.id && cell.date === date)
-                                        ) ? { boxShadow: '0 0 0 3px #3b82f6, 0 0 0 5px white' } : undefined
+                                        students.length > 0 &&
+                                        students.every((student) =>
+                                          selectedCells.some(
+                                            (cell) => cell.studentId === student.id && cell.date === date,
+                                          ),
+                                        )
+                                          ? { boxShadow: "0 0 0 3px #3b82f6, 0 0 0 5px white" }
+                                          : undefined
                                       }
                                       onClick={() => toggleDateSelection(date)}
                                     >
@@ -1529,13 +1625,11 @@ export default function Page() {
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Baris Siswa */}
                           {students.map((student) => (
                             <div key={student.id} className="flex border-b border-[#E6E9F4]">
-                              <div className="w-40 p-3 border-r border-[#E6E9F4] truncate">
-                                {student.name}
-                              </div>
+                              <div className="w-40 p-3 border-r border-[#E6E9F4] truncate">{student.name}</div>
                               <div className="flex gap-2 p-1">
                                 {filteredDatesAttendance.map((date, i) => (
                                   <div key={i} className="flex-shrink-0">
@@ -1545,7 +1639,7 @@ export default function Page() {
                               </div>
                             </div>
                           ))}
-                          
+
                           {/* Footer Tabel (Kehadiran Harian) */}
                           <div className="flex border-b border-[#E6E9F4]">
                             <div className="w-40 p-3 font-medium text-[#041765] border-r border-[#E6E9F4]">
@@ -1553,23 +1647,26 @@ export default function Page() {
                             </div>
                             <div className="flex gap-2 p-1">
                               {filteredDatesAttendance.map((date, i) => {
-                                let present = 0, absent = 0, sick = 0, permission = 0;
-                                students.forEach(student => {
-                                  const status = student.attendanceByDate[date];
-                                  if (status === 'Hadir') present++;
-                                  else if (status === 'Alfa') absent++;
-                                  else if (status === 'Sakit') sick++;
-                                  else if (status === 'Izin') permission++;
-                                });
-                                const total = students.length;
-                                const attendanceText = total > 0 ? `${present}/${total}` : '-';
+                                let present = 0,
+                                  absent = 0,
+                                  sick = 0,
+                                  permission = 0
+                                students.forEach((student) => {
+                                  const status = student.attendanceByDate[date]
+                                  if (status === "Hadir") present++
+                                  else if (status === "Alfa") absent++
+                                  else if (status === "Sakit") sick++
+                                  else if (status === "Izin") permission++
+                                })
+                                const total = students.length
+                                const attendanceText = total > 0 ? `${present}/${total}` : "-"
                                 return (
                                   <div key={i} className="flex-shrink-0">
                                     <div className="flex items-center justify-center w-10 h-10 rounded-md text-sm">
                                       {attendanceText}
                                     </div>
                                   </div>
-                                );
+                                )
                               })}
                             </div>
                           </div>
@@ -1578,7 +1675,8 @@ export default function Page() {
                         {/* Info Seleksi & Tombol */}
                         <div className="flex justify-between mt-4">
                           <p className="text-sm text-[#041765]">
-                            {selectedCells.length} sel dipilih dari {(filteredDatesAttendance?.length || 0) * (students?.length || 0)} total
+                            {selectedCells.length} sel dipilih dari{" "}
+                            {(filteredDatesAttendance?.length || 0) * (students?.length || 0)} total
                           </p>
                           <div className="flex gap-2">
                             {selectedCells.length > 0 && (
@@ -1607,175 +1705,308 @@ export default function Page() {
 
           {/* Tab Content: Dashboard Data Presensi Siswa */}
           <TabsContent value="dashboard" className="mt-6">
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Overview Section - Width adjusted to exactly 562px */}
-              <div style={{ width: "562px", flexShrink: 0 }} className="overflow-hidden">
-                <Card className="border-[#E1E2E8] h-full">
-                  <CardContent className="p-6">
-                    {/* Filters for Overview */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <p className="text-base font-semibold text-[#041765]">Overview Kehadiran Siswa per Minggu:</p>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div style={{ width: "min(70%, 562px)", flexShrink: 0 }} className="overflow-hidden">
+                  <Card className="border-[#E1E2E8] h-full">
+                    <CardContent className="p-6">
+                      {/* Filters for Overview */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-base font-semibold text-[#041765]">Overview Kehadiran Siswa per Minggu:</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Select value={selectedMonthOverview} onValueChange={handleMonthChangeOverview}>
+                            <SelectTrigger className="w-[90px] justify-center">
+                              <SelectValue className="text-center" placeholder="Pilih Bulan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getMonthOptions().map((month) => (
+                                <SelectItem key={month.value} value={month.value}>
+                                  {month.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={selectedWeekOverview} onValueChange={handleWeekChangeOverview}>
+                            <SelectTrigger className="w-[100px] justify-center">
+                              <SelectValue className="text-center" placeholder="Pilih Minggu" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {overviewAvailableWeeks.map((week) => (
+                                <SelectItem key={week.value} value={week.value}>
+                                  Minggu {Number.parseInt(week.value) + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    
-                      <div className="flex gap-2">
-                        <Select value={selectedMonthOverview} onValueChange={handleMonthChangeOverview}>
-                          <SelectTrigger className="w-[90px] justify-center">
+
+                      {/* Date range display */}
+                      {overviewWeeklyData && (
+                        <div className="mb-4">
+                          <p className="text-lg font-medium text-[#041765]">
+                            {overviewWeeklyData.week_info.startDate &&
+                              overviewWeeklyData.week_info.endDate &&
+                              formatRange(overviewWeeklyData.week_info.startDate, overviewWeeklyData.week_info.endDate)}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Conditional content */}
+                      {activeWeeklyData && activeWeeklyData.daily_details.length > 0 ? (
+                        <>
+                          {/* Rata-Rata Kehadiran Siswa */}
+                          <h4 className="text-base font-medium text-gray-800 mb-4">Rata-Rata Kehadiran Siswa</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#22C55E] text-base font-medium mb-1">Hadir</span>
+                              <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Hadir}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#FFC804] text-base font-medium mb-1">Izin</span>
+                              <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Izin}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#9B51E0] text-base font-medium mb-1">Sakit</span>
+                              <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Sakit}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#EA2F32] text-base font-medium mb-1">Alfa</span>
+                              <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Alfa}%</span>
+                            </div>
+                          </div>
+
+                          {/* Persentase Kehadiran Terbanyak */}
+                          <div className="mb-8">
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Persentase Kehadiran Terbanyak - {getHighestAttendanceDay()}
+                            </h4>
+                            <div className="relative" style={{ height: "320px", minWidth: "70%" }}>
+                              {/* Chart container with grid */}
+                              <div className="absolute top-0 left-0 right-0 bottom-10 border-b border-l border-gray-200">
+                                {/* Y-axis labels */}
+                                <div className="absolute inset-y-0 left-0 w-12 flex flex-col justify-between text-sm text-gray-500 pointer-events-none">
+                                  <div className="relative h-0">100%</div>
+                                  <div className="relative h-0">80%</div>
+                                  <div className="relative h-0">60%</div>
+                                  <div className="relative h-0">40%</div>
+                                  <div className="relative h-0">20%</div>
+                                  <div className="relative h-0">0%</div>
+                                </div>
+
+                                {/* Horizontal grid lines */}
+                                <div className="absolute inset-0 left-12 right-4 flex flex-col justify-between pointer-events-none">
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                  <div className="border-t border-gray-200 h-0"></div>
+                                </div>
+
+                                {/* Chart bars */}
+                                <div className="absolute left-12 right-4 bottom-0 top-0 flex items-end justify-around h-full">
+                                  {activeWeeklyData.daily_details.map((day, index) => {
+                                    const barHeight = (day.attendance_percentage / 100) * GRID_HEIGHT
+
+                                    return (
+                                      <div
+                                        key={index}
+                                        className="flex flex-col items-center relative"
+                                        onMouseEnter={() => setHoveredDay(day.day_name)}
+                                        onMouseLeave={() => setHoveredDay(null)}
+                                      >
+                                        {/* The bar itself */}
+                                        <div
+                                          className="bg-[#041765] rounded-t-md hover:bg-[#1a2f8f] transition-all duration-200 cursor-pointer w-[60px]"
+                                          style={{ height: `${barHeight}px` }}
+                                          title={`${day.attendance_percentage}%`}
+                                        ></div>
+
+                                        {/* Tooltip that appears on hover */}
+                                        {hoveredDay === day.day_name && (
+                                          <div className="absolute bottom-full mb-1 bg-white rounded-md shadow-lg p-2 z-50 w-40 border border-gray-100">
+                                            <div className="text-center font-medium mb-1 text-xs text-[#041765]">
+                                              {day.day_name} ({day.attendance_percentage}%)
+                                            </div>
+                                            <div className="space-y-0.5 text-xs">
+                                              <div className="flex justify-between">
+                                                <span>Hadir:</span>
+                                                <span className="font-medium">{day.counts?.Hadir || 0} Siswa</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span>Sakit:</span>
+                                                <span className="font-medium">{day.counts?.Sakit || 0} Siswa</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span>Izin:</span>
+                                                <span className="font-medium">{day.counts?.Izin || 0} Siswa</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span>Alfa:</span>
+                                                <span className="font-medium">{day.counts?.Alfa || 0} Siswa</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Day labels - positioned below the chart */}
+                              <div className="absolute bottom-0 left-12 right-4 flex justify-around">
+                                {activeWeeklyData.daily_details.map((day, index) => (
+                                  <div key={index} className="text-sm font-medium text-gray-600 w-[60px] text-center">
+                                    {day.day_name}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-center h-40">
+                          <p className="text-gray-500">Tidak ada data kehadiran mingguan yang tersedia.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Analysis Section - Width adjusted to exactly 900px */}
+                <div style={{ width: "min(70%, 900px)" }} className="overflow-x-auto">
+                  <Card className="border-[#E1E2E8] h-full">
+                    <CardContent className="p-6">
+                      {/* Filter for Analysis */}
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-semibold text-lg text-[#041765]">Analisis Kehadiran Siswa</h3>
+                        <Select value={selectedMonthAnalysis} onValueChange={handleMonthChangeAnalysis}>
+                          <SelectTrigger className="w-[120px] justify-center">
                             <SelectValue className="text-center" placeholder="Pilih Bulan" />
                           </SelectTrigger>
                           <SelectContent>
-                            {getMonthOptionsdashboard().map((month) => (
+                            {getMonthOptions().map((month) => (
                               <SelectItem key={month.value} value={month.value}>
                                 {month.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <Select value={selectedWeekOverview} onValueChange={handleWeekChangeOverview}>
-                          <SelectTrigger className="w-[100px] justify-center">
-                            <SelectValue className="text-center" placeholder="Pilih Minggu" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {overviewAvailableWeeks.map((week) => (
-                              <SelectItem key={week.value} value={week.value}>
-                                Minggu {Number.parseInt(week.value) + 1}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
                       </div>
-                    </div>
-
-                    {/* Conditional content */}
-                    {activeWeeklyData && activeWeeklyData.daily_details.length > 0 ? (
-                      <>
-                        {/* Rata-Rata Kehadiran Siswa */}
-                        <h4 className="text-base font-medium text-gray-800 mb-4">Rata-Rata Kehadiran Siswa</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                          <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
-                            <span className="text-[#22C55E] text-base font-medium mb-1">Hadir</span>
-                            <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Hadir}%</span>
-                          </div>
-                          <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
-                            <span className="text-[#FFC804] text-base font-medium mb-1">Izin</span>
-                            <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Izin}%</span>
-                          </div>
-                          <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
-                            <span className="text-[#9B51E0] text-base font-medium mb-1">Sakit</span>
-                            <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Sakit}%</span>
-                          </div>
-                          <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
-                            <span className="text-[#EA2F32] text-base font-medium mb-1">Alfa</span>
-                            <span className="text-2xl font-bold">{activeWeeklyData.weekly_averages.Alfa}%</span>
-                          </div>
-                        </div>
-
-                        {/* Persentase Kehadiran Terbanyak */}
-                        <div className="mb-8">
-                          <h4 className="text-base font-medium text-gray-800 mb-4">
-                            Persentase Kehadiran Terbanyak - {getHighestAttendanceDay()}
-                          </h4>
-                          <div className="relative" style={{ height: "320px" }}>
-                            {/* Chart container with grid */}
-                            <div className="absolute top-0 left-0 right-0 bottom-10 border-b border-l border-gray-200">
-                              {/* Y-axis labels */}
-                              <div className="absolute inset-y-0 left-0 w-12 flex flex-col justify-between text-sm text-gray-500 pointer-events-none">
-                                <div className="relative h-0">100%</div>
-                                <div className="relative h-0">80%</div>
-                                <div className="relative h-0">60%</div>
-                                <div className="relative h-0">40%</div>
-                                <div className="relative h-0">20%</div>
-                                <div className="relative h-0">0%</div>
-                              </div>
-
-                              {/* Horizontal grid lines */}
-                              <div className="absolute inset-0 left-12 right-4 flex flex-col justify-between pointer-events-none">
-                                <div className="border-t border-gray-200 h-0"></div>
-                                <div className="border-t border-gray-200 h-0"></div>
-                                <div className="border-t border-gray-200 h-0"></div>
-                                <div className="border-t border-gray-200 h-0"></div>
-                                <div className="border-t border-gray-200 h-0"></div>
-                                <div className="border-t border-gray-200 h-0"></div>
-                              </div>
-
-                              {/* Chart bars */}
-                              <div className="absolute left-12 right-4 bottom-0 top-0 flex items-end justify-around h-full">
-                                {activeWeeklyData.daily_details.map((day, index) => {
-                                  const barHeight = (day.attendance_percentage / 100) * GRID_HEIGHT
-
-                                  return (
-                                    <div
-                                      key={index}
-                                      className="flex flex-col items-center relative"
-                                      onMouseEnter={() => setHoveredDay(day.day_name)}
-                                      onMouseLeave={() => setHoveredDay(null)}
-                                    >
-                                      {/* The bar itself */}
-                                      <div
-                                        className="bg-[#041765] rounded-t-md hover:bg-[#1a2f8f] transition-all duration-200 cursor-pointer w-[60px]"
-                                        style={{ height: `${barHeight}px` }}
-                                        title={`${day.attendance_percentage}%`}
-                                      ></div>
-
-                                      {/* Tooltip that appears on hover */}
-                                      {hoveredDay === day.day_name && (
-                                        <div className="absolute bottom-full mb-1 bg-white rounded-md shadow-lg p-2 z-50 w-40 border border-gray-100">
-                                          <div className="text-center font-medium mb-1 text-xs text-[#041765]">
-                                            {day.day_name} ({day.attendance_percentage}%)
-                                          </div>
-                                          <div className="space-y-0.5 text-xs">
-                                            <div className="flex justify-between">
-                                              <span>Hadir:</span>
-                                              <span className="font-medium">{day.counts?.Hadir || 0} Siswa</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                              <span>Sakit:</span>
-                                              <span className="font-medium">{day.counts?.Sakit || 0} Siswa</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                              <span>Izin:</span>
-                                              <span className="font-medium">{day.counts?.Izin || 0} Siswa</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                              <span>Alfa:</span>
-                                              <span className="font-medium">{day.counts?.Alfa || 0} Siswa</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-
-                            {/* Day labels - positioned below the chart */}
-                            <div className="absolute bottom-0 left-12 right-4 flex justify-around">
-                              {activeWeeklyData.daily_details.map((day, index) => (
-                                <div key={index} className="text-sm font-medium text-gray-600 w-[60px] text-center">
-                                  {day.day_name}
-                                </div>
-                              ))}
+                      {isLoadingMonthly ? (
+                        <div className="py-10 text-center text-gray-500">Loading...</div>
+                      ) : monthlyAnalysis ? (
+                        <>
+                          <div className="mb-8">
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Siswa dengan Persentase Kehadiran Tertinggi
+                            </h4>
+                            <div
+                              className="overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "#CBD5E1 #F1F5F9",
+                              }}
+                            >
+                              <table className="w-full min-w-[min(70%,800px)] text-sm">
+                                <thead className="bg-white">
+                                  <tr className="border-b border-gray-200">
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthlyAnalysis.top_students.map((student: any) => (
+                                    <tr key={student.id} className="border-b border-gray-100">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-green-600">
+                                        {student.percentage}%
+                                      </td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center h-40">
-                        <p className="text-gray-500">Tidak ada data kehadiran mingguan yang tersedia.</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                          <div>
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Siswa dengan Persentase Kehadiran Terendah
+                            </h4>
+                            <div
+                              className="overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "#CBD5E1 #F1F5F9",
+                              }}
+                            >
+                              <table className="w-full min-w-[min(70%,800px)] text-sm">
+                                <thead className="bg-white">
+                                  <tr className="border-b border-gray-200">
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthlyAnalysis.bottom_students.map((student: any) => (
+                                    <tr key={student.id} className="border-b border-gray-100">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-red-600">
+                                        {student.percentage}%
+                                      </td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="py-10 text-center text-gray-500">Tidak ada data analisis bulanan.</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
 
-              {/* Analysis Section - Width adjusted to exactly 900px */}
-              <div style={{ width: "900px", height: "742px" }} className="overflow-auto">
-                <Card className="border-[#E1E2E8] h-full">
-                  <CardContent className="p-6">
-                    {/* Filter for Analysis */}
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="font-semibold text-lg text-[#041765]">Analisis Kehadiran Siswa</h3>
+              {/* Detail Kehadiran Siswa Section */}
+              <Card className="border-[#E1E2E8]" style={{ minWidth: "70%" }}>
+                <CardContent className="p-6">
+                  {/* Header + Controls as a column */}
+                  <div className="flex flex-col mb-6">
+                    {/* Title */}
+                    <h3 className="font-semibold text-lg text-[#041765]">Detail Kehadiran Siswa</h3>
+
+                    {/* Search + Filter now below header */}
+                    <div className="flex items-center gap-4 mt-4 ">
+                      <div className="relative w-64">
+                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Cari nama siswa..."
+                          className="pl-8"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
                       <Select value={selectedMonthAnalysis} onValueChange={handleMonthChangeAnalysis}>
                         <SelectTrigger className="w-[120px] justify-center">
                           <SelectValue className="text-center" placeholder="Pilih Bulan" />
@@ -1789,115 +2020,200 @@ export default function Page() {
                         </SelectContent>
                       </Select>
                     </div>
-                    {isLoadingMonthly ? (
-                      <div className="py-10 text-center text-gray-500">Loading...</div>
-                    ) : monthlyAnalysis ? (
-                      <>
-                        <div className="mb-8">
-                          <h4 className="text-base font-medium text-gray-800 mb-4">
-                            Siswa dengan Persentase Kehadiran Tertinggi
-                          </h4>
-                          <div
-                            className="overflow-auto border border-gray-100 rounded-md"
-                            style={{
-                              height: "200px",
-                              scrollbarWidth: "thin",
-                              scrollbarColor: "#CBD5E1 #F1F5F9",
-                            }}
-                          >
-                            <table className="w-full min-w-[600px] text-sm">
-                              <thead className="sticky top-0 bg-white z-10">
-                                <tr className="border-b border-gray-200">
-                                  <th className="py-2 px-2 text-left font-medium text-gray-600">Nama Siswa</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                  </div>
+
+                  {isLoadingMonthlyDetail ? (
+                    <div className="py-10 text-center text-gray-500">Loading...</div>
+                  ) : monthlyDetailData ? (
+                    <>
+                      {/* Scrollable table wrapper with always-on horizontal scroll */}
+                      <div
+                        className="max-w-full overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                        style={{
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "#CBD5E1 #F1F5F9",
+                        }}
+                      >
+                        <table className="w-full min-w-[min(70%,800px)] text-sm">
+                          <thead className="bg-white sticky top-0">
+                            <tr className="border-b border-gray-200">
+                              <th className="py-2 px-1 text-left font-medium text-gray-600 w-[30px]">No</th>
+                              <th className="py-2 px-2 text-left font-medium text-gray-600">Nama Siswa</th>
+                              <th className="py-2 px-2 text-left font-medium text-gray-600">NISN</th>
+                              <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase Kehadiran</th>
+                              <th className="py-2 px-2 text-center font-medium text-gray-600 w-[50px]">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedStudents.length > 0 ? (
+                              paginatedStudents.map((student, index) => (
+                                <tr key={student.id} className="border-b border-gray-100">
+                                  <td className="py-2 px-1">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                  <td className="py-2 px-2">{student.name}</td>
+                                  <td className="py-2 px-2">{student.nisn}</td>
+                                  <td className="py-2 px-2 text-center">
+                                    <span
+                                      className={`font-medium ${
+                                        student.monthly_percentage >= 80
+                                          ? "text-green-600"
+                                          : student.monthly_percentage >= 60
+                                            ? "text-yellow-600"
+                                            : "text-red-600"
+                                      }`}
+                                    >
+                                      {student.monthly_percentage}%
+                                    </span>
+                                  </td>
+                                  <td className="py-2 px-2 text-center">
+                                    <Button variant="outline" size="sm" onClick={() => viewStudentDetail(student)}>
+                                      Lihat
+                                    </Button>
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {monthlyAnalysis.top_students.map((student: any) => (
-                                  <tr key={student.id} className="border-b border-gray-100">
-                                    <td className="py-3 px-4">{student.name}</td>
-                                    <td className="py-3 px-4 text-center font-medium text-green-600">
-                                      {student.percentage}%
-                                    </td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={5} className="py-4 text-center text-gray-500">
+                                  {searchQuery
+                                    ? "Tidak ada siswa yang sesuai dengan pencarian"
+                                    : "Tidak ada data siswa"}
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="mt-4 flex justify-end">
+                          <Pagination>
+                            <PaginationContent>
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                              </PaginationItem>
+
+                              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                .filter(
+                                  (page) =>
+                                    page === 1 ||
+                                    page === totalPages ||
+                                    (page >= currentPage - 1 && page <= currentPage + 1),
+                                )
+                                .map((page, i, array) => {
+                                  if (i > 0 && array[i - 1] !== page - 1) {
+                                    return (
+                                      <React.Fragment key={`ellipsis-${page}`}>
+                                        <PaginationItem>
+                                          <PaginationEllipsis />
+                                        </PaginationItem>
+                                        <PaginationItem>
+                                          <PaginationLink
+                                            isActive={page === currentPage}
+                                            onClick={() => setCurrentPage(page)}
+                                          >
+                                            {page}
+                                          </PaginationLink>
+                                        </PaginationItem>
+                                      </React.Fragment>
+                                    )
+                                  }
+                                  return (
+                                    <PaginationItem key={page}>
+                                      <PaginationLink
+                                        isActive={page === currentPage}
+                                        onClick={() => setCurrentPage(page)}
+                                      >
+                                        {page}
+                                      </PaginationLink>
+                                    </PaginationItem>
+                                  )
+                                })}
+
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                  className={
+                                    currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
                         </div>
-                        <div>
-                          <h4 className="text-base font-medium text-gray-800 mb-4">
-                            Siswa dengan Persentase Kehadiran Terendah
-                          </h4>
-                          <div
-                            className="overflow-auto border border-gray-100 rounded-md"
-                            style={{
-                              height: "200px",
-                              scrollbarWidth: "thin",
-                              scrollbarColor: "#CBD5E1 #F1F5F9",
-                            }}
-                          >
-                            <table className="w-full min-w-[600px] text-sm">
-                              <thead className="sticky top-0 bg-white z-10">
-                                <tr className="border-b border-gray-200">
-                                  <th className="py-2 px-2 text-left font-medium text-gray-600">Nama Siswa</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
-                                  <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {monthlyAnalysis.bottom_students.map((student: any) => (
-                                  <tr key={student.id} className="border-b border-gray-100">
-                                    <td className="py-2 px-2">{student.name}</td>
-                                    <td className="py-2 px-2 text-center font-medium text-red-600">
-                                      {student.percentage}%
-                                    </td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
-                                    <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
-                                  </tr>
-                                ))}
-                                {/* Add dummy rows if needed to ensure scrolling */}
-                                {monthlyAnalysis.bottom_students.length < 5 &&
-                                  Array(5 - monthlyAnalysis.bottom_students.length)
-                                    .fill(0)
-                                    .map((_, index) => (
-                                      <tr key={`dummy-${index}`} className="border-b border-gray-100">
-                                        <td className="py-2 px-2">&nbsp;</td>
-                                        <td className="py-2 px-2 text-center">&nbsp;</td>
-                                        <td className="py-2 px-2 text-center">&nbsp;</td>
-                                        <td className="py-2 px-2 text-center">&nbsp;</td>
-                                        <td className="py-2 px-2 text-center">&nbsp;</td>
-                                        <td className="py-2 px-2 text-center">&nbsp;</td>
-                                      </tr>
-                                    ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="py-10 text-center text-gray-500">Tidak ada data analisis bulanan.</div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                      )}
+
+                      <div className="mt-2 text-sm text-gray-500">
+                        {filteredStudents.length > 0 && (
+                          <p>
+                            {(currentPage - 1) * itemsPerPage + 1} -{" "}
+                            {Math.min(currentPage * itemsPerPage, filteredStudents.length)} dari{" "}
+                            {filteredStudents.length} baris
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="py-10 text-center text-gray-500">Tidak ada data detail kehadiran siswa.</div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Student Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-[#041765]">{selectedStudent?.name}</DialogTitle>
+            <DialogDescription className="text-sm">NISN: {selectedStudent?.nisn}</DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-2 space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-gray-800 mb-2">Detail Kehadiran per Minggu</h4>
+              <div className="space-y-3">
+                {selectedStudent?.weekly_summary.map((week, index) => (
+                  <div key={index} className="border border-gray-200 rounded-md p-3">
+                    <h5 className="text-sm font-medium text-[#041765] mb-2">
+                      Minggu {week.week_number + 1} ({week.date_range})
+                    </h5>
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600">Hadir</span>
+                        <span className="font-medium text-[#22C55E]">{week.counts.Hadir}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600">Sakit</span>
+                        <span className="font-medium text-[#9B51E0]">{week.counts.Sakit}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600">Izin</span>
+                        <span className="font-medium text-[#FFC804]">{week.counts.Izin}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600">Alfa</span>
+                        <span className="font-medium text-[#EA2F32]">{week.counts.Alfa}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsDetailModalOpen(false)}>
+              Tutup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Context Menu */}
       {contextMenu && (
