@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/api";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) { 
@@ -16,7 +17,6 @@ export async function GET(request: Request) {
     }
 
     try {
-        const API_BASE_URL = process.env.DJANGO_API_BASE_URL || 'http://localhost:8000';
         const fetchUrl = `${API_BASE_URL}/api/evalguru/detail-tahunan/?guru_id=${guru_id}&tahun_ajaran_id=${tahun_ajaran_id}`; 
         
         console.log(`[API Proxy EvalGuru Detail] Forwarding to: ${fetchUrl}`);

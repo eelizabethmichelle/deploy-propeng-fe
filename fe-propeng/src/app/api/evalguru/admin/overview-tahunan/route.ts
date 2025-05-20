@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/api";
 import { NextResponse } from "next/server";
 
 
@@ -6,7 +7,6 @@ export async function GET(request: Request) {
     const token = authHeader?.split(" ")[1];
     try {
 
-        const API_BASE_URL = process.env.DJANGO_API_BASE_URL || 'http://localhost:8000';
         const fetchUrl = `${API_BASE_URL}/api/evalguru/overview-tahunan/`
         const result = await fetch(fetchUrl, {
             method: "GET",
