@@ -5,7 +5,9 @@ export async function GET(request: Request) {
     const authHeader = request.headers.get("Authorization");
     const token = authHeader?.split(" ")[1];
     try {
-        const fetchUrl = `http://localhost:8000/api/evalguru/overview-tahunan/`
+
+        const API_BASE_URL = process.env.DJANGO_API_BASE_URL || 'http://localhost:8000';
+        const fetchUrl = `${API_BASE_URL}/api/evalguru/overview-tahunan/`
         const result = await fetch(fetchUrl, {
             method: "GET",
             headers: {

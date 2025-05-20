@@ -23,8 +23,10 @@ export function OverviewTahunanToolbar({
     guruOptions,
     mataPelajaranOptions,
 }: OverviewToolbarProps) {
+    
     const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter;
 
+    
     return (
         <div className="flex items-center justify-between flex-wrap gap-2 py-4">
             <div className="flex flex-1 items-center space-x-2 flex-wrap gap-y-2">
