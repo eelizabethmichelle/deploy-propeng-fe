@@ -32,6 +32,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { ResponsiveContainer } from "recharts"
+
 
 interface ClassData {
   id: number
@@ -335,7 +339,6 @@ export default function Page() {
   const [yearlyData, setYearlyData] = useState<YearlyData | null>(null)
   const [availableWeeks, setAvailableWeeks] = useState<{ value: string; label: string }[]>([])
   const [activeWeeklyData, setActiveWeeklyData] = useState<WeeklyAttendanceData | null>(null)
-  const [hoveredDay, setHoveredDay] = useState<string | null>(null)
 
   // State variables for Overview Kehadiran Siswa per Minggu
   const [selectedMonthOverview, setSelectedMonthOverview] = useState<string>(new Date().getMonth().toString())
@@ -803,9 +806,8 @@ export default function Page() {
     if (!status) {
       return (
         <div
-          className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${
-            isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
-          }`}
+          className={`${baseClasses} border border-[#041765] hover:bg-gray-50 ${isSelected ? "box-shadow-[0_0_0_2px_#3b82f6]" : ""
+            }`}
           style={isSelected ? { boxShadow: "0 0 0 3px #3b82f6, 0 0 0 5px white" } : undefined}
           onClick={(e) => {
             e.stopPropagation()
@@ -1608,11 +1610,11 @@ export default function Page() {
                                       className={`flex items-center justify-center w-10 h-10 rounded-md text-sm border-0 cursor-pointer hover:bg-gray-100`}
                                       style={
                                         students.length > 0 &&
-                                        students.every((student) =>
-                                          selectedCells.some(
-                                            (cell) => cell.studentId === student.id && cell.date === date,
-                                          ),
-                                        )
+                                          students.every((student) =>
+                                            selectedCells.some(
+                                              (cell) => cell.studentId === student.id && cell.date === date,
+                                            ),
+                                          )
                                           ? { boxShadow: "0 0 0 3px #3b82f6, 0 0 0 5px white" }
                                           : undefined
                                       }
@@ -1783,88 +1785,77 @@ export default function Page() {
                             <h4 className="text-base font-medium text-gray-800 mb-4">
                               Persentase Kehadiran Terbanyak - {getHighestAttendanceDay()}
                             </h4>
-                            <div className="relative" style={{ height: "320px", minWidth: "70%" }}>
-                              {/* Chart container with grid */}
-                              <div className="absolute top-0 left-0 right-0 bottom-10 border-b border-l border-gray-200">
-                                {/* Y-axis labels */}
-                                <div className="absolute inset-y-0 left-0 w-12 flex flex-col justify-between text-sm text-gray-500 pointer-events-none">
-                                  <div className="relative h-0">100%</div>
-                                  <div className="relative h-0">80%</div>
-                                  <div className="relative h-0">60%</div>
-                                  <div className="relative h-0">40%</div>
-                                  <div className="relative h-0">20%</div>
-                                  <div className="relative h-0">0%</div>
-                                </div>
-
-                                {/* Horizontal grid lines */}
-                                <div className="absolute inset-0 left-12 right-4 flex flex-col justify-between pointer-events-none">
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                  <div className="border-t border-gray-200 h-0"></div>
-                                </div>
-
-                                {/* Chart bars */}
-                                <div className="absolute left-12 right-4 bottom-0 top-0 flex items-end justify-around h-full">
-                                  {activeWeeklyData.daily_details.map((day, index) => {
-                                    const barHeight = (day.attendance_percentage / 100) * GRID_HEIGHT
-
-                                    return (
-                                      <div
-                                        key={index}
-                                        className="flex flex-col items-center relative"
-                                        onMouseEnter={() => setHoveredDay(day.day_name)}
-                                        onMouseLeave={() => setHoveredDay(null)}
-                                      >
-                                        {/* The bar itself */}
-                                        <div
-                                          className="bg-[#041765] rounded-t-md hover:bg-[#1a2f8f] transition-all duration-200 cursor-pointer w-[60px]"
-                                          style={{ height: `${barHeight}px` }}
-                                          title={`${day.attendance_percentage}%`}
-                                        ></div>
-
-                                        {/* Tooltip that appears on hover */}
-                                        {hoveredDay === day.day_name && (
-                                          <div className="absolute bottom-full mb-1 bg-white rounded-md shadow-lg p-2 z-50 w-40 border border-gray-100">
-                                            <div className="text-center font-medium mb-1 text-xs text-[#041765]">
-                                              {day.day_name} ({day.attendance_percentage}%)
-                                            </div>
-                                            <div className="space-y-0.5 text-xs">
-                                              <div className="flex justify-between">
-                                                <span>Hadir:</span>
-                                                <span className="font-medium">{day.counts?.Hadir || 0} Siswa</span>
+                            <div className="-mx-6" style={{ height: "320px" }}>
+                              <ChartContainer
+                                className="w-full"
+                                config={{
+                                  hadir: { color: "#041765" },
+                                  sakit: { color: "#9B51E0" },
+                                  izin: { color: "#FFC804" },
+                                  alfa: { color: "#EA2F32" },
+                                }}
+                              >
+                                <ResponsiveContainer width="150%" height="100%">
+                                  <BarChart
+                                    data={activeWeeklyData?.daily_details.map((day) => ({
+                                      name: day.day_name,
+                                      percentage: day.attendance_percentage,
+                                      hadir: day.counts?.Hadir || 0,
+                                      sakit: day.counts?.Sakit || 0,
+                                      izin: day.counts?.Izin || 0,
+                                      alfa: day.counts?.Alfa || 0,
+                                    }))}
+                                    margin={{ top: 5, right: 5, bottom: 5, left: 0 }}
+                                  >
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" />
+                                    <YAxis
+                                      domain={[0, 100]}
+                                      tickFormatter={(value) => `${value}%`}
+                                      ticks={[0, 20, 40, 60, 80, 100]}
+                                    />
+                                    <ChartTooltip
+                                      content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                          const data = payload[0].payload
+                                          return (
+                                            <div className="bg-white rounded-md shadow-lg p-2 border border-gray-100">
+                                              <div className="text-center font-medium mb-1 text-xs text-[#041765]">
+                                                {data.name} ({data.percentage}%)
                                               </div>
-                                              <div className="flex justify-between">
-                                                <span>Sakit:</span>
-                                                <span className="font-medium">{day.counts?.Sakit || 0} Siswa</span>
-                                              </div>
-                                              <div className="flex justify-between">
-                                                <span>Izin:</span>
-                                                <span className="font-medium">{day.counts?.Izin || 0} Siswa</span>
-                                              </div>
-                                              <div className="flex justify-between">
-                                                <span>Alfa:</span>
-                                                <span className="font-medium">{day.counts?.Alfa || 0} Siswa</span>
+                                              <div className="space-y-0.5 text-xs">
+                                                <div className="flex justify-between">
+                                                  <span>Hadir:</span>
+                                                  <span className="font-medium">{data.hadir} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Sakit:</span>
+                                                  <span className="font-medium">{data.sakit} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Izin:</span>
+                                                  <span className="font-medium">{data.izin} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Alfa:</span>
+                                                  <span className="font-medium">{data.alfa} Siswa</span>
+                                                </div>
                                               </div>
                                             </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-
-                              {/* Day labels - positioned below the chart */}
-                              <div className="absolute bottom-0 left-12 right-4 flex justify-around">
-                                {activeWeeklyData.daily_details.map((day, index) => (
-                                  <div key={index} className="text-sm font-medium text-gray-600 w-[60px] text-center">
-                                    {day.day_name}
-                                  </div>
-                                ))}
-                              </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
+                                    />
+                                    <Bar
+                                      dataKey="percentage"
+                                      fill="var(--color-hadir)"
+                                      radius={[4, 4, 0, 0]}
+                                      barSize={60}
+                                    />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </ChartContainer>
                             </div>
                           </div>
                         </>
@@ -1877,7 +1868,7 @@ export default function Page() {
                   </Card>
                 </div>
 
-                {/* Analysis Section - Width adjusted to exactly 900px */}
+                {/* Analysis Section */}
                 <div style={{ width: "min(70%, 900px)" }} className="overflow-x-auto">
                   <Card className="border-[#E1E2E8] h-full">
                     <CardContent className="p-6">
@@ -2053,13 +2044,12 @@ export default function Page() {
                                   <td className="py-2 px-2">{student.nisn}</td>
                                   <td className="py-2 px-2 text-center">
                                     <span
-                                      className={`font-medium ${
-                                        student.monthly_percentage >= 80
+                                      className={`font-medium ${student.monthly_percentage >= 80
                                           ? "text-green-600"
                                           : student.monthly_percentage >= 60
                                             ? "text-yellow-600"
                                             : "text-red-600"
-                                      }`}
+                                        }`}
                                     >
                                       {student.monthly_percentage}%
                                     </span>
