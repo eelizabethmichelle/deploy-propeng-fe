@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse, Search } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import {
   Dialog,
@@ -353,7 +353,7 @@ export default function Page() {
 
   // State variables for Detail Kehadiran Siswa
   const [monthlyDetailData, setMonthlyDetailData] = useState<MonthlyDetailData | null>(null)
-  const [selectedMonthDetail, setSelectedMonthDetail] = useState<string>((new Date().getMonth() + 1).toString())
+  const [selectedMonthDetail, setSelectedMonthDetail] = useState<string>(new Date().getMonth().toString())
   const [isLoadingMonthlyDetail, setIsLoadingMonthlyDetail] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -912,12 +912,6 @@ export default function Page() {
       { value: "3", label: "April" },
       { value: "4", label: "Mei" },
       { value: "5", label: "Juni" },
-      { value: "6", label: "Juli" },
-      { value: "7", label: "Agustus" },
-      { value: "8", label: "September" },
-      { value: "9", label: "Oktober" },
-      { value: "10", label: "November" },
-      { value: "11", label: "Desember" },
     ]
   }
 
@@ -1106,12 +1100,6 @@ export default function Page() {
       "April",
       "Mei",
       "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
     ]
     const startStr = `${startDate.getDate()} ${monthNames[startDate.getMonth()]}`
     const endStr = `${endDate.getDate()} ${monthNames[endDate.getMonth()]} ${endDate.getFullYear()}`
@@ -1316,12 +1304,6 @@ export default function Page() {
       "April",
       "Mei",
       "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
     ]
     return monthNames[monthNumber] || ""
   }
@@ -1335,12 +1317,6 @@ export default function Page() {
       { value: "3", label: "April" },
       { value: "4", label: "Mei" },
       { value: "5", label: "Juni" },
-      { value: "6", label: "Juli" },
-      { value: "7", label: "Agustus" },
-      { value: "8", label: "September" },
-      { value: "9", label: "Oktober" },
-      { value: "10", label: "November" },
-      { value: "11", label: "Desember" },
     ]
   }
 
@@ -1368,9 +1344,31 @@ export default function Page() {
 
   if (!classData) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-gray-500 mb-4">Anda tidak menjadi wali kelas untuk kelas aktif manapun saat ini.</p>
-      </div>
+              <div className="mt-8 flex justify-center">
+                <Card className="border border-yellow-200 bg-yellow-50 max-w-xl w-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CardTitle>Tidak Ada Kelas</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Anda belum memiliki kelas apapun saat ini.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Silakan hubungi admin untuk mendapatkan akses ke kelas Anda.
+                    </p>
+                    <Button 
+                      onClick={() => window.location.reload()}
+                      className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
+                    >
+                      Muat Ulang
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
     )
   }
 
@@ -1889,7 +1887,7 @@ export default function Page() {
                         </Select>
                       </div>
                       {isLoadingMonthly ? (
-                        <div className="py-10 text-center text-gray-500">Loading...</div>
+                        <div className="py-10 text-center text-gray-500">Memuat Data....</div>
                       ) : monthlyAnalysis ? (
                         <>
                           <div className="mb-8">
@@ -1998,7 +1996,7 @@ export default function Page() {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      <Select value={selectedMonthAnalysis} onValueChange={handleMonthChangeAnalysis}>
+                      <Select value={selectedMonthDetail} onValueChange={handleMonthChangeDetail}>
                         <SelectTrigger className="w-[120px] justify-center">
                           <SelectValue className="text-center" placeholder="Pilih Bulan" />
                         </SelectTrigger>
@@ -2014,7 +2012,7 @@ export default function Page() {
                   </div>
 
                   {isLoadingMonthlyDetail ? (
-                    <div className="py-10 text-center text-gray-500">Loading...</div>
+                    <div className="py-10 text-center text-gray-500">Memuat Data....</div>
                   ) : monthlyDetailData ? (
                     <>
                       {/* Scrollable table wrapper with always-on horizontal scroll */}
