@@ -48,7 +48,7 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => { 
-            router.push(`/guru/mata-pelajaran/rekapitulasi/${data.id}`);
+            router.push(`/guru/mata-pelajaran/rekapitulasi-nilai/${data.id}`);
             setDropdownOpen(false);
           }}
           disabled={loading}

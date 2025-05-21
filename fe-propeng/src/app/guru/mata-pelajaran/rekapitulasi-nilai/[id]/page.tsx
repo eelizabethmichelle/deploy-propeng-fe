@@ -12,7 +12,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { toast, Toaster } from "sonner"
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
   BarChart,
@@ -22,8 +23,15 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts"
 import { useParams } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -43,6 +51,7 @@ interface GradeData {
   academicYear: string
   teacherName: string
   teacherNisp: string
+  subjectName: string
   initialGrades: Record<string, Record<string, number>>
 }
 
@@ -61,6 +70,7 @@ export default function Page() {
   const [loadingGrades, setLoadingGrades] = useState(false)
   const [studentIdsInClass, setStudentIdsInClass] = useState<string[]>([])
   const [kelas, setKelas] = useState<Kelas>()
+  const [activeTab, setActiveTab] = useState("pengetahuan")
 
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
@@ -89,7 +99,20 @@ export default function Page() {
         }
         return res.json() as Promise<GradeData>
       })
-      .then(setGradeData)
+      .then((data) => {
+        setGradeData(data)
+        if (!data.students || data.students.length === 0) {
+          toast.error("Belum ada data siswa", {
+            description: "Silakan tambahkan data siswa terlebih dahulu",
+            duration: 5000,
+          })
+        } else if (Object.keys(data.initialGrades).length === 0) {
+          toast.error("Belum ada data nilai", {
+            description: "Silakan input nilai siswa terlebih dahulu",
+            duration: 5000,
+          })
+        }
+      })
       .catch((e: any) => toast.error(e.message || "Gagal memuat data nilai"))
       .finally(() => setLoadingGrades(false))
   }, [subjectId, token])
@@ -161,13 +184,13 @@ export default function Page() {
       { accessorKey: "name", header: "Nama Siswa" },
       {
         accessorKey: "pengetahuan",
-        header: "Nilai Pengetahuan",
-        cell: ({ getValue }) => getValue<number>().toFixed(0),
+        header: () => <div className="text-center">Nilai Pengetahuan</div>,
+        cell: ({ getValue }) => <div className="text-center">{getValue<number>().toFixed(2)}</div>,
       },
       {
         accessorKey: "keterampilan",
-        header: "Nilai Keterampilan",
-        cell: ({ getValue }) => getValue<number>().toFixed(0),
+        header: () => <div className="text-center">Nilai Keterampilan</div>,
+        cell: ({ getValue }) => <div className="text-center">{getValue<number>().toFixed(2)}</div>,
       },
       {
         accessorKey: "status",
@@ -208,8 +231,8 @@ export default function Page() {
 
       const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0)
 
-      const pen = avg(penScores)
-      const ket = avg(ketScores)
+      const pen = Number(avg(penScores).toFixed(2))
+      const ket = Number(avg(ketScores).toFixed(2))
       console.log("sss")
       console.log(pen)
       console.log(ket)
@@ -227,22 +250,34 @@ export default function Page() {
     })
   : []
 
-  const getGradeDistribution = (rows: GradeRow[]) => {
+  const getGradeDistribution = (rows: GradeRow[], type: string) => {
+    // Get all values for the selected type
+    const values = rows.map(r => {
+      if (type === "pengetahuan") return r.pengetahuan
+      if (type === "keterampilan") return r.keterampilan
+      return (r.pengetahuan + r.keterampilan) / 2
+    }).filter(v => !isNaN(v))
+
+    if (values.length === 0) return []
+
+    // Create static ranges with 10-unit intervals, from lowest to highest
     const ranges = [
-      { label: "<51", min: 0, max: 50 },
-      { label: "51-75", min: 51, max: 75 },
-      { label: "76-83", min: 76, max: 83 },
-      { label: "84-92", min: 84, max: 92 },
-      { label: "93-100", min: 93, max: 100 },
+      { label: "0-10", min: 0, max: 10.99 },
+      { label: "11-20", min: 11, max: 20.99 },
+      { label: "21-30", min: 21, max: 30.99 },
+      { label: "31-40", min: 31, max: 40.99 },
+      { label: "41-50", min: 41, max: 50.99 },
+      { label: "51-60", min: 51, max: 60.99 },
+      { label: "61-70", min: 61, max: 70.99 },
+      { label: "71-80", min: 71, max: 80.99 },
+      { label: "81-90", min: 81, max: 90.99 },
+      { label: "91-100", min: 91, max: 100 }
     ]
-    return ranges.map((range) => {
-      const keterampilan = rows.filter((r) =>
-        r.keterampilan >= range.min && r.keterampilan <= range.max
-      ).length
-      const pengetahuan = rows.filter((r) =>
-        r.pengetahuan >= range.min && r.pengetahuan <= range.max
-      ).length
-      return { range: range.label, keterampilan, pengetahuan }
+
+    // Count values in each bin
+    return ranges.map(range => {
+      const count = values.filter(v => v >= range.min && v <= range.max).length
+      return { range: range.label, count }
     })
   }
 
@@ -305,14 +340,20 @@ export default function Page() {
     count: studentAverages?.filter(avg => avg >= min && avg <= max).length ?? 0, 
   }))
   
+  const chartConfig = {
+    count: {
+      label: "Jumlah Siswa",
+      color: "hsl(var(--primary))",
+    },
+  }
+
   return (
     <div className="p-6 space-y-8">
-      <Toaster position="top-right" />
-  
+      <Toaster />
       {/* Title + Subtext + Filter */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa</h1>
+          <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa Mata Pelajaran {gradeData?.subjectName}</h1>
           <div className="text-sm text-gray-600 mt-1">
             <p>
               <strong>Tahun Ajaran:</strong> {gradeData?.academicYear} |{' '}
@@ -329,80 +370,124 @@ export default function Page() {
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-         <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
-         <div className="flex gap-10 items-start w-full max-w-6xl">
-  {/* Chart */}
-  <div className="relative flex-1 h-[300px]">
-    {/* Y-axis labels */}
-    <div className="absolute left-0 top-0 bottom-10 w-12 flex flex-col justify-between text-xs text-gray-500 select-none">
-      {[5, 4, 3, 2, 1, 0].map((n) => (
-        <div key={n} className="h-0 leading-none">
-          {n}
-        </div>
-      ))}
-    </div>
+         {/* <h2 className="text-lg font-semibold mb-1">Grafik Persebaran Nilai</h2>   */}
+         <div className="flex gap-10 items-start w-full max-w-7xl">
+            {/* Chart */}
+            <Card className="flex-1">
+              <CardContent className="pt-6">
+                {(!gradeData?.students || gradeData.students.length === 0) ? (
+                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                    <p className="text-lg">Belum ada data siswa</p>
+                  </div>
+                ) : Object.keys(gradeData.initialGrades).length === 0 ? (
+                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                    <p className="text-lg">Belum ada data nilai</p>
+                  </div>
+                ) : (
+                  <Tabs defaultValue="pengetahuan" className="w-full" onValueChange={setActiveTab}>
+                    <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[700px] h-[40px] mb-4">
+                      <TabsTrigger
+                        value="pengetahuan"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Pengetahuan
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="keterampilan"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Keterampilan
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="rata-rata"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Rata-rata
+                      </TabsTrigger>
+                    </TabsList>
 
-    {/* Horizontal grid lines */}
-    <div className="absolute top-0 left-12 right-0 bottom-10 flex flex-col justify-between pointer-events-none">
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="border-t border-gray-200 h-0"></div>
-      ))}
-    </div>
+                    <ChartContainer config={chartConfig}>
+                      <BarChart
+                        data={getGradeDistribution(rows, activeTab)}
+                        margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
+                        barSize={40}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                        <XAxis 
+                          dataKey="range" 
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={10}
+                        />
+                        <YAxis 
+                          allowDecimals={false}
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={10}
+                        />
+                        <ChartTooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="rounded-lg border bg-background p-2 shadow-sm">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex flex-col">
+                                      <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                        Range
+                                      </span>
+                                      <span className="font-bold text-muted-foreground">
+                                        {payload[0].payload.range}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                        Jumlah
+                                      </span>
+                                      <span className="font-bold">
+                                        {payload[0].value} siswa
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <Bar 
+                          dataKey="count" 
+                          fill="var(--color-count)"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </Tabs>
+                )}
+              </CardContent>
+            </Card>
 
-    {/* Histogram bars */}
-    <div className="absolute bottom-10 left-12 right-0 flex items-end justify-around h-[90%] px-2 gap-2">
-      {intervalCounts.map((bin, index) => {
-        const maxCount = Math.max(...intervalCounts.map((b) => b.count))
-        const barHeight = maxCount > 0 ? (bin.count / maxCount) * 200 : 0
-
-        return (
-          <div key={index} className="flex flex-col items-center gap-1 w-12 relative group cursor-pointer">
-            <div
-              className="bg-blue-600 rounded-t-md w-full transition-all duration-300 ease-in-out group-hover:bg-blue-800"
-              style={{ height: `${barHeight}px` }}
-            />
-            {/* Tooltip */}
-            <div className="absolute -top-6 bg-blue-900 text-white text-xs rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
-              {bin.count} siswa
+            {/* Scorecards */}
+            <div className="flex flex-col gap-6 w-80">
+              <Card className="bg-red-50 shadow-md rounded-lg">
+                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                  <ArrowRight className="w-10 h-10 text-red-500" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
+                    <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-blue-50 shadow-md rounded-lg">
+                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                  <Users className="w-10 h-10 text-blue-500" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-700">Total Siswa</p>
+                    <p className="text-3xl font-bold">{rows.length} Siswa</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        )
-      })}
-    </div>
-
-    {/* X-axis labels */}
-    <div className="absolute bottom-0 left-12 right-0 flex justify-around text-xs text-gray-600 px-2 gap-2">
-      {intervalCounts.map((bin, index) => (
-        <div key={index} className="w-12 text-center">
-          {bin.label}
-        </div>
-      ))}
-    </div>
-  </div>
-
-  {/* Scorecards */}
-  <div className="flex flex-col gap-6 w-80">
-    <Card className="bg-red-50 shadow-md rounded-lg">
-      <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-        <ArrowRight className="w-10 h-10 text-red-500" />
-        <div>
-          <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
-          <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
-        </div>
-      </CardContent>
-    </Card>
-    <Card className="bg-blue-50 shadow-md rounded-lg">
-      <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-        <Users className="w-10 h-10 text-blue-500" />
-        <div>
-          <p className="text-sm font-medium text-blue-700">Total Siswa</p>
-          <p className="text-3xl font-bold">{rows.length} Siswa</p>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-</div>
-
   
           {/* Table */}
           <div className="mt-6">
@@ -411,4 +496,5 @@ export default function Page() {
         </>
       )}
     </div>
-  ) } 
+  )
+} 

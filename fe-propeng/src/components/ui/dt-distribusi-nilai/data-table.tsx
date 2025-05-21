@@ -88,7 +88,9 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
-                  Belum ada nilai siswa yang dimasukkan! Silahkan masukkan nilai siswa terlebih dahulu.
+                  {data.length === 0 
+                    ? "Belum ada data siswa yang dimasukkan! Silahkan tambahkan siswa terlebih dahulu."
+                    : "Belum ada nilai siswa yang dimasukkan! Silahkan masukkan nilai siswa terlebih dahulu."}
                 </TableCell>
               </TableRow>
             )}

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo,  } from "react"
 import { DataTable } from "@/components/ui/dt-distribusi-nilai/data-table"
 import {
   Select,
@@ -23,6 +23,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
+import { useRouter } from "next/router"
+import { useParams } from "next/navigation"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -51,6 +53,7 @@ type GradeRow = {
 }
 
 export default function Page() {
+   const params = useParams();
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [subjectId, setSubjectId] = useState<string>("")
   const [gradeData, setGradeData] = useState<GradeData | null>(null)
@@ -63,15 +66,29 @@ export default function Page() {
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
   useEffect(() => {
+    const classIdRaw = params.id;
+    const classId = Array.isArray(classIdRaw)
+      ? classIdRaw[classIdRaw.length - 1]
+      : classIdRaw
+  
     if (!token) {
       toast.error("Token otentikasi tidak ditemukan.")
       setLoadingSubjects(false)
       return
     }
   
-    fetch("/api/kelas/saya", {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
+    if (!classId) {
+      toast.error("ID kelas tidak ditemukan di URL.")
+      setLoadingSubjects(false)
+      return
+    }
+  
+    fetch("/api/kelas/detailBaru", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token} id ${classId}`,
+      },
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -81,10 +98,17 @@ export default function Page() {
         return res.json()
       })
       .then((data) => {
-        const kelasData = data.data?.[0] // ambil kelas pertama
-        if (!kelasData) {
+        const kelasList = data.data
+        if (!kelasList) {
           throw new Error("Tidak ada data kelas.")
         }
+  
+const kelasData = kelasList.find((k: any) => String(k.id) === String(classId))
+
+if (!kelasData) {
+  throw new Error("Kelas dengan ID tersebut tidak ditemukan.")
+}
+
         const matpelUnik = kelasData.mata_pelajaran_unik || []
         setSubjects(
           matpelUnik.map((m: any) => ({
@@ -95,19 +119,27 @@ export default function Page() {
           }))
         )
         setKelas({
-          namaKelas: data.data[0].namaKelas,
-          tahunAjaran: data.data[0].tahunAjaran,
-          waliKelas: data.data[0].waliKelas,
-          id: data.data[0].id,
+          namaKelas: kelasData.namaKelas,
+          tahunAjaran: kelasData.tahunAjaran,
+          waliKelas: kelasData.waliKelas,
+          id: kelasData.id,
         })
         const siswaInKelas = (kelasData.siswa || []).map((s: any) => String(s.id))
         setStudentIdsInClass(siswaInKelas)
+        console.log("Mata Pelajaran Unik:", kelasData.mata_pelajaran_unik)
+
+        console.log("A")
+        console.log(matpelUnik[0].id)
         if (matpelUnik[0]) setSubjectId(String(matpelUnik[0].id))
       })
-      .catch((e: any) => toast.error(e.message || "Gagal memuat mata pelajaran unik"))
+      .catch((e: any) => toast.error(e.message || "Gagal memuat data kelas"))
       .finally(() => setLoadingSubjects(false))
-  }, [token])  
+  }, [token])
 
+  
+  console.log("T"  )
+  console.log(subjectId)
+  
   useEffect(() => {
     if (!subjectId || !token) return
     setLoadingGrades(true)
@@ -261,45 +293,80 @@ export default function Page() {
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-          {/* Chart */}
-          {rows.length > 0 && (
-            <div className="mt-2">
-              <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getGradeDistribution(rows)} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <XAxis dataKey="range" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="pengetahuan" fill="#3b82f6" name="Nilai Pengetahuan" />
-                  <Bar dataKey="keterampilan" fill="#facc15" name="Nilai Keterampilan" />
-                </BarChart>
-              </ResponsiveContainer>
+          <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
+          <div className="flex gap-10 items-start w-full max-w-6xl">
+            {/* Chart */}
+            <div className="relative flex-1 h-[300px]">
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 bottom-10 w-12 flex flex-col justify-between text-xs text-gray-500 select-none">
+                {[5, 4, 3, 2, 1, 0].map((n) => (
+                  <div key={n} className="h-0 leading-none">
+                    {n}
+                  </div>
+                ))}
+              </div>
+
+              {/* Horizontal grid lines */}
+              <div className="absolute top-0 left-12 right-0 bottom-10 flex flex-col justify-between pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="border-t border-gray-200 h-0"></div>
+                ))}
+              </div>
+
+              {/* Histogram bars */}
+              <div className="absolute bottom-10 left-12 right-0 flex items-end justify-around h-[90%] px-2 gap-2">
+                {getGradeDistribution(rows).map((bin, index) => {
+                  const maxCount = Math.max(...getGradeDistribution(rows).map((b) => b.pengetahuan + b.keterampilan))
+                  const barHeight = maxCount > 0 ? ((bin.pengetahuan + bin.keterampilan) / maxCount) * 200 : 0
+
+                  return (
+                    <div key={index} className="flex flex-col items-center gap-1 w-12 relative group cursor-pointer">
+                      <div
+                        className="bg-blue-600 rounded-t-md w-full transition-all duration-300 ease-in-out group-hover:bg-blue-800"
+                        style={{ height: `${barHeight}px` }}
+                      />
+                      {/* Tooltip */}
+                      <div className="absolute -top-6 bg-blue-900 text-white text-xs rounded px-2 py-0.5 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+                        {bin.pengetahuan + bin.keterampilan} siswa
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* X-axis labels */}
+              <div className="absolute bottom-0 left-12 right-0 flex justify-around">
+                {getGradeDistribution(rows).map((bin, index) => (
+                  <div key={index} className="w-12 text-center text-xs text-gray-500">
+                    {bin.range}
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-  
-          {/* Score cards */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <Card className="bg-red-50">
-              <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
-                <ArrowRight className="w-8 h-8 text-red-500" />
-                <div>
-                  <p className="text-sm text-red-700">Siswa Butuh Bimbingan</p>
-                  <p className="text-2xl font-semibold">{needsGuidanceCount} Siswa</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-blue-50">
-              <CardContent className="flex items-center justify-start gap-4 px-6 py-4">
-                <Users className="w-8 h-8 text-blue-500" />
-                <div>
-                  <p className="text-sm text-blue-700">Total Siswa</p>
-                  <p className="text-2xl font-semibold">{rows.length} Siswa</p>
-                </div>
-              </CardContent>
-            </Card>
+
+            {/* Scorecards */}
+            <div className="flex flex-col gap-6 w-80">
+              <Card className="bg-red-50 shadow-md rounded-lg">
+                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                  <ArrowRight className="w-10 h-10 text-red-500" />
+                  <div>
+                    <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
+                    <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-blue-50 shadow-md rounded-lg">
+                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                  <Users className="w-10 h-10 text-blue-500" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-700">Total Siswa</p>
+                    <p className="text-3xl font-bold">{rows.length} Siswa</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-  
+
           {/* Table */}
           <div className="mt-6">
             <DataTable columns={columns} data={rows} />

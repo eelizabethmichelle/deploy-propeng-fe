@@ -111,7 +111,7 @@ export default function KelasPage() {
       if (button) {
         const id = button.dataset.id;
         if (id) {
-          router.push(`/guru/kelas/dashboard/${id}`);
+          router.push(`/guru/kelas/rekapitulasi-nilai/${id}`);
         }
       }
     };
