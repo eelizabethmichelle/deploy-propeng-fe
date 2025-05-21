@@ -1,0 +1,487 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import router from "next/router";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { GradeDistributionChart } from "@/components/ui/grade-distribution";
+import { ThreeBarStatCard } from "@/components/ui/bar-card";
+import DonutChart from "@/components/ui/donut-chart";
+import { DataTableDistribusiNilai } from "@/components/ui/dt-distribusi-nilai-keseluruhan/data-table";
+import { distribusiNilaiColumns } from "@/components/ui/dt-distribusi-nilai-keseluruhan/columns";
+import { DataTableDistribusiNilaiKomponen } from "@/components/ui/dt-distribusi-nilai-komponen/data-table";
+import { distribusiNilaiKomponenColumns } from "@/components/ui/dt-distribusi-nilai-komponen/columns";
+import { DataTableDashboardSiswa } from "@/components/ui/dt-dashboard-siswa/data-table";
+import { dashboardSiswaColumns } from "@/components/ui/dt-dashboard-siswa/columns";
+import { ArrowRight } from "lucide-react";
+
+const chartColors = [
+    "#0B0E66", "#3543A4", "#5C70D6", "#A4AEEB", "#F0B400",
+    "#C34A36", "#6C3483", "#138D75", "#F39C12", "#E74C3C"
+];
+
+type GradeDistribution = {
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+  };
+
+type SubjectDistribution = {
+    id: number;
+    namaMataPelajaran: string;
+    jumlahSiswa: number;
+    rerataNilai: number;
+    distribusiNilai: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+    };
+  };
+
+type SubjectDistributionByKomponen = {
+    id: number;
+    namaMataPelajaran: string;
+    jenis: 'Pengetahuan' | 'Keterampilan';
+    rerataNilai: number;
+    distribusiNilai: {
+      a: number;
+      b: number;
+      c: number;
+      d: number;
+    };
+  };
+
+type topAndRiskStudent = {
+    id: number;
+    namaSiswa: string;
+    rerataNilai: number;
+    nilaiPengetahuan: number;
+    nilaiKeterampilan: number;
+  };
+
+const siswaTerbaik = [
+  { id: 1, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 2, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 3, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 4, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 5, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 6, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 7, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 8, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 9, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 10, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+];
+
+const siswaRisikoAkademik = [
+  { id: 1, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 2, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 3, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 4, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 5, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 6, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 7, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 8, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 9, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+  { id: 10, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
+];
+
+export default function Page() {
+    const classId = 1;
+    const [filterType, setFilterType] = useState("Pengetahuan");
+    const [loading, setLoading] = useState(false);
+
+    const [kelas, setKelas] = useState("");
+    const [totalSiswa, setTotalSiswa] = useState([]);
+    const [tahunAjaran, setTahunAjaran] = useState("");
+
+    // PIE CHART
+    const [subjectData, setSubjectData] = useState([]);
+    const [notes, setNotes] = useState([]);
+
+    // CARD
+    const [moreThan8A, setMoreThan8A] = useState(0);
+    const [between18A, setBetween18A] = useState(0);
+    const [zeroA, setZeroA] = useState(0);
+    const [moreThan5C, setMoreThan5C] = useState(0);
+    const [between15C, setBetween15C] = useState(0);
+    const [zeroC, setZeroC] = useState(0);
+    const [moreThan3D, setMoreThan3D] = useState(0);
+    const [between13D, setBetween13D] = useState(0);
+    const [zeroD, setZeroD] = useState(0);
+    const [passedLessThanHalf, setPassedLessThanHalf] = useState(0);
+    const [passedHalfToAll, setPassedHalfToAll] = useState(0);
+    const [passedAll, setPassedAll] = useState(0);
+    const [belowClassAvg, setBelowClassAvg] = useState(0);
+    const [betweenAvgAndThreshold, setBetweenAvgAndThreshold] = useState(0);
+    const [aboveThreshold, setAboveThreshold] = useState(0);
+    const [avgBelow75, setAvgBelow75] = useState(0);
+    const [avgBetween75And84, setAvgBetween75And84] = useState(0);
+    const [avg84OrMore, setAvg84Ormore] = useState(0);
+    const [classAverage, setClassAverage] = useState(0);
+    const [classThreshold, setClassThreshold] = useState(0);
+
+    // TABLE
+    const [classDistribution, setClassDistribution] = useState<GradeDistribution | null>(null);
+    const [subjectDistributionAll, setSubjectDistributionAll] = useState<SubjectDistribution[]>([]);
+    const [subjectDistributionByKomponen, setSubjectDistributionByKomponen] = useState<SubjectDistributionByKomponen[]>([])
+    const [topStudent, setTopStudent] = useState<topAndRiskStudent[]>([])
+    const [riskStudent, setRiskStudent] = useState<topAndRiskStudent[]>([])
+  
+    const [error, setError] = useState("");
+
+    const getAuthToken = () => {
+        const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+        if (!token) {
+            router.push("/login");
+            return null;
+        }
+        return token;
+    };
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+          try {
+            setLoading(true);
+            const token = getAuthToken();
+            if (!token) return;
+    
+            const response = await fetch("/api/kelas/dashboard", {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token} classId ${classId}`,
+              },
+            });
+    
+            const result = await response.json();
+            console.log(result)
+    
+            if (response.ok && result.status === 200) {
+                setKelas(result.kelas);
+                setTotalSiswa(result.total_siswa);
+                setTahunAjaran(result.tahun_ajaran);
+
+                // Pie Chart
+                const pieChartData = result.subject_data.classes.map((item: any, index: number) => ({
+                    name: item.name,
+                    value: item.value,
+                    color: chartColors[index % chartColors.length],
+                }));
+                setSubjectData(pieChartData);
+                setNotes(result.subject_data.classes_notes);
+
+                // Card
+                const insights = result.insights;
+                setMoreThan8A(insights.more_than_8_A || 0);
+                setBetween18A(insights.between_1_8_A || 0);
+                setZeroA(insights.zero_A || 0);
+                setMoreThan5C(insights.more_than_5_C || 0);
+                setBetween15C(insights.between_1_5_C || 0);
+                setZeroC(insights.zero_C || 0);
+                setMoreThan3D(insights.more_than_3_D || 0);
+                setBetween13D(insights.between_1_3_D || 0);
+                setZeroD(insights.zero_D || 0);
+                setPassedLessThanHalf(insights.passed_less_than_half || 0);
+                setPassedHalfToAll(insights.passed_half_to_all || 0);
+                setPassedAll(insights.passed_all || 0);
+                setBelowClassAvg(insights.below_class_avg || 0);
+                setBetweenAvgAndThreshold(insights.between_avg_and_threshold || 0);
+                setAboveThreshold(insights.above_threshold || 0);
+                setAvgBelow75(insights.avg_below_75 || 0);
+                setAvgBetween75And84(insights.avg_between_75_84 || 0);
+                setAvg84Ormore(insights.avg_84_or_more || 0);
+                setClassAverage(Math.round(insights.class_avg) || 0);
+                setClassThreshold(Math.round(insights.class_threshold) || 0);
+
+                // Grade distribution
+                const classDistributionRaw = result.class_distribution;
+                setClassDistribution(classDistributionRaw.distribusi);
+                const subjectDistributionAllRaw = result.subject_distribution_all;
+                setSubjectDistributionAll(subjectDistributionAllRaw.map((item: any) => ({
+                    id: item.id_mata_pelajaran,
+                    namaMataPelajaran: item.mata_pelajaran,
+                    jumlahSiswa: item.jumlah_siswa,
+                    rerataNilai: Number(item.rata_rata),
+                    distribusiNilai: {
+                      a: item.distribusi?.a ?? 0,
+                      b: item.distribusi?.b ?? 0,
+                      c: item.distribusi?.c ?? 0,
+                      d: item.distribusi?.d ?? 0,
+                    },
+                  })));
+                const subjectDistributionByKomponenRaw = result.subject_distribution_by_komponen;
+                setSubjectDistributionByKomponen(subjectDistributionByKomponenRaw.map((item: any) => ({
+                    id: item.id_mata_pelajaran,
+                    namaMataPelajaran: item.mata_pelajaran,
+                    jenis: item.jenis,
+                    rerataNilai: Number(item.rata_rata),
+                    distribusiNilai: {
+                      a: item.distribusi?.a ?? 0,
+                      b: item.distribusi?.b ?? 0,
+                      c: item.distribusi?.c ?? 0,
+                      d: item.distribusi?.d ?? 0,
+                    },
+                  })));
+                  
+                  // Top and risk student
+                  const studentData = result.student_data;
+                  setTopStudent(studentData.siswa_terbaik.map((item: any) => ({
+                      id: item.id,
+                      namaSiswa: item.namaSiswa,
+                      rerataNilai: Number(item.rerataNilai),
+                      nilaiPengetahuan: Number(item.nilaiPengetahuan),
+                      nilaiKeterampilan: Number(item.nilaiKeterampilan),
+                    })));
+                  setRiskStudent(studentData.siswa_risiko_akademik.map((item: any) => ({
+                      id: item.id,
+                      namaSiswa: item.namaSiswa,
+                      rerataNilai: Number(item.rerataNilai),
+                      nilaiPengetahuan: Number(item.nilaiPengetahuan),
+                      nilaiKeterampilan: Number(item.nilaiKeterampilan),
+                    })));
+                
+
+            } else {
+              throw new Error(result.message || "Gagal memuat data insight");
+            }
+          } catch (err: any) {
+            console.error(err);
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+    
+        fetchDashboardData();
+    }, []);    
+
+  const filteredData = subjectDistributionByKomponen.filter((item) => item.jenis === filterType);
+
+  return (
+    <div>
+        {/* Header section */}
+        <div className="space-y-1 mb-6">
+          <h1 className="text-2xl font-bold text-blue-900">{`${kelas}`}</h1>
+          <p className="text-gray-700 text-sm">Jumlah Siswa: {`${totalSiswa}`} | Tahun Ajaran: {`${tahunAjaran}/${Number(tahunAjaran)+1}`}</p>
+
+          {/* Grade Legend */}
+          <div className="mt-2 text-sm text-gray-800">
+            <div className="flex items-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-300 inline-block"></span>
+                    <span className="font-semibold text-green-600">A</span>
+                    <span>(100 - 93)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-200 inline-block"></span>
+                    <span className="font-semibold text-green-600">B</span>
+                    <span>(92 - 84)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-yellow-200 inline-block"></span>
+                    <span className="font-semibold text-yellow-600">C</span>
+                    <span>(83 - 75)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-200 inline-block"></span>
+                    <span className="font-semibold text-red-600">D</span>
+                    <span>(&lt; 75)</span>
+                </div>
+                </div>
+            </div>
+            </div>
+    
+        <div className="flex flex-col gap-6">
+          {/* Row 1: Donut chart and bar stats */}
+          <div className="flex gap-4 items-stretch">
+            <div className="basis-2/5 flex flex-col">
+              <DonutChart
+                title="Distribusi Pendaftaran Mata Pelajaran"
+                data={subjectData}
+                notes={notes}
+              />
+            </div>
+    
+            <div className="flex flex-col gap-4 basis-3/5">
+              {/* First row of ThreeBarStatCard */}
+              <div className="flex gap-4">
+                <ThreeBarStatCard
+                  titleColor="text-green-600"
+                  title={`${moreThan8A/(zeroA+between18A+moreThan8A)}%`}
+                  subtitle={`${moreThan8A} dari ${zeroA+between18A+moreThan8A}`}
+                  description="Siswa dengan nilai A pada lebih dari delapan mata pelajaran"
+                  columns={[
+                    { label: "0", value: zeroA },
+                    { label: "1 - 8", value: between18A },
+                    { label: "> 8", value: moreThan8A },
+                  ]}
+                />
+                <ThreeBarStatCard
+                  titleColor="text-yellow-600"
+                  title={`${moreThan5C/(zeroC+between15C+moreThan5C)}%`}
+                  subtitle={`${moreThan5C} dari ${zeroC+between15C+moreThan5C}`}
+                  description="Siswa dengan nilai C pada lebih dari lima mata pelajaran"
+                  columns={[
+                    { label: "0", value: zeroC },
+                    { label: "1 - 5", value: between15C },
+                    { label: "> 5", value: moreThan5C },
+                  ]}
+                />
+                <ThreeBarStatCard
+                  titleColor="text-red-600"
+                  title={`${moreThan3D/(zeroD+between13D+moreThan3D)}%`}
+                  subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
+                  description="Siswa dengan nilai D pada lebih dari tiga mata pelajaran"
+                  columns={[
+                    { label: "0", value: zeroD },
+                    { label: "1 - 3", value: between13D },
+                    { label: "> 3", value: moreThan3D },
+                  ]}
+                />
+              </div>
+    
+              {/* Second row of ThreeBarStatCard */}
+              <div className="flex gap-4">
+              <ThreeBarStatCard
+                  titleColor="text-green-600"
+                  title={`${passedAll/(passedLessThanHalf+passedHalfToAll+passedAll)}%`}
+                  subtitle={`${passedAll} dari ${passedLessThanHalf+passedHalfToAll+passedAll}`}
+                  description="Siswa lulus pada seluruh mata pelajaran"
+                  columns={[
+                    { label: "< 50%", value: passedLessThanHalf },
+                    { label: "< 100%", value: passedHalfToAll },
+                    { label: "100%", value: passedAll },
+                  ]}
+                />
+                <ThreeBarStatCard
+                  titleColor="text-yellow-600"
+                  title={`${belowClassAvg/(belowClassAvg+betweenAvgAndThreshold+aboveThreshold)}%`}
+                  subtitle={`${belowClassAvg} dari ${belowClassAvg+betweenAvgAndThreshold+aboveThreshold}`}
+                  description={`Siswa dengan rerata nilai di bawah rata-rata nilai kelas (${classAverage})`}
+                  columns={[
+                    { label: `< ${classAverage}`, value: belowClassAvg },
+                    { label: `< ${classThreshold}`, value: betweenAvgAndThreshold },
+                    { label: `>= ${classThreshold}`, value: aboveThreshold },
+                  ]}
+                />
+                <ThreeBarStatCard
+                  titleColor="text-red-600"
+                  title={`${moreThan3D/(zeroD+between13D+moreThan3D)}%`}
+                  subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
+                  description="Siswa dengan rata-rata nilai di bawah KKM"
+                  columns={[
+                    { label: "< 75", value: zeroD },
+                    { label: "< 84", value: between13D },
+                    { label: ">= 84", value: moreThan3D },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+    
+          {/* Row 2: Grade distribution */}
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-blue-900">
+              Distribusi Nilai Keseluruhan
+            </h2>
+            <GradeDistributionChart 
+                a={classDistribution?.a || 0} 
+                b={classDistribution?.b || 0} 
+                c={classDistribution?.c || 0} 
+                d={classDistribution?.d || 0} 
+            />
+          </div>
+    
+          {/* Row 3: Data Tables */}
+          <div className="flex gap-4">
+            {/* Left Table */}
+            <div className="basis-1/2 space-y-2">
+              <h2 className="text-medium text-black font-semibold h-[40px] flex items-center">
+                Berdasarkan Mata Pelajaran
+              </h2>
+              <DataTableDistribusiNilai
+                columns={distribusiNilaiColumns}
+                data={subjectDistributionAll}
+              />
+            </div>
+    
+            {/* Right Table with Select */}
+            <div className="basis-1/2 space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-medium text-black font-semibold h-[40px] flex items-center">
+                  Berdasarkan Komponen Penilaian
+                </h2>
+                <div className="w-[180px]">
+                  <Select defaultValue="Pengetahuan" onValueChange={setFilterType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih jenis" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pengetahuan">Pengetahuan</SelectItem>
+                      <SelectItem value="Keterampilan">Keterampilan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DataTableDistribusiNilaiKomponen
+                columns={distribusiNilaiKomponenColumns}
+                data={filteredData}
+              />
+            </div>
+          </div>
+    
+          {/* Row 4: Data Tables */}
+          <div className="space-y-2">
+            {/* Header with Button */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-blue-900">
+                Ringkasan Nilai Siswa
+              </h2>
+              <Button
+                type="button"
+                onClick={() => router.push("/ke-page-dien")}
+              >
+              <ArrowRight className="h-5 w-5 ml-2" />
+                Lihat Rekapitulasi Nilai
+              </Button>
+            </div>
+    
+            {/* Tables */}
+            <div className="flex gap-4">
+              {/* Left Table */}
+              <div className="basis-1/2 space-y-2">
+                <h2 className="text-medium text-black font-semibold">
+                  Siswa dengan Rata-Rata Nilai Tertinggi
+                </h2>
+                <DataTableDashboardSiswa
+                  columns={dashboardSiswaColumns}
+                  data={topStudent}
+                />
+              </div>
+    
+              {/* Right Table */}
+              <div className="basis-1/2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-medium text-black font-semibold">
+                    Siswa dengan Risiko Akademik
+                  </h2>
+                </div>
+                <DataTableDashboardSiswa
+                  columns={dashboardSiswaColumns}
+                  data={riskStudent}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  );
+}
