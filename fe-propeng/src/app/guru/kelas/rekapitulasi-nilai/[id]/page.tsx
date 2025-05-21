@@ -342,11 +342,16 @@ if (!kelasData) {
 
   const getGradeDistribution = (rows: GradeRow[], type: string) => {
     const ranges = [
-      { label: "<51", min: 0, max: 50 },
-      { label: "51-75", min: 51, max: 75 },
-      { label: "76-83", min: 76, max: 83 },
-      { label: "84-92", min: 84, max: 92 },
-      { label: "93-100", min: 93, max: 100 },
+      { label: "0-10", min: 0, max: 10.99 },
+      { label: "11-20", min: 11, max: 20.99 },
+      { label: "21-30", min: 21, max: 30.99 },
+      { label: "31-40", min: 31, max: 40.99 },
+      { label: "41-50", min: 41, max: 50.99 },
+      { label: "51-60", min: 51, max: 60.99 },
+      { label: "61-70", min: 61, max: 70.99 },
+      { label: "71-80", min: 71, max: 80.99 },
+      { label: "81-90", min: 81, max: 90.99 },
+      { label: "91-100", min: 91, max: 100 }
     ]
     return ranges.map((range) => {
       const count = rows.filter((r) => {
@@ -412,7 +417,7 @@ if (!kelasData) {
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-          <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
+          {/* <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>   */}
           <div className="flex gap-10 items-start w-full max-w-6xl">
             {/* Chart */}
             <Card className="flex-1">

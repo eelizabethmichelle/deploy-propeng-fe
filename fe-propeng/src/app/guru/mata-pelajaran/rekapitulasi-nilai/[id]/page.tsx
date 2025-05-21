@@ -51,6 +51,7 @@ interface GradeData {
   academicYear: string
   teacherName: string
   teacherNisp: string
+  subjectName: string
   initialGrades: Record<string, Record<string, number>>
 }
 
