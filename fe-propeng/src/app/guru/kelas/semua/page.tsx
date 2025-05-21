@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { kelasColumns } from "@/components/ui/dt-lihat-kelas-guru/columns";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { CheckCircledIcon } from "@radix-ui/react-icons";
 
 interface Kelas {
   id: number;
@@ -30,6 +32,7 @@ export default function KelasPage() {
   const [data, setData] = useState<FormattedKelas[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noClass, setNoClass] = useState(false); // <-- NEW STATE
   const router = useRouter(); 
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function KelasPage() {
       try {
         setLoading(true);
         setError(null);
+        setNoClass(false); // reset
 
         const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
         if (!token) {
@@ -57,7 +61,18 @@ export default function KelasPage() {
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const kelasResponse = await response.json();
-      
+
+        // If teacher has no class
+        if (
+          kelasResponse.message === "Anda tidak menjadi wali kelas untuk kelas aktif manapun saat ini." ||
+          (kelasResponse.data && Array.isArray(kelasResponse.data) && kelasResponse.data.length === 0)
+        ) {
+          setNoClass(true);
+          setData([]);
+          setLoading(false);
+          return;
+        }
+
         if (!kelasResponse.data || !Array.isArray(kelasResponse.data)) {
           console.error("Error: Response bukan array!", kelasResponse);
           setError("Data tidak valid dari server.");
@@ -124,7 +139,34 @@ export default function KelasPage() {
       {loading && <p>Loading data...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {!loading && !error && (
+      {noClass && !loading && !error && (
+        <div className="mt-8 flex justify-center">
+          <Card className="border border-yellow-200 bg-yellow-50 max-w-xl w-full">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <CheckCircledIcon className="h-5 w-5 text-green-600" />
+                <CardTitle>Tidak Ada Kelas</CardTitle>
+              </div>
+              <CardDescription>
+                Anda belum memiliki kelas apapun saat ini.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Silakan hubungi admin untuk mendapatkan akses ke kelas Anda.
+              </p>
+              <Button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
+              >
+                Muat Ulang
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {!loading && !error && !noClass && (
         <div className="relative">
           <DataTable columns={kelasColumns} data={data} />
         </div>

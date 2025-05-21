@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse, Search } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 import {
   Dialog,
@@ -1368,9 +1368,31 @@ export default function Page() {
 
   if (!classData) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-gray-500 mb-4">Anda tidak menjadi wali kelas untuk kelas aktif manapun saat ini.</p>
-      </div>
+              <div className="mt-8 flex justify-center">
+                <Card className="border border-yellow-200 bg-yellow-50 max-w-xl w-full">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CardTitle>Tidak Ada Kelas</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Anda belum memiliki kelas apapun saat ini.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">
+                      Silakan hubungi admin untuk mendapatkan akses ke kelas Anda.
+                    </p>
+                    <Button 
+                      onClick={() => window.location.reload()}
+                      className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
+                    >
+                      Muat Ulang
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
     )
   }
 
