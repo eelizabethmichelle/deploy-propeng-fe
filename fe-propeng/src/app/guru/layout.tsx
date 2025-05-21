@@ -64,8 +64,13 @@ export default function GuruLayout({
       return [
         { label: "Pendaftar Mata Pelajaran Peminatan", href: "/guru/submisi-peminatan" },
         { label: "Formulir Persetujuan" },
-      ];}
-    else {
+      ];
+    } else if (pathname.startsWith("/guru/mata-pelajaran/rekapitulasi-nilai/")) {
+      return [
+        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+        { label: "Rekapitulasi Nilai" },
+      ];
+    } else {
       return breadcrumbMap[pathname] || [];
     }
   };
