@@ -14,7 +14,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { SubjectSummary } from "./schema"; // Sesuaikan path jika perlu
-import { BookOpen, Edit, LucideBookOpenText } from "lucide-react"; // Impor ikon yang sesuai
+import { BookOpen, Edit, LucideBookOpenText, ClipboardList } from "lucide-react"; // Impor ikon yang sesuai
 
 interface SubjectListRowActionsProps {
   row: Row<SubjectSummary>;
@@ -48,6 +48,13 @@ export function SubjectListRowActions({ row }: SubjectListRowActionsProps) {
             <Link href={`/guru/manajemennilai/inputnilai/${subjectId}`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Input Nilai
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+            {/* Link ke halaman rekapitulasi nilai */}
+            <Link href={`/guru/mata-pelajaran/rekapitulasi-nilai/${subjectId}`}>
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Lihat Rekapitulasi Nilai
             </Link>
         </DropdownMenuItem>
         {/* Anda bisa menambahkan aksi lain di sini jika perlu */}
