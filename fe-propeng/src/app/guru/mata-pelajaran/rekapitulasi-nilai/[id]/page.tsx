@@ -12,7 +12,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { toast, Toaster } from "sonner"
+import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
   BarChart,
@@ -97,7 +98,20 @@ export default function Page() {
         }
         return res.json() as Promise<GradeData>
       })
-      .then(setGradeData)
+      .then((data) => {
+        setGradeData(data)
+        if (!data.students || data.students.length === 0) {
+          toast.error("Belum ada data siswa", {
+            description: "Silakan tambahkan data siswa terlebih dahulu",
+            duration: 5000,
+          })
+        } else if (Object.keys(data.initialGrades).length === 0) {
+          toast.error("Belum ada data nilai", {
+            description: "Silakan input nilai siswa terlebih dahulu",
+            duration: 5000,
+          })
+        }
+      })
       .catch((e: any) => toast.error(e.message || "Gagal memuat data nilai"))
       .finally(() => setLoadingGrades(false))
   }, [subjectId, token])
@@ -334,8 +348,7 @@ export default function Page() {
 
   return (
     <div className="p-6 space-y-8">
-      <Toaster position="top-right" />
-  
+      <Toaster />
       {/* Title + Subtext + Filter */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
@@ -361,84 +374,94 @@ export default function Page() {
             {/* Chart */}
             <Card className="flex-1">
               <CardContent className="pt-6">
-                <Tabs defaultValue="pengetahuan" className="w-full" onValueChange={setActiveTab}>
-                  <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[700px] h-[40px] mb-4">
-                    <TabsTrigger
-                      value="pengetahuan"
-                      className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
-                    >
-                      Pengetahuan
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="keterampilan"
-                      className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
-                    >
-                      Keterampilan
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="rata-rata"
-                      className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
-                    >
-                      Rata-rata
-                    </TabsTrigger>
-                  </TabsList>
+                {(!gradeData?.students || gradeData.students.length === 0) ? (
+                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                    <p className="text-lg">Belum ada data siswa</p>
+                  </div>
+                ) : Object.keys(gradeData.initialGrades).length === 0 ? (
+                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                    <p className="text-lg">Belum ada data nilai</p>
+                  </div>
+                ) : (
+                  <Tabs defaultValue="pengetahuan" className="w-full" onValueChange={setActiveTab}>
+                    <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[700px] h-[40px] mb-4">
+                      <TabsTrigger
+                        value="pengetahuan"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Pengetahuan
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="keterampilan"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Keterampilan
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="rata-rata"
+                        className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
+                      >
+                        Rata-rata
+                      </TabsTrigger>
+                    </TabsList>
 
-                  <ChartContainer config={chartConfig}>
-                    <BarChart
-                      data={getGradeDistribution(rows, activeTab)}
-                      margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
-                      barSize={40}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                      <XAxis 
-                        dataKey="range" 
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={10}
-                      />
-                      <YAxis 
-                        allowDecimals={false}
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={10}
-                      />
-                      <ChartTooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-background p-2 shadow-sm">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Range
-                                    </span>
-                                    <span className="font-bold text-muted-foreground">
-                                      {payload[0].payload.range}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                      Jumlah
-                                    </span>
-                                    <span className="font-bold">
-                                      {payload[0].value} siswa
-                                    </span>
+                    <ChartContainer config={chartConfig}>
+                      <BarChart
+                        data={getGradeDistribution(rows, activeTab)}
+                        margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
+                        barSize={40}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                        <XAxis 
+                          dataKey="range" 
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={10}
+                        />
+                        <YAxis 
+                          allowDecimals={false}
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={10}
+                        />
+                        <ChartTooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="rounded-lg border bg-background p-2 shadow-sm">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex flex-col">
+                                      <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                        Range
+                                      </span>
+                                      <span className="font-bold text-muted-foreground">
+                                        {payload[0].payload.range}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                        Jumlah
+                                      </span>
+                                      <span className="font-bold">
+                                        {payload[0].value} siswa
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )
-                          }
-                          return null
-                        }}
-                      />
-                      <Bar 
-                        dataKey="count" 
-                        fill="var(--color-count)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ChartContainer>
-                </Tabs>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <Bar 
+                          dataKey="count" 
+                          fill="var(--color-count)"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ChartContainer>
+                  </Tabs>
+                )}
               </CardContent>
             </Card>
 
