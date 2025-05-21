@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -18,6 +18,23 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+
+// --- Add imports for new Dashboard tabs ---
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { ResponsiveContainer } from "recharts";
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface ClassData {
   id: number;
@@ -85,6 +102,202 @@ interface ContextMenuPosition {
   date: string;
 }
 
+interface WeeklyAttendanceDataDash {
+  kelas_info: {
+    id: number
+    namaKelas: string
+    waliKelas: string
+    totalSiswa: number
+  }
+  week_info: {
+    startDate: string
+    endDate: string
+    displayMonth: string
+    displayWeek: string
+  }
+  weekly_averages: {
+    Hadir: number
+    Sakit: number
+    Izin: number
+    Alfa: number
+  }
+  daily_details: {
+    day_name: string
+    date: string
+    attendance_percentage: number
+    counts: {
+      Hadir?: number
+      Sakit?: number
+      Izin?: number
+      Alfa?: number
+    }
+    has_record: boolean
+  }[]
+}
+
+interface MonthlyAnalysisDataDash {
+  kelas_info: {
+    id: number
+    namaKelas: string
+    waliKelas: string
+    totalSiswa: number
+  }
+  month_info: {
+    year: number
+    monthNumber: number
+    monthName: string
+    startDate: string
+    endDate: string
+    totalPossibleDaysInMonth: number
+  }
+  top_students: {
+    id: number
+    name: string
+    percentage: number
+    counts: {
+      Hadir: string
+      Sakit: string
+      Izin: string
+      Alfa: string
+    }
+  }[]
+  bottom_students: {
+    id: number
+    name: string
+    percentage: number
+    counts: {
+      Hadir: string
+      Sakit: string
+      Izin: string
+      Alfa: string
+    }
+  }[]
+}
+
+interface YearlyDataDash {
+  kelas_info: {
+    id: number
+    namaKelas: string
+    waliKelas: string
+    totalSiswa: number
+  }
+  year: number
+  monthly_summaries: {
+    month_info: {
+      year: number
+      monthNumber: number
+      monthName: string
+      startDate: string
+      endDate: string
+      totalDays: number
+    }
+    monthly_averages: {
+      Hadir: number
+      Sakit: number
+      Izin: number
+      Alfa: number
+    }
+    weekly_summaries: {
+      week_info: {
+        startDate: string
+        endDate: string
+        displayWeek: string
+      }
+      weekly_averages: {
+        Hadir: number
+        Sakit: number
+        Izin: number
+        Alfa: number
+      }
+      daily_details: {
+        day_name: string
+        date: string
+        attendance_percentage: number
+        counts: {
+          Hadir?: number
+          Sakit?: number
+          Izin?: number
+          Alfa?: number
+        }
+        has_record: boolean
+      }[]
+    }[]
+  }[]
+}
+
+interface MonthlyAnalysisDash {
+  top_students: {
+    id: number
+    name: string
+    percentage: number
+    counts: {
+      Hadir: string
+      Sakit: string
+      Izin: string
+      Alfa: string
+    }
+  }[]
+  bottom_students: {
+    id: number
+    name: string
+    percentage: number
+    counts: {
+      Hadir: string
+      Sakit: string
+      Izin: string
+      Alfa: string
+    }
+  }[]
+  // ...other fields if needed
+}
+
+// New interfaces for monthly detail data
+interface WeeklySummaryDash {
+  week_number: number
+  date_range: string
+  startDate: string
+  endDate: string
+  counts: {
+    Hadir: string
+    Sakit: string
+    Izin: string
+    Alfa: string
+  }
+  possible_days_in_week: number
+}
+
+interface StudentDetailDash {
+  id: number
+  name: string
+  nisn: string
+  monthly_percentage: number
+  monthly_counts: {
+    Hadir: string
+    Sakit: string
+    Izin: string
+    Alfa: string
+  }
+  weekly_summary: WeeklySummaryDash[]
+}
+
+interface MonthlyDetailDataDash {
+  kelas_info: {
+    id: number
+    namaKelas: string
+    waliKelas: string
+    totalSiswa: number
+  }
+  month_info: {
+    year: number
+    monthNumber: number
+    monthName: string
+    startDate: string
+    endDate: string
+    totalPossibleDaysInMonth: number
+  }
+  students_details: StudentDetailDash[]
+}
+
 // Add month names for Indonesian
 const monthNames = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -118,6 +331,27 @@ export default function Page() {
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+
+  // --- Dashboard Data Presensi Siswa states ---
+  const [selectedMonthOverviewDash, setSelectedMonthOverviewDash] = useState<string>(new Date().getMonth().toString());
+  const [selectedWeekOverviewDash, setSelectedWeekOverviewDash] = useState<string>("0");
+  const [overviewWeeklyDataDash, setOverviewWeeklyDataDash] = useState<WeeklyAttendanceDataDash | null>(null);
+  const [overviewAvailableWeeksDash, setOverviewAvailableWeeksDash] = useState<{ value: string; label: string }[]>([]);
+  const [yearlyDataDash, setYearlyDataDash] = useState<YearlyDataDash | null>(null);
+  const [activeWeeklyDataDash, setActiveWeeklyDataDash] = useState<WeeklyAttendanceDataDash | null>(null);
+
+  const [selectedMonthAnalysisDash, setSelectedMonthAnalysisDash] = useState<string>(new Date().getMonth().toString());
+  const [monthlyAnalysisDash, setMonthlyAnalysisDash] = useState<MonthlyAnalysisDash | null>(null);
+  const [isLoadingMonthlyDash, setIsLoadingMonthlyDash] = useState(false);
+
+  const [monthlyDetailDataDash, setMonthlyDetailDataDash] = useState<MonthlyDetailDataDash | null>(null);
+  const [selectedMonthDetailDash, setSelectedMonthDetailDash] = useState<string>((new Date().getMonth() + 1).toString());
+  const [isLoadingMonthlyDetailDash, setIsLoadingMonthlyDetailDash] = useState(false);
+  const [searchQueryDash, setSearchQueryDash] = useState("");
+  const [currentPageDash, setCurrentPageDash] = useState(1);
+  const [selectedStudentDash, setSelectedStudentDash] = useState<StudentDetailDash | null>(null);
+  const [isDetailModalOpenDash, setIsDetailModalOpenDash] = useState(false);
+  const [itemsPerPageDash, setItemsPerPageDash] = useState(10);
 
   const getFormattedTodayDate = () => { /* ... keep function ... */
     const today = new Date();
@@ -686,35 +920,279 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceDates]);
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Memuat data...</div>;
-  }
+  // --- Dashboard Data Presensi Siswa helpers ---
+  const getMonthOptionsDash = () => [
+    { value: "0", label: "Januari" },
+    { value: "1", label: "Februari" },
+    { value: "2", label: "Maret" },
+    { value: "3", label: "April" },
+    { value: "4", label: "Mei" },
+    { value: "5", label: "Juni" },
+    { value: "6", label: "Juli" },
+    { value: "7", label: "Agustus" },
+    { value: "8", label: "September" },
+    { value: "9", label: "Oktober" },
+    { value: "10", label: "November" },
+    { value: "11", label: "Desember" },
+  ];
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-red-500 mb-4">{error}</p>
-        <Button onClick={fetchData}>Coba Lagi</Button>
-      </div>
-    );
-  }
-  console.log(classData);
-  if (!classData) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-gray-500 mb-4">Anda tidak menjadi wali kelas untuk kelas aktif manapun saat ini.</p>
-      </div>
-    );
-  }
+  const fetchYearlyDataDash = async () => {
+    try {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      if (!token || !classData?.id) return;
+      const kelasId = classData.id.toString();
 
-  // Main Render
+      const response = await fetch(`/api/absensi/yearly-summary?kelasId=${kelasId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setYearlyDataDash(data.data);
+
+        // Set initial month and week data
+        if (data.data.monthly_summaries.length > 0) {
+          const currentMonth = new Date().getMonth();
+          const currentMonthData = data.data.monthly_summaries.find(
+            (summary: any) => summary.month_info.monthNumber === currentMonth + 1,
+          );
+
+          if (currentMonthData) {
+            setSelectedMonthOverviewDash(currentMonth.toString());
+
+            if (currentMonthData.weekly_summaries.length > 0) {
+              const today = new Date();
+              const weekIndex = currentMonthData.weekly_summaries.findIndex((week: any) => {
+                const start = new Date(week.week_info.startDate);
+                const end = new Date(week.week_info.endDate);
+                return today >= start && today <= end;
+              });
+              const defaultWeekIndex = weekIndex !== -1 ? weekIndex : 0;
+              const defaultWeek = currentMonthData.weekly_summaries[defaultWeekIndex];
+
+              const weeklyDataObj = {
+                ...defaultWeek,
+                kelas_info: data.data.kelas_info,
+                week_info: {
+                  ...defaultWeek.week_info,
+                  displayMonth: currentMonthData.month_info.monthName,
+                },
+              };
+
+              setActiveWeeklyDataDash(weeklyDataObj);
+              setOverviewWeeklyDataDash(weeklyDataObj);
+
+              const formattedWeeks = currentMonthData.weekly_summaries.map((week: any, index: number) => ({
+                value: index.toString(),
+                label: `Minggu ${index + 1}`,
+              }));
+
+              setOverviewAvailableWeeksDash(formattedWeeks);
+              setSelectedWeekOverviewDash(defaultWeekIndex.toString());
+
+              fetchMonthlyAnalysisDash(currentMonth + 1);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      setYearlyDataDash(null);
+    }
+  };
+
+  const handleMonthChangeOverviewDash = (value: string) => {
+    setSelectedMonthOverviewDash(value);
+    if (yearlyDataDash) {
+      const monthData = yearlyDataDash.monthly_summaries.find(
+        (summary) => summary.month_info.monthNumber === Number.parseInt(value) + 1,
+      );
+      if (monthData && monthData.weekly_summaries.length > 0) {
+        setOverviewAvailableWeeksDash(
+          monthData.weekly_summaries.map((week: any, index: number) => ({
+            value: index.toString(),
+            label: `Minggu ${index + 1}`,
+          })),
+        );
+        setSelectedWeekOverviewDash("0");
+        setOverviewWeeklyDataDash({
+          ...monthData.weekly_summaries[0],
+          kelas_info: yearlyDataDash.kelas_info,
+          week_info: {
+            ...monthData.weekly_summaries[0].week_info,
+            displayMonth: monthData.month_info.monthName,
+          },
+        });
+        setActiveWeeklyDataDash({
+          ...monthData.weekly_summaries[0],
+          kelas_info: yearlyDataDash.kelas_info,
+          week_info: {
+            ...monthData.weekly_summaries[0].week_info,
+            displayMonth: monthData.month_info.monthName,
+          },
+        });
+      } else {
+        setOverviewAvailableWeeksDash([]);
+        setOverviewWeeklyDataDash(null);
+        setActiveWeeklyDataDash(null);
+      }
+    }
+  };
+
+  const handleWeekChangeOverviewDash = (value: string) => {
+    setSelectedWeekOverviewDash(value);
+    if (yearlyDataDash) {
+      const monthData = yearlyDataDash.monthly_summaries.find(
+        (summary) => summary.month_info.monthNumber === Number.parseInt(selectedMonthOverviewDash) + 1,
+      );
+      if (monthData && monthData.weekly_summaries[Number.parseInt(value)]) {
+        const selectedWeekData = monthData.weekly_summaries[Number.parseInt(value)];
+        const weekData = {
+          ...selectedWeekData,
+          kelas_info: yearlyDataDash.kelas_info,
+          week_info: {
+            ...selectedWeekData.week_info,
+            displayMonth: monthData.month_info.monthName,
+          },
+        };
+        setOverviewWeeklyDataDash(weekData);
+        setActiveWeeklyDataDash(weekData);
+      }
+    }
+  };
+
+  const fetchMonthlyAnalysisDash = async (month: number) => {
+    setIsLoadingMonthlyDash(true);
+    try {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      const kelasId = classData?.id;
+      if (!token || !kelasId) return;
+
+      const response = await fetch(`/api/absensi/monthly-analysis?month=${month}`, {
+        headers: {
+          Authorization: `Bearer ${token} kelasId ${kelasId}`,
+        },
+      });
+
+      if (!response.ok) {
+        setMonthlyAnalysisDash(null);
+        return;
+      }
+
+      const data = await response.json();
+      setMonthlyAnalysisDash(data.data);
+    } catch (e) {
+      setMonthlyAnalysisDash(null);
+    } finally {
+      setIsLoadingMonthlyDash(false);
+    }
+  };
+
+  const handleMonthChangeAnalysisDash = (value: string) => {
+    setSelectedMonthAnalysisDash(value);
+    fetchMonthlyAnalysisDash(Number(value) + 1);
+  };
+
+  const fetchMonthlyDetailDataDash = async () => {
+    if (!classData) return;
+    setIsLoadingMonthlyDetailDash(true);
+    try {
+      const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+      const kelasId = classData.id;
+      if (!token || !kelasId) return;
+
+      const response = await fetch(`/api/absensi/monthly-detail?month=${selectedMonthDetailDash}`, {
+        headers: {
+          Authorization: `Bearer ${token} kelasId ${kelasId}`,
+        },
+      });
+
+      if (!response.ok) {
+        setMonthlyDetailDataDash(null);
+        return;
+      }
+
+      const data = await response.json();
+      setMonthlyDetailDataDash(data.data);
+    } catch (error) {
+      setMonthlyDetailDataDash(null);
+    } finally {
+      setIsLoadingMonthlyDetailDash(false);
+    }
+  };
+
+  useEffect(() => {
+    if (classData) {
+      fetchYearlyDataDash();
+      fetchMonthlyDetailDataDash();
+      fetchMonthlyAnalysisDash(Number(selectedMonthAnalysisDash) + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classData]);
+
+  useEffect(() => {
+    if (classData) {
+      fetchMonthlyDetailDataDash();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonthDetailDash, classData]);
+
+  // --- Dashboard Data Presensi Siswa: filter, pagination, etc ---
+  const filteredStudentsDash = useMemo(() => {
+    if (!monthlyDetailDataDash) return [];
+    return monthlyDetailDataDash.students_details.filter(
+      (student) =>
+        student.name.toLowerCase().includes(searchQueryDash.toLowerCase()) ||
+        student.nisn.toLowerCase().includes(searchQueryDash.toLowerCase()),
+    );
+  }, [monthlyDetailDataDash, searchQueryDash]);
+
+  const totalPagesDash = Math.ceil(filteredStudentsDash.length / itemsPerPageDash);
+  const paginatedStudentsDash = useMemo(() => {
+    const startIndex = (currentPageDash - 1) * itemsPerPageDash;
+    return filteredStudentsDash.slice(startIndex, startIndex + itemsPerPageDash);
+  }, [filteredStudentsDash, currentPageDash, itemsPerPageDash]);
+
+  const viewStudentDetailDash = (student: StudentDetailDash) => {
+    setSelectedStudentDash(student);
+    setIsDetailModalOpenDash(true);
+  };
+
+  const formatRangeDash = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const monthNames = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    const startStr = `${startDate.getDate()} ${monthNames[startDate.getMonth()]}`;
+    const endStr = `${endDate.getDate()} ${monthNames[endDate.getMonth()]} ${endDate.getFullYear()}`;
+    return `${startStr} - ${endStr}`;
+  };
+
+  const getHighestAttendanceDayDash = () => {
+    if (!activeWeeklyDataDash || !activeWeeklyDataDash.daily_details.length) return null;
+    const highestDay = activeWeeklyDataDash.daily_details.reduce((prev, current) =>
+      prev.attendance_percentage > current.attendance_percentage ? prev : current,
+    );
+    return `${highestDay.day_name} (${highestDay.attendance_percentage}%)`;
+  };
+
+  const isStudentDetailOpenDash = (studentId: number) => {
+    return selectedStudentDash?.id === studentId && isDetailModalOpenDash;
+  };
+
+  // --- Replace Tabs section with new tabs (add Dashboard Data Presensi Siswa tab) ---
   return (
     <div className="p-6">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           {/* Class Header */}
-          <h2 className="text-2xl font-normal text-[#041765]">{classData.namaKelas}</h2>
-          <p className="text-sm text-[#88888C]">TA {classData.tahunAjaran}</p>
+          <h2 className="text-2xl font-normal text-[#041765]">{classData?.namaKelas}</h2>
+          <p className="text-sm text-[#88888C]">TA {classData?.tahunAjaran}</p>
         </div>
 
         {/* Tabs Navigation */}
@@ -726,6 +1204,9 @@ export default function Page() {
             </TabsTrigger>
             <TabsTrigger value="attendance" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-sm transition-all flex-1 sm:flex-initial">
               Rekap Kehadiran
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm rounded-md px-3 py-1.5 text-sm transition-all flex-1 sm:flex-initial">
+              Dashboard Data Presensi Siswa
             </TabsTrigger>
           </TabsList>
 
@@ -804,7 +1285,7 @@ export default function Page() {
                       <h4 className="text-gray-700 text-base font-semibold">Jumlah Murid</h4> {/* Sesuaikan style */}
                       <div> {/* Bungkus paragraf jika perlu styling tambahan */}
                         <p className="text-sm"> {/* Sesuaikan style */}
-                          <span className="text-gray-900 font-medium">{classData.totalSiswa}</span>
+                          <span className="text-gray-900 font-medium">{classData?.totalSiswa}</span>
                           <span className="text-gray-600"> Peserta Didik</span>
                         </p>
                       </div>
@@ -813,32 +1294,32 @@ export default function Page() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="text-gray-700 text-base font-semibold">Kehadiran Hari Ini</h4> {/* Sesuaikan style */}
-                        {classData.totalSiswa > 0 && ( // Hanya tampilkan jika ada siswa
+                        {(classData?.totalSiswa ?? 0) > 0 && ( // Hanya tampilkan jika ada siswa
                           <div className="bg-blue-50 rounded-lg px-2 py-0.5"> {/* Sesuaikan style */}
-                            <span className="text-blue-700 text-xs">Total {classData.totalSiswa} Siswa</span>
+                            <span className="text-blue-700 text-xs">Total {classData?.totalSiswa ?? 0} Siswa</span>
                           </div>
                         )}
                       </div>
                       {/* Detail Kehadiran */}
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"> {/* Sesuaikan gap & text size */}
                         <p>
-                          <span className="text-gray-900 font-medium">{classData.absensiStats?.totalHadir || 0}</span>
+                          <span className="text-gray-900 font-medium">{classData?.absensiStats?.totalHadir || 0}</span>
                           <span className="text-gray-600"> Hadir</span>
                         </p>
                         {/* Titik pemisah bisa dihilangkan jika menggunakan gap */}
                         {/* <div className="w-1 h-1 bg-gray-300 rounded-full"></div> */}
                         <p>
-                          <span className="text-gray-900 font-medium">{classData.absensiStats?.totalSakit || 0}</span>
+                          <span className="text-gray-900 font-medium">{classData?.absensiStats?.totalSakit || 0}</span>
                           <span className="text-gray-600"> Sakit</span>
                         </p>
                         {/* <div className="w-1 h-1 bg-gray-300 rounded-full"></div> */}
                         <p>
-                          <span className="text-gray-900 font-medium">{classData.absensiStats?.totalIzin || 0}</span>
+                          <span className="text-gray-900 font-medium">{classData?.absensiStats?.totalIzin || 0}</span>
                           <span className="text-gray-600"> Izin</span>
                         </p>
                         {/* <div className="w-1 h-1 bg-gray-300 rounded-full"></div> */}
                         <p>
-                          <span className="text-gray-900 font-medium">{classData.absensiStats?.totalAlfa || 0}</span>
+                          <span className="text-gray-900 font-medium">{classData?.absensiStats?.totalAlfa || 0}</span>
                           <span className="text-gray-600"> Alfa</span>
                         </p>
                       </div>
@@ -1012,6 +1493,490 @@ export default function Page() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* TabsContent: Dashboard Data Presensi Siswa */}
+          <TabsContent value="dashboard" className="mt-6">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div style={{ width: "min(70%, 562px)", flexShrink: 0 }} className="overflow-hidden">
+                  <Card className="border-[#E1E2E8] h-full">
+                    <CardContent className="p-6">
+                      {/* Filters for Overview */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-base font-semibold text-[#041765]">Overview Kehadiran Siswa per Minggu:</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Select value={selectedMonthOverviewDash} onValueChange={handleMonthChangeOverviewDash}>
+                            <SelectTrigger className="w-[90px] justify-center">
+                              <SelectValue className="text-center" placeholder="Pilih Bulan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getMonthOptionsDash().map((month) => (
+                                <SelectItem key={month.value} value={month.value}>
+                                  {month.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={selectedWeekOverviewDash} onValueChange={handleWeekChangeOverviewDash}>
+                            <SelectTrigger className="w-[100px] justify-center">
+                              <SelectValue className="text-center" placeholder="Pilih Minggu" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {overviewAvailableWeeksDash.map((week) => (
+                                <SelectItem key={week.value} value={week.value}>
+                                  Minggu {Number.parseInt(week.value) + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {/* Date range display */}
+                      {overviewWeeklyDataDash && (
+                        <div className="mb-4">
+                          <p className="text-lg font-medium text-[#041765]">
+                            {overviewWeeklyDataDash.week_info.startDate &&
+                              overviewWeeklyDataDash.week_info.endDate &&
+                              formatRangeDash(overviewWeeklyDataDash.week_info.startDate, overviewWeeklyDataDash.week_info.endDate)}
+                          </p>
+                        </div>
+                      )}
+                      {/* Conditional content */}
+                      {activeWeeklyDataDash && activeWeeklyDataDash.daily_details.length > 0 ? (
+                        <>
+                          {/* Rata-Rata Kehadiran Siswa */}
+                          <h4 className="text-base font-medium text-gray-800 mb-4">Rata-Rata Kehadiran Siswa</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#22C55E] text-base font-medium mb-1">Hadir</span>
+                              <span className="text-2xl font-bold">{activeWeeklyDataDash.weekly_averages.Hadir}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#FFC804] text-base font-medium mb-1">Izin</span>
+                              <span className="text-2xl font-bold">{activeWeeklyDataDash.weekly_averages.Izin}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#9B51E0] text-base font-medium mb-1">Sakit</span>
+                              <span className="text-2xl font-bold">{activeWeeklyDataDash.weekly_averages.Sakit}%</span>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+                              <span className="text-[#EA2F32] text-base font-medium mb-1">Alfa</span>
+                              <span className="text-2xl font-bold">{activeWeeklyDataDash.weekly_averages.Alfa}%</span>
+                            </div>
+                          </div>
+                          {/* Persentase Kehadiran Terbanyak */}
+                          <div className="mb-8">
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Persentase Kehadiran Terbanyak - {getHighestAttendanceDayDash()}
+                            </h4>
+                            <div className="-mx-6" style={{ height: "320px" }}>
+                              <ChartContainer
+                                className="w-full"
+                                config={{
+                                  hadir: { color: "#041765" },
+                                  sakit: { color: "#9B51E0" },
+                                  izin: { color: "#FFC804" },
+                                  alfa: { color: "#EA2F32" },
+                                }}
+                              >
+                                <ResponsiveContainer width="150%" height="100%">
+                                  <BarChart
+                                    data={activeWeeklyDataDash?.daily_details.map((day) => ({
+                                      name: day.day_name,
+                                      percentage: day.attendance_percentage,
+                                      hadir: day.counts?.Hadir || 0,
+                                      sakit: day.counts?.Sakit || 0,
+                                      izin: day.counts?.Izin || 0,
+                                      alfa: day.counts?.Alfa || 0,
+                                    }))}
+                                    margin={{ top: 5, right: 5, bottom: 5, left: 0 }}
+                                  >
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" />
+                                    <YAxis
+                                      domain={[0, 100]}
+                                      tickFormatter={(value) => `${value}%`}
+                                      ticks={[0, 20, 40, 60, 80, 100]}
+                                    />
+                                    <ChartTooltip
+                                      content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                          const data = payload[0].payload;
+                                          return (
+                                            <div className="bg-white rounded-md shadow-lg p-2 border border-gray-100">
+                                              <div className="text-center font-medium mb-1 text-xs text-[#041765]">
+                                                {data.name} ({data.percentage}%)
+                                              </div>
+                                              <div className="space-y-0.5 text-xs">
+                                                <div className="flex justify-between">
+                                                  <span>Hadir:</span>
+                                                  <span className="font-medium">{data.hadir} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Sakit:</span>
+                                                  <span className="font-medium">{data.sakit} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Izin:</span>
+                                                  <span className="font-medium">{data.izin} Siswa</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                  <span>Alfa:</span>
+                                                  <span className="font-medium">{data.alfa} Siswa</span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        }
+                                        return null;
+                                      }}
+                                    />
+                                    <Bar
+                                      dataKey="percentage"
+                                      fill="var(--color-hadir)"
+                                      radius={[4, 4, 0, 0]}
+                                      barSize={60}
+                                    />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </ChartContainer>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-center h-40">
+                          <p className="text-gray-500">Tidak ada data kehadiran mingguan yang tersedia.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+                {/* Analysis Section */}
+                <div style={{ width: "min(70%, 900px)" }} className="overflow-x-auto">
+                  <Card className="border-[#E1E2E8] h-full">
+                    <CardContent className="p-6">
+                      {/* Filter for Analysis */}
+                      <div className="flex justify-between items-center mb-6">
+                        <h3 className="font-semibold text-lg text-[#041765]">Analisis Kehadiran Siswa</h3>
+                        <Select value={selectedMonthAnalysisDash} onValueChange={handleMonthChangeAnalysisDash}>
+                          <SelectTrigger className="w-[120px] justify-center">
+                            <SelectValue className="text-center" placeholder="Pilih Bulan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getMonthOptionsDash().map((month) => (
+                              <SelectItem key={month.value} value={month.value}>
+                                {month.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {isLoadingMonthlyDash ? (
+                        <div className="py-10 text-center text-gray-500">Loading...</div>
+                      ) : monthlyAnalysisDash ? (
+                        <>
+                          <div className="mb-8">
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Siswa dengan Persentase Kehadiran Tertinggi
+                            </h4>
+                            <div
+                              className="overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "#CBD5E1 #F1F5F9",
+                              }}
+                            >
+                              <table className="w-full min-w-[min(70%,800px)] text-sm">
+                                <thead className="bg-white">
+                                  <tr className="border-b border-gray-200">
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthlyAnalysisDash.top_students.map((student: any) => (
+                                    <tr key={student.id} className="border-b border-gray-100">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-green-600">
+                                        {student.percentage}%
+                                      </td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="text-base font-medium text-gray-800 mb-4">
+                              Siswa dengan Persentase Kehadiran Terendah
+                            </h4>
+                            <div
+                              className="overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md"
+                              style={{
+                                scrollbarWidth: "thin",
+                                scrollbarColor: "#CBD5E1 #F1F5F9",
+                              }}
+                            >
+                              <table className="w-full min-w-[min(70%,800px)] text-sm">
+                                <thead className="bg-white">
+                                  <tr className="border-b border-gray-200">
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthlyAnalysisDash.bottom_students.map((student: any) => (
+                                    <tr key={student.id} className="border-b border-gray-100">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-red-600">
+                                        {student.percentage}%
+                                      </td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="py-10 text-center text-gray-500">Tidak ada data analisis bulanan.</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              {/* Detail Kehadiran Siswa Section */}
+              <Card className="border-[#E1E2E8]" style={{ minWidth: "70%" }}>
+                <CardContent className="p-6">
+                  {/* Header + Controls as a column */}
+                  <div className="flex flex-col mb-6">
+                    {/* Title */}
+                    <h3 className="font-semibold text-lg text-[#041765]">Detail Kehadiran Siswa</h3>
+                    {/* Search + Filter now below header */}
+                    <div className="flex items-center gap-4 mt-4 ">
+                      <div className="relative w-64">
+                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Cari nama siswa..."
+                          className="pl-8"
+                          value={searchQueryDash}
+                          onChange={(e) => setSearchQueryDash(e.target.value)}
+                        />
+                      </div>
+                      <Select value={selectedMonthAnalysisDash} onValueChange={handleMonthChangeAnalysisDash}>
+                        <SelectTrigger className="w-[120px] justify-center">
+                          <SelectValue className="text-center" placeholder="Pilih Bulan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getMonthOptionsDash().map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {isLoadingMonthlyDetailDash ? (
+                    <div className="py-10 text-center text-gray-500">Loading...</div>
+                  ) : monthlyDetailDataDash ? (
+                    <>
+                      {/* Scrollable table wrapper with always-on horizontal scroll */}
+                      <div
+                        className="max-w-full overflow-x-auto overflow-y-hidden border border-gray-100 rounded-md scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                        style={{
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "#CBD5E1 #F1F5F9",
+                        }}
+                      >
+                        <table className="w-full min-w-[min(70%,800px)] text-sm">
+                          <thead className="bg-white sticky top-0">
+                            <tr className="border-b border-gray-200">
+                              <th className="py-2 px-1 text-left font-medium text-gray-600 w-[30px]">No</th>
+                              <th className="py-2 px-2 text-left font-medium text-gray-600">Nama Siswa</th>
+                              <th className="py-2 px-2 text-left font-medium text-gray-600">NISN</th>
+                              <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase Kehadiran</th>
+                              <th className="py-2 px-2 text-center font-medium text-gray-600 w-[50px]">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedStudentsDash.length > 0 ? (
+                              paginatedStudentsDash.map((student, index) => (
+                                <tr key={student.id} className="border-b border-gray-100">
+                                  <td className="py-2 px-1">{(currentPageDash - 1) * itemsPerPageDash + index + 1}</td>
+                                  <td className="py-2 px-2">{student.name}</td>
+                                  <td className="py-2 px-2">{student.nisn}</td>
+                                  <td className="py-2 px-2 text-center">
+                                    <span
+                                      className={`font-medium ${student.monthly_percentage >= 80
+                                        ? "text-green-600"
+                                        : student.monthly_percentage >= 60
+                                          ? "text-yellow-600"
+                                          : "text-red-600"
+                                        }`}
+                                    >
+                                      {student.monthly_percentage}%
+                                    </span>
+                                  </td>
+                                  <td className="py-2 px-2 text-center">
+                                    <Button variant="outline" size="sm" onClick={() => viewStudentDetailDash(student)}>
+                                      Lihat
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={5} className="py-4 text-center text-gray-500">
+                                  {searchQueryDash
+                                    ? "Tidak ada siswa yang sesuai dengan pencarian"
+                                    : "Tidak ada data siswa"}
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Pagination */}
+                      {totalPagesDash > 1 && (
+                        <div className="mt-4 flex justify-end">
+                          <Pagination>
+                            <PaginationContent>
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() => setCurrentPageDash((prev) => Math.max(prev - 1, 1))}
+                                  className={currentPageDash === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                              </PaginationItem>
+                              {Array.from({ length: totalPagesDash }, (_, i) => i + 1)
+                                .filter(
+                                  (page) =>
+                                    page === 1 ||
+                                    page === totalPagesDash ||
+                                    (page >= currentPageDash - 1 && page <= currentPageDash + 1),
+                                )
+                                .map((page, i, array) => {
+                                  if (i > 0 && array[i - 1] !== page - 1) {
+                                    return (
+                                      <React.Fragment key={`ellipsis-${page}`}>
+                                        <PaginationItem>
+                                          <PaginationEllipsis />
+                                        </PaginationItem>
+                                        <PaginationItem>
+                                          <PaginationLink
+                                            isActive={page === currentPageDash}
+                                            onClick={() => setCurrentPageDash(page)}
+                                          >
+                                            {page}
+                                          </PaginationLink>
+                                        </PaginationItem>
+                                      </React.Fragment>
+                                    );
+                                  }
+                                  return (
+                                    <PaginationItem key={page}>
+                                      <PaginationLink
+                                        isActive={page === currentPageDash}
+                                        onClick={() => setCurrentPageDash(page)}
+                                      >
+                                        {page}
+                                      </PaginationLink>
+                                    </PaginationItem>
+                                  );
+                                })}
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() => setCurrentPageDash((prev) => Math.min(prev + 1, totalPagesDash))}
+                                  className={
+                                    currentPageDash === totalPagesDash ? "pointer-events-none opacity-50" : "cursor-pointer"
+                                  }
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>
+                      )}
+                      <div className="mt-2 text-sm text-gray-500">
+                        {filteredStudentsDash.length > 0 && (
+                          <p>
+                            {(currentPageDash - 1) * itemsPerPageDash + 1} -{" "}
+                            {Math.min(currentPageDash * itemsPerPageDash, filteredStudentsDash.length)} dari{" "}
+                            {filteredStudentsDash.length} baris
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="py-10 text-center text-gray-500">Tidak ada data detail kehadiran siswa.</div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            {/* Student Detail Modal */}
+            <Dialog open={isDetailModalOpenDash} onOpenChange={setIsDetailModalOpenDash}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-semibold text-[#041765]">{selectedStudentDash?.name}</DialogTitle>
+                  <DialogDescription className="text-sm">NISN: {selectedStudentDash?.nisn}</DialogDescription>
+                </DialogHeader>
+                <div className="mt-2 space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-800 mb-2">Detail Kehadiran per Minggu</h4>
+                    <div className="space-y-3">
+                      {selectedStudentDash?.weekly_summary.map((week, index) => (
+                        <div key={index} className="border border-gray-200 rounded-md p-3">
+                          <h5 className="text-sm font-medium text-[#041765] mb-2">
+                            Minggu {week.week_number + 1} ({week.date_range})
+                          </h5>
+                          <div className="grid grid-cols-4 gap-2 text-sm">
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600">Hadir</span>
+                              <span className="font-medium text-[#22C55E]">{week.counts.Hadir}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600">Sakit</span>
+                              <span className="font-medium text-[#9B51E0]">{week.counts.Sakit}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600">Izin</span>
+                              <span className="font-medium text-[#FFC804]">{week.counts.Izin}</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600">Alfa</span>
+                              <span className="font-medium text-[#EA2F32]">{week.counts.Alfa}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" size="sm" onClick={() => setIsDetailModalOpenDash(false)}>
+                    Tutup
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
