@@ -236,24 +236,32 @@ export default function Page() {
   : []
 
   const getGradeDistribution = (rows: GradeRow[], type: string) => {
+    // Get all values for the selected type
+    const values = rows.map(r => {
+      if (type === "pengetahuan") return r.pengetahuan
+      if (type === "keterampilan") return r.keterampilan
+      return (r.pengetahuan + r.keterampilan) / 2
+    }).filter(v => !isNaN(v))
+
+    if (values.length === 0) return []
+
+    // Create static ranges with 10-unit intervals, from lowest to highest
     const ranges = [
-      { label: "<51", min: 0, max: 50 },
-      { label: "51-75", min: 51, max: 75 },
-      { label: "76-83", min: 76, max: 83 },
-      { label: "84-92", min: 84, max: 92 },
-      { label: "93-100", min: 93, max: 100 },
+      { label: "0-10", min: 0, max: 10.99 },
+      { label: "11-20", min: 11, max: 20.99 },
+      { label: "21-30", min: 21, max: 30.99 },
+      { label: "31-40", min: 31, max: 40.99 },
+      { label: "41-50", min: 41, max: 50.99 },
+      { label: "51-60", min: 51, max: 60.99 },
+      { label: "61-70", min: 61, max: 70.99 },
+      { label: "71-80", min: 71, max: 80.99 },
+      { label: "81-90", min: 81, max: 90.99 },
+      { label: "91-100", min: 91, max: 100 }
     ]
-    return ranges.map((range) => {
-      const count = rows.filter((r) => {
-        if (type === "pengetahuan") {
-          return r.pengetahuan >= range.min && r.pengetahuan <= range.max
-        } else if (type === "keterampilan") {
-          return r.keterampilan >= range.min && r.keterampilan <= range.max
-        } else {
-          const avg = (r.pengetahuan + r.keterampilan) / 2
-          return avg >= range.min && avg <= range.max
-        }
-      }).length
+
+    // Count values in each bin
+    return ranges.map(range => {
+      const count = values.filter(v => v >= range.min && v <= range.max).length
       return { range: range.label, count }
     })
   }
@@ -331,7 +339,7 @@ export default function Page() {
       {/* Title + Subtext + Filter */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa</h1>
+          <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa Mata Pelajaran {gradeData?.subjectName}</h1>
           <div className="text-sm text-gray-600 mt-1">
             <p>
               <strong>Tahun Ajaran:</strong> {gradeData?.academicYear} |{' '}
@@ -348,13 +356,13 @@ export default function Page() {
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-         <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
-         <div className="flex gap-10 items-start w-full max-w-6xl">
+         {/* <h2 className="text-lg font-semibold mb-1">Grafik Persebaran Nilai</h2>   */}
+         <div className="flex gap-10 items-start w-full max-w-7xl">
             {/* Chart */}
             <Card className="flex-1">
               <CardContent className="pt-6">
                 <Tabs defaultValue="pengetahuan" className="w-full" onValueChange={setActiveTab}>
-                  <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[556px] h-[40px] mb-4">
+                  <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[700px] h-[40px] mb-4">
                     <TabsTrigger
                       value="pengetahuan"
                       className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
@@ -378,7 +386,8 @@ export default function Page() {
                   <ChartContainer config={chartConfig}>
                     <BarChart
                       data={getGradeDistribution(rows, activeTab)}
-                      margin={{ top: 10, right: 20, bottom: 20, left: 0 }}
+                      margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
+                      barSize={40}
                     >
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                       <XAxis 
