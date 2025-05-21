@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo,  } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { DataTable } from "@/components/ui/dt-distribusi-nilai/data-table"
 import {
   Select,
@@ -15,21 +15,22 @@ import { Badge } from "@/components/ui/badge"
 import { toast, Toaster } from "sonner"
 import type { ColumnDef } from "@tanstack/react-table"
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
+  Tooltip,
+  Legend,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts"
-import { useRouter } from "next/router"
 import { useParams } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -46,11 +47,13 @@ interface Kelas {
 interface GradeData {
   students: Student[]
   assessmentComponents: Component[]
+  academicYear: string
+  teacherName: string
+  teacherNisp: string
   initialGrades: Record<string, Record<string, number>>
 }
 
 type GradeRow = {
-  no: number
   name: string
   pengetahuan: number
   keterampilan: number
@@ -58,8 +61,7 @@ type GradeRow = {
 }
 
 export default function Page() {
-   const params = useParams();
-  const [subjects, setSubjects] = useState<Subject[]>([])
+  const params = useParams();
   const [subjectId, setSubjectId] = useState<string>("")
   const [gradeData, setGradeData] = useState<GradeData | null>(null)
   const [loadingSubjects, setLoadingSubjects] = useState(true)
@@ -68,84 +70,19 @@ export default function Page() {
   const [kelas, setKelas] = useState<Kelas>()
   const [activeTab, setActiveTab] = useState("pengetahuan")
 
-
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : ""
 
   useEffect(() => {
-    const classIdRaw = params.id;
-    const classId = Array.isArray(classIdRaw)
-      ? classIdRaw[classIdRaw.length - 1]
-      : classIdRaw
+    const matpelIdRaw = params.id;
+    const matpelId = Array.isArray(matpelIdRaw)
+      ? matpelIdRaw[matpelIdRaw.length - 1]
+      : matpelIdRaw
   
-    if (!token) {
-      toast.error("Token otentikasi tidak ditemukan.")
-      setLoadingSubjects(false)
-      return
+    if (matpelId) {
+      setSubjectId(matpelId)
     }
-  
-    if (!classId) {
-      toast.error("ID kelas tidak ditemukan di URL.")
-      setLoadingSubjects(false)
-      return
-    }
-  
-    fetch("/api/kelas/detailBaru", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token} id ${classId}`,
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.message || `(${res.status})`)
-        }
-        return res.json()
-      })
-      .then((data) => {
-        const kelasList = data.data
-        if (!kelasList) {
-          throw new Error("Tidak ada data kelas.")
-        }
-  
-const kelasData = kelasList.find((k: any) => String(k.id) === String(classId))
+  }, [params.id])
 
-if (!kelasData) {
-  throw new Error("Kelas dengan ID tersebut tidak ditemukan.")
-}
-
-        const matpelUnik = kelasData.mata_pelajaran_unik || []
-        setSubjects(
-          matpelUnik.map((m: any) => ({
-            id: String(m.id),
-            name: m.nama,
-            kode: m.kode,
-            kategori: m.kategori,
-          }))
-        )
-        setKelas({
-          namaKelas: kelasData.namaKelas,
-          tahunAjaran: kelasData.tahunAjaran,
-          waliKelas: kelasData.waliKelas,
-          id: kelasData.id,
-        })
-        const siswaInKelas = (kelasData.siswa || []).map((s: any) => String(s.id))
-        setStudentIdsInClass(siswaInKelas)
-        console.log("Mata Pelajaran Unik:", kelasData.mata_pelajaran_unik)
-
-        console.log("A")
-        console.log(matpelUnik[0].id)
-        if (matpelUnik[0]) setSubjectId(String(matpelUnik[0].id))
-      })
-      .catch((e: any) => toast.error(e.message || "Gagal memuat data kelas"))
-      .finally(() => setLoadingSubjects(false))
-  }, [token])
-
-  
-  console.log("T"  )
-  console.log(subjectId)
-  
   useEffect(() => {
     if (!subjectId || !token) return
     setLoadingGrades(true)
@@ -167,64 +104,88 @@ if (!kelasData) {
 
   const { avgPengetahuan, avgKeterampilan } = useMemo(() => {
     if (!gradeData) return { avgPengetahuan: 0, avgKeterampilan: 0 }
+  
+    const penComponentIds = gradeData.assessmentComponents
+      .filter((comp) => comp.type === "Pengetahuan")
+      .map((comp) => comp.id)
+  
+    const ketComponentIds = gradeData.assessmentComponents
+      .filter((comp) => comp.type === "Keterampilan")
+      .map((comp) => comp.id)
+  
     const penScores: number[] = []
     const ketScores: number[] = []
-    gradeData.students.forEach((stu) => {
-      const grades = gradeData.initialGrades[stu.id] || {}
-      penScores.push(grades["1"] ?? 0)
-      ketScores.push(grades["2"] ?? 0)
+  
+    gradeData.students.forEach((student) => {
+      const grades = gradeData.initialGrades[student.id] || {}
+  
+      penComponentIds.forEach((id) => {
+        if (grades[id] != null) penScores.push(grades[id])
+      })
+  
+      ketComponentIds.forEach((id) => {
+        if (grades[id] != null) ketScores.push(grades[id])
+      })
     })
+  
     const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
     const avg = (arr: number[]) => (arr.length ? sum(arr) / arr.length : 0)
+  
     return {
       avgPengetahuan: avg(penScores),
       avgKeterampilan: avg(ketScores),
     }
   }, [gradeData])
+  console.log ("T")
+  console.log(gradeData)
 
+  const needsGuidanceCount = gradeData
+  ? gradeData.students.filter((stu) => {
+      const grades = gradeData.initialGrades[stu.id] || {}
+
+      // Cari semua nilai Pengetahuan untuk siswa ini
+      const penScores = gradeData.assessmentComponents
+        .filter(comp => comp.type === "Pengetahuan")
+        .map(comp => grades[comp.id] ?? 0)
+
+      // Cari semua nilai Keterampilan untuk siswa ini
+      const ketScores = gradeData.assessmentComponents
+        .filter(comp => comp.type === "Keterampilan")
+        .map(comp => grades[comp.id] ?? 0)
+
+      // Hitung rata-rata Pengetahuan dan Keterampilan siswa tersebut
+      const avgPen = penScores.length ? penScores.reduce((a,b) => a+b, 0) / penScores.length : 0
+      const avgKet = ketScores.length ? ketScores.reduce((a,b) => a+b, 0) / ketScores.length : 0
+
+      // Return true kalau nilai siswa di bawah rata-rata kelas (avgPengetahuan & avgKeterampilan global)
+      return avgPen < 75 || avgKet < 75
+    }).length
+  : 0
+
+  console.log(needsGuidanceCount)
   const columns = useMemo<ColumnDef<GradeRow>[]>(
     () => [
-      { 
-        id: "no", 
-        header: () => <div className="text-center">No</div>,
-        accessorFn: (_r, idx) => idx + 1,
-        cell: ({ getValue }) => <div className="flex justify-center">{getValue<number>()}</div>
-      },
-      { 
-        accessorKey: "name", 
-        header: "Nama Siswa" 
-      },
+      { id: "no", header: "No", accessorFn: (_r, idx) => idx + 1 },
+      { accessorKey: "name", header: "Nama Siswa" },
       {
         accessorKey: "pengetahuan",
         header: () => <div className="text-center">Nilai Pengetahuan</div>,
-        cell: ({ getValue }) => (
-          <div className="flex justify-center w-full">
-            {getValue<number>().toFixed(2)}
-          </div>
-        ),
+        cell: ({ getValue }) => <div className="text-center">{getValue<number>().toFixed(2)}</div>,
       },
       {
         accessorKey: "keterampilan",
         header: () => <div className="text-center">Nilai Keterampilan</div>,
-        cell: ({ getValue }) => (
-          <div className="flex justify-center w-full">
-            {getValue<number>().toFixed(2)}
-          </div>
-        ),
+        cell: ({ getValue }) => <div className="text-center">{getValue<number>().toFixed(2)}</div>,
       },
       {
         accessorKey: "status",
-        header: () => <div className="">Status</div>,
+        header: "Status",
         cell: ({ getValue }) => {
           const value = getValue<string>()
-          return (
-            <div className="flex w-full">
-              {value === "Di atas KKM" ? (
-                <Badge variant="secondary">{value}</Badge>
-              ) : (
-                <Badge className="bg-red-100 text-red-800">{value}</Badge>
-              )}
-            </div>
+          return value === "Di atas KKM" ? (
+            <Badge variant="secondary">{value}</Badge>
+          ) : (
+            <Badge className="bg-red-100 text-red-800">{value}</Badge>
           )
         },        
       },
@@ -232,113 +193,47 @@ if (!kelasData) {
     []
   )
 
-  const rows: GradeRow[] = gradeData
-    ? gradeData.students
-    .filter((stu) => studentIdsInClass.includes(stu.id)) 
-    .map((stu, i) => {
-        const grades = gradeData.initialGrades[stu.id] || {}
-        
-        // Get Pengetahuan components and their weights
-        const penComponents = gradeData.assessmentComponents
-          .filter(comp => comp.type === "Pengetahuan")
-          .map(comp => ({
-            id: comp.id,
-            weight: comp.weight
-          }))
-
-        // Get Keterampilan components and their weights
-        const ketComponents = gradeData.assessmentComponents
-          .filter(comp => comp.type === "Keterampilan")
-          .map(comp => ({
-            id: comp.id,
-            weight: comp.weight
-          }))
-
-        // Calculate weighted average for Pengetahuan
-        let penTotal = 0
-        let penWeightTotal = 0
-        penComponents.forEach(comp => {
-          const grade = grades[comp.id]
-          if (grade !== null && grade !== undefined) {
-            penTotal += grade * comp.weight
-            penWeightTotal += comp.weight
-          }
-        })
-        const pen = penWeightTotal > 0 ? Number((penTotal / penWeightTotal).toFixed(2)) : 0
-
-        // Calculate weighted average for Keterampilan
-        let ketTotal = 0
-        let ketWeightTotal = 0
-        ketComponents.forEach(comp => {
-          const grade = grades[comp.id]
-          if (grade !== null && grade !== undefined) {
-            ketTotal += grade * comp.weight
-            ketWeightTotal += comp.weight
-          }
-        })
-        const ket = ketWeightTotal > 0 ? Number((ketTotal / ketWeightTotal).toFixed(2)) : 0
-
-        const status = pen >= 75 && ket >= 75 ? "Di atas KKM" : "Di bawah KKM"
-        
-        return { 
-          no: i + 1, 
-          name: stu.name, 
-          pengetahuan: pen, 
-          keterampilan: ket, 
-          status 
-        }
-      })
-    : []
-
-  const needsGuidanceCount = gradeData
-    ? gradeData.students.filter((stu) => {
-        const grades = gradeData.initialGrades[stu.id] || {}
-        
-        // Get Pengetahuan components and their weights
-        const penComponents = gradeData.assessmentComponents
-          .filter(comp => comp.type === "Pengetahuan")
-          .map(comp => ({
-            id: comp.id,
-            weight: comp.weight
-          }))
-
-        // Get Keterampilan components and their weights
-        const ketComponents = gradeData.assessmentComponents
-          .filter(comp => comp.type === "Keterampilan")
-          .map(comp => ({
-            id: comp.id,
-            weight: comp.weight
-          }))
-
-        // Calculate weighted average for Pengetahuan
-        let penTotal = 0
-        let penWeightTotal = 0
-        penComponents.forEach(comp => {
-          const grade = grades[comp.id]
-          if (grade !== null && grade !== undefined) {
-            penTotal += grade * comp.weight
-            penWeightTotal += comp.weight
-          }
-        })
-        const pen = penWeightTotal > 0 ? Number((penTotal / penWeightTotal).toFixed(2)) : 0
-
-        // Calculate weighted average for Keterampilan
-        let ketTotal = 0
-        let ketWeightTotal = 0
-        ketComponents.forEach(comp => {
-          const grade = grades[comp.id]
-          if (grade !== null && grade !== undefined) {
-            ketTotal += grade * comp.weight
-            ketWeightTotal += comp.weight
-          }
-        })
-        const ket = ketWeightTotal > 0 ? Number((ketTotal / ketWeightTotal).toFixed(2)) : 0
-
-        return pen < 75 || ket < 75
-      }).length
-    : 0
-
   console.log(studentIdsInClass)
+  const rows: GradeRow[] = gradeData
+  ? gradeData.students.map((stu) => {
+      const grades = gradeData.initialGrades[stu.id] || {}
+
+      const penComponentIds = gradeData.assessmentComponents
+        .filter((comp) => comp.type === "Pengetahuan")
+        .map((comp) => comp.id)
+
+      const ketComponentIds = gradeData.assessmentComponents
+        .filter((comp) => comp.type === "Keterampilan")
+        .map((comp) => comp.id)
+
+      const penScores = penComponentIds
+        .map((id) => grades[id])
+        .filter((val): val is number => val !== undefined)
+
+      const ketScores = ketComponentIds
+        .map((id) => grades[id])
+        .filter((val): val is number => val !== undefined)
+
+      const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0)
+
+      const pen = Number(avg(penScores).toFixed(2))
+      const ket = Number(avg(ketScores).toFixed(2))
+      console.log("sss")
+      console.log(pen)
+      console.log(ket)
+
+      const status = pen >= 75 && ket >= 75 ? "Di atas KKM" : "Di bawah KKM"
+
+      return {
+        id: stu.id,
+        name: stu.name,
+        class: stu.class,
+        pengetahuan: pen,
+        keterampilan: ket,
+        status,
+      }
+    })
+  : []
 
   const getGradeDistribution = (rows: GradeRow[], type: string) => {
     const ranges = [
@@ -363,6 +258,65 @@ if (!kelasData) {
     })
   }
 
+  const getGradeBins = (grades: number[]) => {
+    const bins = {
+      "0-20": 0,
+      "21-40": 0,
+      "41-60": 0,
+      "61-80": 0,
+      "81-100": 0
+    }
+  
+    for (const g of grades) {
+      if (g <= 20) bins["0-20"]++
+      else if (g <= 40) bins["21-40"]++
+      else if (g <= 60) bins["41-60"]++
+      else if (g <= 80) bins["61-80"]++
+      else bins["81-100"]++
+    }
+  
+    return bins
+  }
+
+  const penGrades: number[] = gradeData?.students.map(stu => {
+    const grades = gradeData.initialGrades[stu.id] || {}
+    const penComponents = gradeData.assessmentComponents.filter(c => c.type === 'Pengetahuan').map(c => c.id)
+    const values = penComponents.map(id => grades[id]).filter((v): v is number => typeof v === 'number')
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
+  }) ?? []
+  
+  const ketGrades: number[] = gradeData?.students.map(stu => {
+    const grades = gradeData.initialGrades[stu.id] || {}
+    const ketComponents = gradeData.assessmentComponents.filter(c => c.type === 'Keterampilan').map(c => c.id)
+    const values = ketComponents.map(id => grades[id]).filter((v): v is number => typeof v === 'number')
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
+  }) ?? []
+  
+  const penBins = getGradeBins(penGrades)
+  const ketBins = getGradeBins(ketGrades)
+
+  const intervals = [
+    { label: '0–20', min: 0, max: 20 },
+    { label: '21–40', min: 21, max: 40 },
+    { label: '41–60', min: 41, max: 60 },
+    { label: '61–80', min: 61, max: 80 },
+    { label: '81–100', min: 81, max: 100 },
+  ]
+  
+  const penComponents = gradeData?.assessmentComponents.filter(c => c.type === 'Pengetahuan').map(c => c.id)
+  
+  const studentAverages = gradeData?.students.map((stu) => {
+    const grades = gradeData?.initialGrades[stu.id] || {}
+    const values = penComponents?.map(id => grades[id]).filter((v): v is number => typeof v === 'number')
+    const avg = values?.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
+    return avg
+  })
+  
+  const intervalCounts = intervals.map(({ min, max }) => ({
+    label: `${min}–${max}`,
+    count: studentAverages?.filter(avg => avg >= min && avg <= max).length ?? 0, 
+  }))
+  
   const chartConfig = {
     count: {
       label: "Jumlah Siswa",
@@ -379,32 +333,14 @@ if (!kelasData) {
         <div>
           <h1 className="text-2xl font-semibold">Rekapitulasi Nilai Siswa</h1>
           <div className="text-sm text-gray-600 mt-1">
-            <p><strong>Nama Kelas:</strong> {kelas?.namaKelas} | <strong>Tahun Ajaran:</strong> {kelas?.tahunAjaran} | <strong>Wali Kelas:</strong> {kelas?.waliKelas}</p>
+            <p>
+              <strong>Tahun Ajaran:</strong> {gradeData?.academicYear} |{' '}
+              <strong>Nama Guru:</strong> {gradeData?.teacherName}
+            </p>
           </div>
         </div>
-        <Select
-          value={subjectId}
-          onValueChange={setSubjectId}
-          disabled={loadingSubjects}
-        >
-         <SelectTrigger className="w-[240px]">
-            <SelectValue
-              placeholder={
-                loadingSubjects
-                  ? "Memuat…"
-                  : subjects.length === 0
-                  ? "Tidak ada mata pelajaran"
-                  : "Pilih Mata Pelajaran"
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {subjects.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
+        <Select value={subjectId} onValueChange={setSubjectId} disabled={loadingSubjects}>
+          {/* options here */}
         </Select>
       </div>
   
@@ -412,8 +348,8 @@ if (!kelasData) {
         <div className="text-center py-10">Memuat nilai…</div>
       ) : (
         <>
-          <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
-          <div className="flex gap-10 items-start w-full max-w-6xl">
+         <h2 className="text-lg font-semibold mb-4">Grafik Persebaran Nilai</h2>  
+         <div className="flex gap-10 items-start w-full max-w-6xl">
             {/* Chart */}
             <Card className="flex-1">
               <CardContent className="pt-6">
@@ -519,7 +455,7 @@ if (!kelasData) {
               </Card>
             </div>
           </div>
-
+  
           {/* Table */}
           <div className="mt-6">
             <DataTable columns={columns} data={rows} />
@@ -527,5 +463,5 @@ if (!kelasData) {
         </>
       )}
     </div>
-  )  
-}
+  )
+} 
