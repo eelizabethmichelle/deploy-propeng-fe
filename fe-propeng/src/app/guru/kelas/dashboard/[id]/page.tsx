@@ -405,8 +405,7 @@ export default function Page() {
 
     try {
       const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-      // ... (fetch logic remains the same) ...
-      const response = await fetch(`/api/kelas/kode`, { /* ... headers ... */
+      const response = await fetch(`/api/kelas/kode`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -414,12 +413,28 @@ export default function Page() {
         },
       });
       const data = await response.json();
-      if (!response.ok) { throw new Error(data.message || "Gagal membuat kode presensi"); }
+
+      if (response.status === 401) {
+        localStorage.removeItem("accessToken");
+        sessionStorage.removeItem("accessToken");
+        router.push("/login");
+        return false; // Indicate failure
+      }
+
+      // Added validation for the case when data isn't available
+      if (data.status === 404) {
+        customToast.error("Gagal", data.errorMessage || "Data tidak tersedia");
+        setIsModalOpen(false);
+        return false;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal membuat kode presensi");
+      }
 
       setAttendanceCode(data.data.kode);
       setExpiryTime(30);
-      // setIsCodeGenerated(true); // No longer needed
-      setIsModalOpen(true); // <-- Open the modal on success
+      setIsModalOpen(true); // Open the modal on success
       customToast.success("Berhasil", "Kode presensi berhasil dibuat");
       return true; // Indicate success
 
