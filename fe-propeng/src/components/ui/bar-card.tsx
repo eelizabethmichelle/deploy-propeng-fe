@@ -9,6 +9,7 @@ type ThreeBarStatCardProps = {
   description: string;
   columns: {
     label: string;
+    sublabel: string;
     value: number;
     color?: string;
   }[];
@@ -24,7 +25,7 @@ export function ThreeBarStatCard({
     const total = columns.reduce((sum, col) => sum + col.value, 0);
   
     return (
-      <div className="flex flex-col w-full h-full rounded-lg border border-gray-200 p-4 bg-white dark:bg-black text-center space-y-2">
+      <div className="flex flex-col w-full h-full rounded-lg border border-gray-200 p-4 bg-white dark:bg-black text-center space-y-1">
         <div className={cn("text-3xl font-semibold", titleColor)}>{title}</div>
         <div className={cn("text-lg font-medium", titleColor)}>{subtitle}</div>
         <p className="text-sm text-blue-900 whitespace-pre-line">{description}</p>
@@ -38,15 +39,16 @@ export function ThreeBarStatCard({
               <div key={index} className="flex items-center w-full">
                 {/* LABEL */}
                 <div className="w-[25%] text-left text-sm font-medium text-blue-900">
-                  {col.label}
+                    <div>{col.label}</div>
+                    <div className="text-[10px] font-normal">{col.sublabel}</div>
                 </div>
   
                 {/* BAR */}
-                <div className="w-[50%] h-6 rounded bg-blue-100 relative overflow-hidden">
+                <div className="w-[50%] h-8 rounded bg-blue-100 relative overflow-hidden">
                   <HoverCard>
                     <HoverCardTrigger asChild>
                       <div
-                        className={cn("h-6 rounded cursor-pointer", color)}
+                        className={cn("h-8 rounded cursor-pointer", color)}
                         style={{
                           width: `${percent}%`
                         }}
@@ -67,7 +69,8 @@ export function ThreeBarStatCard({
   
                 {/* PERCENTAGE */}
                 <div className="w-[25%] text-right text-sm font-medium text-gray-500">
-                  {Math.round(percent)}%
+                    <div>{percent.toFixed(2)}%</div>
+                    <div className="text-[10px] font-normal">{col.value} Siswa</div>
                 </div>
               </div>
             );
