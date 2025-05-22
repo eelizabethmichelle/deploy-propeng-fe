@@ -542,10 +542,10 @@ function VariableTabsComponent({ variablesData, summaryData, context }: { variab
                                         <TableRow><TableCell colSpan={2} className="text-center h-20 text-muted-foreground">Tidak ada indikator yang ditampilkan.</TableCell></TableRow>
                                     )}
                                     <TableRow className="bg-primary/5 hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/20">
-                                        <TableCell className="px-4 py-3 font-semibold italic text-primary/90 text-sm">
+                                        <TableCell className="px-4 py-3 font-semibold text-primary/90 text-sm">
                                             Rata-Rata {variableName}
                                         </TableCell>
-                                        <TableCell className="px-4 py-3 text-right font-semibold italic text-sm">
+                                        <TableCell className="px-4 py-3 text-right font-semibold text-sm">
                                             {renderScore(variableAverageScore)}
                                         </TableCell>
                                     </TableRow>
