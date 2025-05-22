@@ -50,9 +50,6 @@ interface StudentData {
     angkatan: number;
 }
 
-// Base API URL
-// const BASE_API_URL = "http://127.0.0.1:8000/api";
-
 // Validation schema with Zod
 const formSchema = z.object({
     namaKelas: z.string()

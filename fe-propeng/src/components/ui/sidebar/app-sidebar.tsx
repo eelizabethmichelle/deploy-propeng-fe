@@ -177,12 +177,8 @@ const data = {
             url: "/guru/kelas/absensi",
           },
           {
-            title: "Lihat Rekap Nilai",
-            url: "/guru/kelas/rekap-nilai",
-          },
-          {
-            title: "Semua Kelas Saya",
-            url: "/guru/kelas/semua",
+            title: "Lihat Semua",
+            url: "/guru/kelas/",
           }
         ],
       },

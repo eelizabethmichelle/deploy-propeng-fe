@@ -38,10 +38,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { SelectPills } from "@/components/ui/multiple-select";
-
-// Base API URL
-// const BASE_API_URL = "http://127.0.0.1:8000/api";
 
 // Schema for class name validation
 const classNameSchema = z.object({
