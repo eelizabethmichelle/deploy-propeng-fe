@@ -147,6 +147,29 @@ const renderScore = (scoreString: string) => {
     );
 };
 
+const ScoreLegend: React.FC = () => {
+    const legendItems = [
+        { label: "5.00 - 4.00 (Perlu Dipertahankan)", description: "(1.00 - 1.99)", colorClass: "text-green-600 dark:text-green-400", bgColorClass: "bg-green-500" },
+        { label: "3.99 - 2.00 (Cukup)", description: "(3.00 - 3.99)", colorClass: "text-orange-500 dark:text-orange-400", bgColorClass: "bg-orange-500" },
+        { label: "1.99 - 0.00 (Belum Optimal)", colorClass: "text-red-600 dark:text-red-400", bgColorClass: "bg-red-500" },
+    ];
+
+    return (
+        <>
+        <div className='flex text-sm font-bold'> Keterangan Skor:
+            {legendItems.map(item => (
+                <div key={item.label} className=' ml-4 flex'>
+                    <div className={item.colorClass}>
+                        {item.label}
+                    </div>
+                </div>
+                ))}
+        </div>
+        </>
+    );
+};
+
+
 interface ParticipationChipDisplayProps {
   pengisi?: number;
   totalSiswa?: number;
@@ -390,6 +413,7 @@ export default function DetailEvaluasiGuruPage() {
         label: item.nama_matapelajaran, value: item.matapelajaran_id.toString(),
     })) || [];
 
+    
     return (
         <div className="container mx-auto p-4 space-y-6">
             <div className="flex justify-between items-start mb-3 flex-wrap gap-x-6 gap-y-3">
@@ -451,14 +475,14 @@ export default function DetailEvaluasiGuruPage() {
                 </div>
             </div>
 
-
+            <ScoreLegend />
             <Tabs defaultValue="ringkasan" className="w-full">
                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 gap-2 mb-8 bg-white dark:bg-slate-900 border-0 p-0">
                     <TabsTrigger value="ringkasan" className={cn("flex items-center justify-center rounded-md border-2 border-muted p-3", "hover:bg-white hover:text-accent-foreground dark:hover:bg-slate-800", "data-[state=active]:border-primary data-[state=active]:text-accent-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-primary", "focus-visible:ring-0 focus-visible:ring-offset-0", "text-sm font-medium bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400")}>
-                        <DashboardIcon className="mr-2 h-4 w-4 text-primary" /> Ringkasan Evaluasi
+                        <DashboardIcon className="mr-2 h-4 w-4 text-primary" /> Ringkasan Evaluasi Gabungan
                     </TabsTrigger>
                     <TabsTrigger value="detailevaluasi" className={cn("flex items-center justify-center rounded-md border-2 border-muted p-3", "hover:bg-white hover:text-accent-foreground dark:hover:bg-slate-800", "data-[state=active]:border-primary data-[state=active]:text-accent-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-primary", "focus-visible:ring-0 focus-visible:ring-offset-0", "text-sm font-medium bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400")}>
-                        <BookDown className="mr-2 h-4 w-4 text-primary" /> Detail Setiap Mata Pelajaran
+                        <BookDown className="mr-2 h-4 w-4 text-primary" /> Detail Evaluasi Setiap Mata Pelajaran
                     </TabsTrigger>
                     <TabsTrigger value="kritikdansaran" className={cn("flex items-center justify-center rounded-md border-2 border-muted p-3", "hover:bg-white hover:text-accent-foreground dark:hover:bg-slate-800", "data-[state=active]:border-primary data-[state=active]:text-accent-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-primary", "focus-visible:ring-0 focus-visible:ring-offset-0", "text-sm font-medium bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400")}>
                         <Mail className="mr-2 h-4 w-4 text-primary" /> Kritik dan Saran dari Siswa
@@ -474,6 +498,7 @@ export default function DetailEvaluasiGuruPage() {
 }
 
 function VariableTabsComponent({ variablesData, summaryData, context }: { variablesData: any[], summaryData: any, context: string }) {
+
     // ... (VariableTabsComponent unchanged from previous full code)
     if (!variablesData || variablesData.length === 0) {
         return <div className="p-4 text-center text-muted-foreground">Tidak ada variabel penilaian yang tersedia.</div>;
@@ -611,25 +636,80 @@ function RingkasanEvaluasiGuru({ dataKeseluruhan }: { dataKeseluruhan: any }) {
         </div>
     );
 }
-
 function DetailEvaluasiGuru({ mataPelajaranOptions, evaluasiData }: { mataPelajaranOptions: Array<{ label: string, value: string }>, evaluasiData: any[] }) {
     const [selectedMapelValue, setSelectedMapelValue] = useState(mataPelajaranOptions?.[0]?.value || "");
+    
     useEffect(() => {
         if (mataPelajaranOptions?.length > 0) {
             if (!selectedMapelValue || !mataPelajaranOptions.some(opt => opt.value === selectedMapelValue)) {
                 setSelectedMapelValue(mataPelajaranOptions[0].value);
             }
-        } else if (selectedMapelValue) setSelectedMapelValue("");
+        } else if (selectedMapelValue) {
+            setSelectedMapelValue("");
+        }
     }, [mataPelajaranOptions, selectedMapelValue]);
 
     const currentSelectedLabel = mataPelajaranOptions?.find(opt => opt.value === selectedMapelValue)?.label || "Pilih Mata Pelajaran";
     const selectedMapelDetails = evaluasiData?.find(item => item.matapelajaran_id.toString() === selectedMapelValue);
 
+    // Hitung Skor Rata-Rata Total untuk Mata Pelajaran yang dipilih
+    const skorTotalRataRataMatapelajaran = useMemo(() => {
+        if (!selectedMapelDetails || !selectedMapelDetails.ringkasan_skor_per_variabel) {
+            // Jika tidak ada detail mapel atau ringkasan skor, kembalikan N/A
+            // Anda bisa juga mencari field seperti selectedMapelDetails.skor_total_matapelajaran jika backend menyediakannya
+            return "N/A"; 
+        }
+
+        const variableScoresMap = selectedMapelDetails.ringkasan_skor_per_variabel;
+        // variableScoresMap contoh: { "1": "4.50 / 5.00", "2": "4.00 / 5.00" }
+        const variableScoreStrings = Object.values(variableScoresMap) as string[];
+
+        if (variableScoreStrings.length === 0) {
+            return "N/A"; // Tidak ada skor variabel untuk dirata-rata
+        }
+
+        let sumOfScores = 0;
+        let countOfValidScores = 0;
+        let maxScoreDenominator = "5.00"; // Default pembagi
+        let foundDenominator = false;
+
+        variableScoreStrings.forEach((scoreString) => {
+            if (typeof scoreString === 'string' && scoreString.includes('/')) {
+                const parts = scoreString.split('/');
+                const scorePart = parts[0].trim();
+                if (parts.length > 1 && parts[1].trim() !== "") {
+                    maxScoreDenominator = parts[1].trim(); // Ambil pembagi dari data jika ada
+                    foundDenominator = true;
+                }
+                const numericScore = parseFloat(scorePart);
+                if (!isNaN(numericScore)) {
+                    sumOfScores += numericScore;
+                    countOfValidScores++;
+                }
+            } else if (typeof scoreString === 'string') { // Coba parse jika hanya angka
+                 const numericScore = parseFloat(scoreString);
+                 if (!isNaN(numericScore)) {
+                    sumOfScores += numericScore;
+                    countOfValidScores++;
+                 }
+            }
+        });
+
+        if (countOfValidScores === 0) {
+            return foundDenominator ? `N/A / ${maxScoreDenominator}` : "N/A"; // Tidak ada skor valid
+        }
+
+        const averageScore = sumOfScores / countOfValidScores;
+        return `${averageScore.toFixed(2)} / ${maxScoreDenominator}`; // Format hasil: "X.XX / Y.YY"
+
+    }, [selectedMapelDetails]); // Kalkulasi ulang hanya jika selectedMapelDetails berubah
+
+    
     if (!mataPelajaranOptions || mataPelajaranOptions.length === 0) {
         return (
             <div className="container mx-auto p-4">
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold flex items-center"><BookDown className="mr-2 h-5 w-5 text-primary" /> Detail Evaluasi per Mata Pelajaran</h4>
+                    <h4 className="text-lg font-semibold flex items-center"><BookDown className="mr-2 h-5 w-5 text-primary" /> Detail Evaluasi Setiap Mata Pelajaran</h4>
                 </div>
                 <div className="p-4 border rounded-lg bg-card shadow-sm text-center">
                     <p className="text-muted-foreground">Tidak ada mata pelajaran yang dievaluasi untuk guru ini.</p>
@@ -641,11 +721,18 @@ function DetailEvaluasiGuru({ mataPelajaranOptions, evaluasiData }: { mataPelaja
     return (
         <div className="container mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                 <h4 className="text-lg font-semibold flex items-center shrink-0"><BookDown className="mr-2 h-5 w-5 text-primary" /> Detail Evaluasi per Mata Pelajaran</h4>
+                 <h4 className="text-lg font-semibold flex items-center shrink-0"><BookDown className="mr-2 h-5 w-5 text-primary" /> Detail Evaluasi Setiap Mata Pelajaran</h4>
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="flex h-9 w-full sm:w-auto min-w-[240px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm"><span className="truncate">{currentSelectedLabel}</span><ChevronDown className="ml-2 h-4 w-4 opacity-50 shrink-0" /></DropdownMenuTrigger>
+                    <DropdownMenuTrigger className="flex h-9 w-full sm:w-auto min-w-[240px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm">
+                        <span className="truncate">{currentSelectedLabel}</span>
+                        <ChevronDown className="ml-2 h-4 w-4 opacity-50 shrink-0" />
+                    </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[--radix-dropdown-menu-trigger-width]">
-                        {mataPelajaranOptions.map(mapel => (<DropdownMenuItem key={mapel.value} onSelect={() => setSelectedMapelValue(mapel.value)}>{mapel.label}</DropdownMenuItem>))}
+                        {mataPelajaranOptions.map(mapel => (
+                            <DropdownMenuItem key={mapel.value} onSelect={() => setSelectedMapelValue(mapel.value)}>
+                                {mapel.label}
+                            </DropdownMenuItem>
+                        ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -653,7 +740,14 @@ function DetailEvaluasiGuru({ mataPelajaranOptions, evaluasiData }: { mataPelaja
             {selectedMapelValue && selectedMapelDetails ? (
                 <>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 p-4 border rounded-lg shadow-sm bg-card">
-                        <div><h3 className="text-xl font-bold text-primary">{selectedMapelDetails.nama_matapelajaran || currentSelectedLabel}</h3><p className="text-sm text-muted-foreground mt-1">Kelas: {selectedMapelDetails.daftar_kelas_evaluasi || 'N/A'}</p></div>
+                        <div>
+                            <h3 className="text-xl font-bold text-primary">{selectedMapelDetails.nama_matapelajaran || currentSelectedLabel}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Kelas: {selectedMapelDetails.daftar_kelas_evaluasi || 'N/A'}</p>
+                              
+                            <p className="text-md font-semibold mt-3 text-gray-700 dark:text-gray-300">
+                                Skor Rata-Rata Total: {renderScore(skorTotalRataRataMatapelajaran)}
+                            </p>
+                        </div>
                         <div className="text-left sm:text-right mt-3 sm:mt-0">
                             <div className="flex items-end justify-start sm:justify-end space-x-1">
                                 <span className="text-5xl font-bold text-primary leading-none">{selectedMapelDetails.total_pengisi_evaluasi ?? '0'}</span>
@@ -664,7 +758,7 @@ function DetailEvaluasiGuru({ mataPelajaranOptions, evaluasiData }: { mataPelaja
                             <ParticipationChip 
                                 pengisi={selectedMapelDetails.total_pengisi_evaluasi} 
                                 totalSiswa={selectedMapelDetails.total_siswa_di_matapelajaran}
-                                className="sm:justify-end justify-start flex"
+                                className="sm:justify-end justify-start flex mt-1.5" // Tambah margin top jika perlu
                             />
                         </div>
                     </div>
@@ -676,10 +770,11 @@ function DetailEvaluasiGuru({ mataPelajaranOptions, evaluasiData }: { mataPelaja
                 </>
             ) : selectedMapelValue ? (
                 <div className="mt-4 p-4 border rounded-lg bg-card shadow-sm text-center"><p className="text-muted-foreground">Detail untuk <span className="font-medium">{currentSelectedLabel}</span> tidak ditemukan.</p></div>
-            ) : ( <div className="mt-4 p-4 border rounded-lg bg-card shadow-sm text-center"><p className="text-muted-foreground">Pilih mata pelajaran.</p></div>)}
+            ) : ( <div className="mt-4 p-4 border rounded-lg bg-card shadow-sm text-center"><p className="text-muted-foreground">Pilih mata pelajaran untuk melihat detail evaluasi.</p></div>)}
         </div>
     );
 }
+
 
 function KritikDanSaranGuru({ dataKeseluruhan, mataPelajaranOptions, evaluasiData }: { dataKeseluruhan: any, mataPelajaranOptions: Array<{ label: string, value: string }>, evaluasiData: any[] }) {
     const [selectedView, setSelectedView] = useState<'gabungan' | string>(mataPelajaranOptions?.[0]?.value || 'gabungan');
@@ -717,7 +812,7 @@ function KritikDanSaranGuru({ dataKeseluruhan, mataPelajaranOptions, evaluasiDat
     return (
         <div className="container mx-auto"> {/* Removed p-4 border rounded-lg bg-card shadow-sm to apply to sub-elements */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                <h4 className="text-lg font-semibold flex items-center"><Mail className="mr-2 h-5 w-5 text-primary" /> Kritik dan Saran</h4>
+                <h4 className="text-lg font-semibold flex items-center"><Mail className="mr-2 h-5 w-5 text-primary" /> Kritik dan Saran dari Siswa</h4>
                 <DropdownMenu>
                     <DropdownMenuTrigger className="flex h-9 w-full sm:w-auto min-w-[240px] items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm"><span className="truncate">{currentSelectionLabel}</span><ChevronDown className="ml-2 h-4 w-4 opacity-50 shrink-0" /></DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[--radix-dropdown-menu-trigger-width]">

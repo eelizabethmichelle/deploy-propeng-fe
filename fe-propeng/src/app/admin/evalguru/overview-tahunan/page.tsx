@@ -123,7 +123,7 @@ export default function OverviewTahunanPage() {
             .map(tahun => {
                 const startYear = parseInt(tahun, 10);
                 // Pastikan startYear adalah angka sebelum membuat label
-                const label = !isNaN(startYear) ? `T.A. ${startYear}/${startYear + 1}` : tahun;
+                const label = !isNaN(startYear) ? `TA ${startYear}/${startYear + 1}` : tahun;
                 return {
                     label: label,
                     value: tahun, // Value tetap tahun asli untuk filtering
@@ -150,13 +150,37 @@ export default function OverviewTahunanPage() {
         return Array.from(uniqueMapels).sort().map(name => ({ label: name, value: name }));
     }, [flattenedData]);
     
+
+    const ScoreLegend: React.FC = () => {
+        const legendItems = [
+            { label: "5.00 - 4.00 (Perlu Dipertahankan)", description: "(1.00 - 1.99)", colorClass: "text-green-600 dark:text-green-400", bgColorClass: "bg-green-500" },
+            { label: "3.99 - 2.00 (Cukup)", description: "(3.00 - 3.99)", colorClass: "text-orange-500 dark:text-orange-400", bgColorClass: "bg-orange-500" },
+            { label: "1.99 - 0.00 (Belum Optimal)", colorClass: "text-red-600 dark:text-red-400", bgColorClass: "bg-red-500" },
+        ];
+    
+        return (
+            <>
+            <div className='flex text-sm font-bold'> Keterangan Skor:
+                {legendItems.map(item => (
+                    <div key={item.label} className=' ml-4 flex'>
+                        <div className={item.colorClass}>
+                            {item.label}
+                        </div>
+                    </div>
+                    ))}
+            </div>
+            </>
+        );
+    };
+    
     return (
         <div className="container mx-auto py-10 px-4 ">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold tracking-tight">Evaluasi Guru</h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-8">
                     Rangkuman evaluasi untuk setiap guru pada tiap tahun ajaran.
                 </p>
+                <ScoreLegend/>
             </div>
             
             {isLoading && (
