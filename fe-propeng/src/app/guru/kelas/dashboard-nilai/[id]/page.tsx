@@ -21,7 +21,7 @@ import { DataTableDistribusiNilaiKomponen } from "@/components/ui/dt-distribusi-
 import { distribusiNilaiKomponenColumns } from "@/components/ui/dt-distribusi-nilai-komponen/columns";
 import { DataTableDashboardSiswa } from "@/components/ui/dt-dashboard-siswa/data-table";
 import { dashboardSiswaColumns } from "@/components/ui/dt-dashboard-siswa/columns";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import Link from "next/link";
 
 const chartColors = [
@@ -247,128 +247,132 @@ export default function Page() {
         {/* Header section */}
         <div className="space-y-1 mb-6">
           <h1 className="text-2xl font-bold text-blue-900">{`${kelas}`}</h1>
-          <p className="text-gray-700 text-sm">Jumlah Siswa: {`${totalSiswa}`} | Tahun Ajaran: {`${tahunAjaran}/${Number(tahunAjaran)+1}`}</p>
-
-          {/* Grade Legend */}
-          <div className="mt-2 text-sm text-gray-800">
-            <div className="flex items-center gap-6 flex-wrap">
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-green-300 inline-block"></span>
-                    <span className="font-semibold text-green-600">A</span>
-                    <span>(100 - 93)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-green-200 inline-block"></span>
-                    <span className="font-semibold text-green-600">B</span>
-                    <span>(92 - 84)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-yellow-200 inline-block"></span>
-                    <span className="font-semibold text-yellow-600">C</span>
-                    <span>(83 - 75)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-red-200 inline-block"></span>
-                    <span className="font-semibold text-red-600">D</span>
-                    <span>(&lt; 75)</span>
-                </div>
-                </div>
-            </div>
-            </div>
+          <p className="text-medium">Jumlah Siswa: {`${totalSiswa}`} | Tahun Ajaran: {`${tahunAjaran}/${Number(tahunAjaran)+1}`}</p>
+          <div className="flex items-center gap-2 text-blue-900">
+            <Info className="w-4 h-4" />
+            <span className="text-sm">Arahkan kursor ke masing-masing bagian pada grafik untuk melihat informasi jumlah siswa secara detail</span>
+          </div>
+        </div>
     
-        <div className="flex flex-col gap-6">
+        <div className="space-y-4">
           {/* Row 1: Donut chart and bar stats */}
-          <div className="flex gap-4 items-stretch">
-            <div className="basis-2/5 flex flex-col">
-              <DonutChart
-                title="Distribusi Pendaftaran Mata Pelajaran"
-                data={subjectData}
-                notes={notes}
-              />
-            </div>
-    
-            <div className="flex flex-col gap-4 basis-3/5">
-              {/* First row of ThreeBarStatCard */}
-              <div className="flex gap-4">
-                <ThreeBarStatCard
-                  titleColor="text-green-600"
-                  title={`${(zeroA+between18A+moreThan8A) > 0 ? ((moreThan8A / (zeroA+between18A+moreThan8A)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${moreThan8A} dari ${zeroA+between18A+moreThan8A}`}
-                  description="Siswa dengan nilai A pada lebih dari delapan mata pelajaran"
-                  columns={[
-                    { label: "0", value: zeroA },
-                    { label: "1 - 8", value: between18A },
-                    { label: "> 8", value: moreThan8A },
-                  ]}
-                />
-                <ThreeBarStatCard
-                  titleColor="text-yellow-600"
-                  title={`${(zeroC+between15C+moreThan5C) > 0 ? ((moreThan5C / (zeroC+between15C+moreThan5C)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${moreThan5C} dari ${zeroC+between15C+moreThan5C}`}
-                  description="Siswa dengan nilai C pada lebih dari lima mata pelajaran"
-                  columns={[
-                    { label: "0", value: zeroC },
-                    { label: "1 - 5", value: between15C },
-                    { label: "> 5", value: moreThan5C },
-                  ]}
-                />
-                <ThreeBarStatCard
-                  titleColor="text-red-600"
-                  title={`${(zeroD+between13D+moreThan3D) > 0 ? ((moreThan3D / (zeroD+between13D+moreThan3D)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
-                  description="Siswa dengan nilai D pada lebih dari tiga mata pelajaran"
-                  columns={[
-                    { label: "0", value: zeroD },
-                    { label: "1 - 3", value: between13D },
-                    { label: "> 3", value: moreThan3D },
-                  ]}
-                />
-              </div>
-    
-              {/* Second row of ThreeBarStatCard */}
-              <div className="flex gap-4">
-              <ThreeBarStatCard
-                  titleColor="text-green-600"
-                  title={`${(passedLessThanHalf+passedHalfToAll+passedAll) > 0 ? ((passedAll / (passedLessThanHalf+passedHalfToAll+passedAll)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${passedAll} dari ${passedLessThanHalf+passedHalfToAll+passedAll}`}
-                  description="Siswa lulus pada seluruh mata pelajaran"
-                  columns={[
-                    { label: "< 50%", value: passedLessThanHalf },
-                    { label: "< 100%", value: passedHalfToAll },
-                    { label: "100%", value: passedAll },
-                  ]}
-                />
-                <ThreeBarStatCard
-                  titleColor="text-yellow-600"
-                  title={`${(belowClassAvg+betweenAvgAndThreshold+aboveThreshold) > 0 ? ((belowClassAvg / (belowClassAvg+betweenAvgAndThreshold+aboveThreshold)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${belowClassAvg} dari ${belowClassAvg+betweenAvgAndThreshold+aboveThreshold}`}
-                  description={`Siswa dengan rerata nilai di bawah rata-rata nilai kelas (${classAverage})`}
-                  columns={[
-                    { label: `< ${classAverage}`, value: belowClassAvg },
-                    { label: `< ${classThreshold}`, value: betweenAvgAndThreshold },
-                    { label: `>= ${classThreshold}`, value: aboveThreshold },
-                  ]}
-                />
-                <ThreeBarStatCard
-                  titleColor="text-red-600"
-                  title={`${(avgBelow75+avgBetween75And84+avg84OrMore) > 0 ? ((avgBelow75 / (avgBelow75+avgBetween75And84+avg84OrMore)) * 100).toFixed(2) : "0.00"}%`}
-                  subtitle={`${avgBelow75} dari ${zeroD+between13D+moreThan3D}`}
-                  description="Siswa dengan rata-rata nilai di bawah KKM"
-                  columns={[
-                    { label: "< 75", value: avgBelow75 },
-                    { label: "< 84", value: avgBetween75And84 },
-                    { label: ">= 84", value: avg84OrMore },
-                  ]}
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-1">
+            <DonutChart
+              title="Distribusi Pendaftaran Mata Pelajaran"
+              data={subjectData}
+              notes={notes}
+            />
           </div>
     
-          {/* Row 2: Grade distribution */}
+          {/* Row 2: First row of ThreeBarStatCard */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ThreeBarStatCard
+              titleColor="text-green-600"
+              title={`${(zeroA+between18A+moreThan8A) > 0 ? ((moreThan8A / (zeroA+between18A+moreThan8A)) * 100).toFixed(2) : "0.00"}%`}
+              subtitle={`${moreThan8A} dari ${zeroA+between18A+moreThan8A}`}
+              description="Siswa dengan nilai A pada lebih dari delapan mata pelajaran"
+              columns={[
+                { label: "0", sublabel:"Mata Pelajaran", value: zeroA },
+                { label: "1 - 8", sublabel:"Mata Pelajaran", value: between18A },
+                { label: "> 8", sublabel:"Mata Pelajaran", value: moreThan8A },
+              ]}
+            />
+            <ThreeBarStatCard
+              titleColor="text-yellow-600"
+              title={`${(zeroC+between15C+moreThan5C) > 0 ? ((moreThan5C / (zeroC+between15C+moreThan5C)) * 100).toFixed(2) : "0.00"}%`}
+              subtitle={`${moreThan5C} dari ${zeroC+between15C+moreThan5C}`}
+              description="Siswa dengan nilai C pada lebih dari lima mata pelajaran"
+              columns={[
+                { label: `0`, sublabel:"Mata Pelajaran", value: zeroC },
+                { label: "1 - 5", sublabel:"Mata Pelajaran", value: between15C },
+                { label: "> 5", sublabel:"Mata Pelajaran", value: moreThan5C },
+              ]}
+            />
+            <ThreeBarStatCard
+              titleColor="text-red-600"
+              title={`${(zeroD+between13D+moreThan3D) > 0 ? ((moreThan3D / (zeroD+between13D+moreThan3D)) * 100).toFixed(2) : "0.00"}%`}
+              subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
+              description="Siswa dengan nilai D pada lebih dari tiga mata pelajaran"
+              columns={[
+                { label: "0", sublabel:"Mata Pelajaran", value: zeroD },
+                { label: "1 - 3", sublabel:"Mata Pelajaran", value: between13D },
+                { label: "> 3", sublabel:"Mata Pelajaran", value: moreThan3D },
+              ]}
+            />
+          </div>
+    
+          {/* Row 3: Second row of ThreeBarStatCard */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ThreeBarStatCard
+                titleColor="text-green-600"
+                title={`${(passedLessThanHalf+passedHalfToAll+passedAll) > 0 ? ((passedAll / (passedLessThanHalf+passedHalfToAll+passedAll)) * 100).toFixed(2) : "0.00"}%`}
+                subtitle={`${passedAll} dari ${passedLessThanHalf+passedHalfToAll+passedAll}`}
+                description="Siswa lulus pada seluruh mata pelajaran"
+                columns={[
+                  { label: "< 50%", sublabel:"Mata Pelajaran", value: passedLessThanHalf },
+                  { label: "< 100%", sublabel:"Mata Pelajaran", value: passedHalfToAll },
+                  { label: "100%", sublabel:"Mata Pelajaran", value: passedAll },
+                ]}
+              />
+              <ThreeBarStatCard
+                titleColor="text-yellow-600"
+                title={`${(belowClassAvg+betweenAvgAndThreshold+aboveThreshold) > 0 ? ((belowClassAvg / (belowClassAvg+betweenAvgAndThreshold+aboveThreshold)) * 100).toFixed(2) : "0.00"}%`}
+                subtitle={`${belowClassAvg} dari ${belowClassAvg+betweenAvgAndThreshold+aboveThreshold}`}
+                description={`Siswa dengan rerata nilai di bawah rata-rata nilai kelas (x̄=${classAverage})`}
+                columns={[
+                  { label: `< ${classAverage}`, sublabel:"Rata-Rata Kelas", value: belowClassAvg },
+                  { label: `< ${classThreshold}`, sublabel:"Ambang Atas", value: betweenAvgAndThreshold },
+                  { label: `≥ ${classThreshold}`, sublabel:"Ambang Atas", value: aboveThreshold },
+                ]}
+              />
+              <ThreeBarStatCard
+                titleColor="text-red-600"
+                title={`${(avgBelow75+avgBetween75And84+avg84OrMore) > 0 ? ((avgBelow75 / (avgBelow75+avgBetween75And84+avg84OrMore)) * 100).toFixed(2) : "0.00"}%`}
+                subtitle={`${avgBelow75} dari ${zeroD+between13D+moreThan3D}`}
+                description="Siswa dengan rata-rata nilai di bawah KKM"
+                columns={[
+                  { label: "< 75", sublabel:"KKM", value: avgBelow75 },
+                  { label: "< 84", sublabel:"Ambang Atas", value: avgBetween75And84 },
+                  { label: "≥ 84", sublabel:"Ambang Atas", value: avg84OrMore },
+                ]}
+              />
+          </div>
+    
+          {/* Row 4: Grade distribution */}
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-blue-900">
-              Distribusi Nilai Keseluruhan
-            </h2>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              {/* Title */}
+              <h2 className="text-xl font-semibold text-blue-900 whitespace-nowrap">
+                Distribusi Nilai Keseluruhan
+              </h2>
+
+              {/* Grade Legend as Card */}
+              <div className="bg-white border rounded-lg p-2">
+                <div className="flex items-center gap-6 flex-wrap text-sm text-gray-800">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-300 inline-block" />
+                    <span className="font-semibold text-green-600">A</span>
+                    <span>(100 - 93)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-200 inline-block" />
+                    <span className="font-semibold text-green-600">B</span>
+                    <span>(92 - 84)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-yellow-200 inline-block" />
+                    <span className="font-semibold text-yellow-600">C</span>
+                    <span>(83 - 75)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-200 inline-block" />
+                    <span className="font-semibold text-red-600">D</span>
+                    <span>(&lt; 75)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <GradeDistributionChart 
                 a={classDistribution?.a || 0} 
                 b={classDistribution?.b || 0} 
@@ -377,7 +381,7 @@ export default function Page() {
             />
           </div>
     
-          {/* Row 3: Data Tables */}
+          {/* Row 5: Data Tables */}
           <div className="flex gap-4">
             {/* Left Table */}
             <div className="basis-1/2 space-y-2">
@@ -415,7 +419,7 @@ export default function Page() {
             </div>
           </div>
     
-          {/* Row 4: Data Tables */}
+          {/* Row 6: Data Tables */}
           <div className="space-y-2">
             {/* Header with Button */}
             <div className="flex items-center justify-between">
@@ -434,9 +438,19 @@ export default function Page() {
             <div className="flex gap-4">
               {/* Left Table */}
               <div className="basis-1/2 space-y-2">
-                <h2 className="text-medium text-black font-semibold">
-                  Siswa dengan Rata-Rata Nilai Tertinggi
-                </h2>
+                <div className="flex items-center justify-between px-1 py-1">
+                  <div className="flex flex-col">
+                    <h2 className="text-medium text-black font-semibold">
+                      10 Siswa dengan Rata-Rata Nilai Tertinggi
+                    </h2>
+                  </div>
+
+                  {/* Right side: Contextual Info (e.g., percentage or filter) */}
+                  <div className="text-sm font-medium text-white bg-white px-3 py-1 rounded">
+                    biar rata aja #pusing
+                  </div>
+                </div>
+                
                 <DataTableDashboardSiswa
                   columns={dashboardSiswaColumns}
                   data={topStudent}
@@ -445,11 +459,20 @@ export default function Page() {
     
               {/* Right Table */}
               <div className="basis-1/2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-medium text-black font-semibold">
-                    Siswa dengan Risiko Akademik
-                  </h2>
+                <div className="flex items-center justify-between px-1 py-1">
+                  {/* Left side: Title + Jumlah Siswa */}
+                  <div className="flex flex-col">
+                    <h2 className="text-medium text-black font-semibold">
+                      Siswa dengan Risiko Akademik
+                    </h2>
+                  </div>
+
+                  {/* Right side: Contextual Info (e.g., percentage or filter) */}
+                  <div className="text-sm font-medium text-red-900 bg-red-200 px-3 py-1 rounded">
+                    Jumlah Siswa: {riskStudent.length}
+                  </div>
                 </div>
+
                 <DataTableDashboardSiswa
                   columns={dashboardSiswaColumns}
                   data={riskStudent}
