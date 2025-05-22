@@ -10,7 +10,7 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Users } from "lucide-react"
+import { ArrowRight, Users, HelpCircle, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast, Toaster } from "sonner"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -30,6 +30,12 @@ import {
 import { useRouter } from "next/router"
 import { useParams } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -387,30 +393,43 @@ if (!kelasData) {
             <p><strong>Nama Kelas:</strong> {kelas?.namaKelas} | <strong>Tahun Ajaran:</strong> {kelas?.tahunAjaran} | <strong>Wali Kelas:</strong> {kelas?.waliKelas}</p>
           </div>
         </div>
-        <Select
-          value={subjectId}
-          onValueChange={setSubjectId}
-          disabled={loadingSubjects}
-        >
-         <SelectTrigger className="w-[240px]">
-            <SelectValue
-              placeholder={
-                loadingSubjects
-                  ? "Memuat…"
-                  : subjects.length === 0
-                  ? "Tidak ada mata pelajaran"
-                  : "Pilih Mata Pelajaran"
-              }
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {subjects.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Pilih mata pelajaran:</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-gray-400 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[300px]">
+                <p>Mata pelajaran yang dapat dipilih adalah mata pelajaran yang setidaknya diambil oleh salah satu siswa di kelas anda</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Select
+            value={subjectId}
+            onValueChange={setSubjectId}
+            disabled={loadingSubjects}
+          >
+            <SelectTrigger className="w-[240px]">
+              <SelectValue
+                placeholder={
+                  loadingSubjects
+                    ? "Memuat…"
+                    : subjects.length === 0
+                    ? "Tidak ada mata pelajaran"
+                    : "Pilih Mata Pelajaran"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {subjects.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
   
       {loadingGrades ? (
@@ -440,7 +459,7 @@ if (!kelasData) {
                       value="rata-rata"
                       className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
                     >
-                      Rata-rata
+                      Rata-rata Pengetahuan dan Keterampilan
                     </TabsTrigger>
                   </TabsList>
 
@@ -449,17 +468,22 @@ if (!kelasData) {
                       data={getGradeDistribution(rows, activeTab)}
                       margin={{ top: 10, right: 20, bottom: 20, left: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                      <CartesianGrid 
+                        horizontal={true} 
+                        vertical={false} 
+                        strokeDasharray="3 3" 
+                        className="stroke-border/70" 
+                      />
                       <XAxis 
                         dataKey="range" 
-                        tickLine={false}
-                        axisLine={false}
+                        tickLine={{ stroke: '#000' }}
+                        axisLine={{ stroke: '#000' }}
                         tickMargin={10}
                       />
                       <YAxis 
                         allowDecimals={false}
-                        tickLine={false}
-                        axisLine={false}
+                        tickLine={{ stroke: '#000' }}
+                        axisLine={{ stroke: '#000' }}
                         tickMargin={10}
                       />
                       <ChartTooltip
@@ -504,15 +528,46 @@ if (!kelasData) {
 
             {/* Scorecards */}
             <div className="flex flex-col gap-6 w-80">
-              <Card className="bg-red-50 shadow-md rounded-lg">
-                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-                  <ArrowRight className="w-10 h-10 text-red-500" />
-                  <div>
-                    <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
-                    <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {rows.length > 0 && (
+                needsGuidanceCount === 0 ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="bg-green-50 shadow-md rounded-lg">
+                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                            <Star className="w-10 h-10 text-green-500" />
+                            <div>
+                              <p className="text-xl font-bold text-green-700">Performa siswa sudah memuaskan!</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[300px]">
+                        <p>Semua siswa telah mencapai target dengan nilai rerata pengetahuan dan keterampilan di atas 75</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="bg-red-50 shadow-md rounded-lg">
+                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                            <ArrowRight className="w-10 h-10 text-red-500" />
+                            <div>
+                              <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
+                              <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[300px]">
+                        <p>Siswa yang membutuhkan bimbingan adalah siswa dengan nilai rerata pengetahuan &lt; 75 dan rerata keterampilan &lt; 75</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )
+              )}
               <Card className="bg-blue-50 shadow-md rounded-lg">
                 <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
                   <Users className="w-10 h-10 text-blue-500" />
