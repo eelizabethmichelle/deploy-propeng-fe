@@ -65,6 +65,21 @@ export default function GuruLayout({
         { label: "Pendaftar Mata Pelajaran Peminatan", href: "/guru/submisi-peminatan" },
         { label: "Formulir Persetujuan" },
       ];
+    } else if (pathname.includes("/guru/kelas/dashboard-nilai/")) {
+      return [
+        { label: "Manajemen Kelas", href: "/guru/kelas" },
+        { label: "Dashboard Nilai" },
+      ];
+    } else if (pathname.includes("/guru/kelas/rekapitulasi-nilai/")) {
+      return [
+        { label: "Manajemen Kelas", href: "/guru/kelas" },
+        { label: "Rekapitulasi Nilai" },
+      ];
+    } else if (pathname.includes("/guru/kelas/dashboard/")) {
+      return [
+        { label: "Manajemen Kelas", href: "/guru/kelas" },
+        { label: "Dashboard Absensi" },
+      ];
     } else if (pathname.startsWith("/guru/mata-pelajaran/rekapitulasi-nilai/")) {
       return [
         { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
