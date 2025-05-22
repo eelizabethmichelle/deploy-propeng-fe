@@ -230,7 +230,7 @@ const data = {
         items: [
           {
             title: "Lihat Semua",
-            url: "#",
+            url: "/guru/evalguru",
           }
         ],
       },

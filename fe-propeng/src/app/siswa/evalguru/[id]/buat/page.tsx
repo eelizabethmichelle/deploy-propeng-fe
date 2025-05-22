@@ -322,6 +322,14 @@ export default function TeacherEvaluationForm() {
       const responseData = await response.json();
       
       if (!response.ok) {
+        if (
+          responseData.status === 400 &&
+          responseData.message === "Siswa tidak terdaftar di mata pelajaran ini."
+        ) {
+          customToast.error("Gagal Mengirim Evaluasi", "Siswa tidak terdaftar di mata pelajaran ini.");
+        } else {
+          customToast.error("Gagal Mengirim Evaluasi", responseData.message || "Gagal mengirim evaluasi");
+        }
         throw new Error(responseData.message || "Gagal mengirim evaluasi");
       }
       
@@ -338,8 +346,6 @@ export default function TeacherEvaluationForm() {
       
     } catch (error) {
       console.error("Error submitting evaluation:", error);
-      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat mengirim evaluasi.";
-      customToast.error("Gagal Mengirim Evaluasi", errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -399,7 +405,7 @@ export default function TeacherEvaluationForm() {
               Masukan Anda sangat berharga untuk meningkatkan kualitas pembelajaran.
             </p>
             <Button 
-              onClick={() => router.push('/siswa/dashboard')}
+              onClick={() => router.push('/siswa/laporannilaiabsen')}
               className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
             >
               Kembali ke Dashboard

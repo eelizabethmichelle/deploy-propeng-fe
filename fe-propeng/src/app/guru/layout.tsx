@@ -37,6 +37,7 @@ export default function GuruLayout({
     "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
     "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
     "/guru/raport": [{ label: "Raport Siswa" }],
+    "/guru/evalguru": [{ label: "Manajemen Evaluasi Mata Pelajaran" }],
   };
 
   // Generate breadcrumbs based on current pathname
@@ -70,7 +71,13 @@ export default function GuruLayout({
         { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
         { label: "Rekapitulasi Nilai" },
       ];
-    } else {
+    } else if (pathname.startsWith("/guru/evalguru/")) {
+      return [
+        { label: "Manajemen Evaluasi Mata Pelajaran", href: "/guru/evalguru" },
+        { label: "Detail Evaluasi Guru" },
+      ];
+    }
+    else {
       return breadcrumbMap[pathname] || [];
     }
   };
