@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Class ID is required" }, { status: 400 });
     }
     
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/${classId}/insight/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/${classId}/insight/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
