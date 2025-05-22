@@ -10,7 +10,7 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Users } from "lucide-react"
+import { ArrowRight, Users, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
@@ -32,6 +32,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // DTOs from your API
 interface Subject { id: string; name: string }
@@ -412,17 +418,22 @@ export default function Page() {
                         margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
                         barSize={40}
                       >
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                        <CartesianGrid 
+                          horizontal={true} 
+                          vertical={false} 
+                          strokeDasharray="3 3" 
+                          className="stroke-border/70" 
+                        />
                         <XAxis 
                           dataKey="range" 
-                          tickLine={false}
-                          axisLine={false}
+                          tickLine={{ stroke: '#000' }}
+                          axisLine={{ stroke: '#000' }}
                           tickMargin={10}
                         />
                         <YAxis 
                           allowDecimals={false}
-                          tickLine={false}
-                          axisLine={false}
+                          tickLine={{ stroke: '#000' }}
+                          axisLine={{ stroke: '#000' }}
                           tickMargin={10}
                         />
                         <ChartTooltip
@@ -468,15 +479,46 @@ export default function Page() {
 
             {/* Scorecards */}
             <div className="flex flex-col gap-6 w-80">
-              <Card className="bg-red-50 shadow-md rounded-lg">
-                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-                  <ArrowRight className="w-10 h-10 text-red-500" />
-                  <div>
-                    <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
-                    <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {rows.length > 0 && (
+                needsGuidanceCount === 0 ? (
+                  <TooltipProvider>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="bg-green-50 shadow-md rounded-lg">
+                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                            <Star className="w-10 h-10 text-green-500" />
+                            <div>
+                              <p className="text-xl font-bold text-green-700">Performa siswa sudah memuaskan!</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[300px]">
+                        <p>Semua siswa telah mencapai target dengan nilai rerata pengetahuan dan keterampilan di atas 75</p>
+                      </TooltipContent>
+                    </UITooltip>
+                  </TooltipProvider>
+                ) : (
+                  <TooltipProvider>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="bg-red-50 shadow-md rounded-lg">
+                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                            <ArrowRight className="w-10 h-10 text-red-500" />
+                            <div>
+                              <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
+                              <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[300px]">
+                        <p>Siswa yang membutuhkan bimbingan adalah siswa dengan nilai rerata pengetahuan &lt; 75 dan rerata keterampilan &lt; 75</p>
+                      </TooltipContent>
+                    </UITooltip>
+                  </TooltipProvider>
+                )
+              )}
               <Card className="bg-blue-50 shadow-md rounded-lg">
                 <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
                   <Users className="w-10 h-10 text-blue-500" />
