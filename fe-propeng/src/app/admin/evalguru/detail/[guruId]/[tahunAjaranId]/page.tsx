@@ -48,7 +48,7 @@ type PdfPaperSize = 'a4' | 'letter' | 'legal';
 const variabelDisplayNames: { [key: string]: string } = {
     "1": "Materi Pelajaran",
     "2": "Proses Pembelajaran",
-    "3": "Pengelolaan Kelas",
+    "3": "Sikap dan Kepribadian Guru",
     "4": "Evaluasi Pembelajaran"
 };
 
@@ -60,33 +60,57 @@ const variabelIcons: { [key: string]: React.ElementType } = {
 };
 
 const detailedIndikatorQuestionMap: { [variableId: string]: { [indicatorKey: string]: string } } = {
+
+//   "1": { 
+//     "Indikator 1": "MP_Q1: Guru menyampaikan rancangan pengajaran dengan jelas di awal semester.",
+//     "Indikator 2": "MP_Q2: Guru menyediakan berbagai sumber pembelajaran yang memudahkan saya memahami materi.",
+//     "Indikator 3": "MP_Q3: Materi yang diajarkan relevan dengan tujuan pembelajaran.",
+//     "Indikator 4": "MP_Q4: Guru menguasai materi pelajaran yang diajarkan.",
+//     "Indikator 5": "MP_Q5: Materi pelajaran disajikan secara sistematis dan mudah dipahami.",
+//   },
   "1": { 
-    "Indikator 1": "MP_Q1: Guru menyampaikan rancangan pengajaran dengan jelas di awal semester.",
-    "Indikator 2": "MP_Q2: Guru menyediakan berbagai sumber pembelajaran yang memudahkan saya memahami materi.",
-    "Indikator 3": "MP_Q3: Materi yang diajarkan relevan dengan tujuan pembelajaran.",
-    "Indikator 4": "MP_Q4: Guru menguasai materi pelajaran yang diajarkan.",
-    "Indikator 5": "MP_Q5: Materi pelajaran disajikan secara sistematis dan mudah dipahami.",
+    "Indikator 1": "Guru menyampaikan rancangan pengajaran dengan jelas di awal semester",
+    "Indikator 2": "Tersedia berbagai sumber pembelajaran yang memudahkan saya memahami materi.",
   },
+//   "2": { 
+//     "Indikator 1": "PP_Q1: Guru memulai dan mengakhiri pembelajaran tepat waktu.",
+//     "Indikator 2": "PP_Q2: Guru menggunakan metode pembelajaran yang bervariasi dan menarik.",
+//     "Indikator 3": "PP_Q3: Guru mendorong partisipasi aktif siswa dalam pembelajaran.",
+//     "Indikator 4": "PP_Q4: Guru memberikan penjelasan yang jelas dan mudah dimengerti.",
+//     "Indikator 5": "PP_Q5: Guru menggunakan media pembelajaran yang efektif.",
+//   },
   "2": { 
-    "Indikator 1": "PP_Q1: Guru memulai dan mengakhiri pembelajaran tepat waktu.",
-    "Indikator 2": "PP_Q2: Guru menggunakan metode pembelajaran yang bervariasi dan menarik.",
-    "Indikator 3": "PP_Q3: Guru mendorong partisipasi aktif siswa dalam pembelajaran.",
-    "Indikator 4": "PP_Q4: Guru memberikan penjelasan yang jelas dan mudah dimengerti.",
-    "Indikator 5": "PP_Q5: Guru menggunakan media pembelajaran yang efektif.",
+    "Indikator 1": "Guru menyampaikan materi pelajaran dengan cara yang mudah dipahami.",
+    "Indikator 2": "Guru menciptakan suasana kelas yang kondusif untuk belajar.",
+    "Indikator 3": "Guru memberikan contoh yang membantu memahami konsep yang sulit.",
+    "Indikator 4": "Guru menjawab pertanyaan siswa dengan jelas.",
+    "Indikator 5": "Guru membantu siswa yang kesulitan dengan memberikan umpan balik yang konstruktif.",
+    "Indikator 6": "Guru menggunakan metode pengajaran yang bervariasi dan menarik.",
+    "Indikator 7": "Guru mendorong siswa untuk berpikir kritis dan mengembangkan kemampuan analitis.",
+    "Indikator 8": "Guru menerima kritik dan saran dari siswa.",
   },
+//   "3": { 
+//     "Indikator 1": "PK_Q1: Guru menciptakan suasana kelas yang aman dan nyaman.",
+//     "Indikator 2": "PK_Q2: Guru mengelola waktu pembelajaran di kelas secara efisien.",
+//     "Indikator 3": "PK_Q3: Guru menegakkan aturan kelas secara adil dan konsisten.",
+//     "Indikator 4": "PK_Q4: Guru mampu mengatasi gangguan belajar di kelas dengan baik.",
+//     "Indikator 5": "PK_Q5: Guru memperhatikan semua siswa secara merata.",
+//   },
   "3": { 
-    "Indikator 1": "PK_Q1: Guru menciptakan suasana kelas yang aman dan nyaman.",
-    "Indikator 2": "PK_Q2: Guru mengelola waktu pembelajaran di kelas secara efisien.",
-    "Indikator 3": "PK_Q3: Guru menegakkan aturan kelas secara adil dan konsisten.",
-    "Indikator 4": "PK_Q4: Guru mampu mengatasi gangguan belajar di kelas dengan baik.",
-    "Indikator 5": "PK_Q5: Guru memperhatikan semua siswa secara merata.",
+    "Indikator 1": "Guru menunjukkan sikap menghargai dan sopan terhadap siswa.",
+    "Indikator 2": "Sikap dan Kepribadian Guru",
   },
+//   "4": { 
+//     "Indikator 1": "EP_Q1: Guru memberikan informasi yang jelas mengenai sistem penilaian.",
+//     "Indikator 2": "EP_Q2: Soal atau tugas evaluasi sesuai dengan materi yang diajarkan.",
+//     "Indikator 3": "EP_Q3: Guru melakukan penilaian secara objektif dan adil.",
+//     "Indikator 4": "EP_Q4: Guru memberikan hasil evaluasi tepat waktu.",
+//     "Indikator 5": "EP_Q5: Guru memberikan umpan balik yang jelas atas hasil evaluasi.",
+//   },
   "4": { 
-    "Indikator 1": "EP_Q1: Guru memberikan informasi yang jelas mengenai sistem penilaian.",
-    "Indikator 2": "EP_Q2: Soal atau tugas evaluasi sesuai dengan materi yang diajarkan.",
-    "Indikator 3": "EP_Q3: Guru melakukan penilaian secara objektif dan adil.",
-    "Indikator 4": "EP_Q4: Guru memberikan hasil evaluasi tepat waktu.",
-    "Indikator 5": "EP_Q5: Guru memberikan umpan balik yang jelas atas hasil evaluasi.",
+    "Indikator 1": "Materi penilaian (kuis, tugas, UTS, UAS, dll) sesuai dengan rancangan pengajaran yang disampaikan di awal semester.",
+    "Indikator 2": "Bobot penilaian setiap komponen penilaian sesuai dengan beban pengerjaannya.",
+    "Indikator 3": "Guru memberikan umpan balik terhadap tugas dan evaluasi.",
   }
 };
 // --- End of static mappings ---

@@ -1147,6 +1147,7 @@ export default function Page() {
     try {
       const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken")
       const kelasId = classData.id
+      const monthNumber = Number(selectedMonthDetail) + 1
 
       if (!token || !kelasId) {
         toast.error("Sesi telah berakhir. Mohon login ulang")
@@ -1154,7 +1155,7 @@ export default function Page() {
         return
       }
 
-      const response = await fetch(`/api/absensi/monthly-detail?month=${selectedMonthDetail}`, {
+      const response = await fetch(`/api/absensi/monthly-detail?month=${monthNumber}`, {
         headers: {
           Authorization: `Bearer ${token} kelasId ${kelasId}`,
         },
@@ -2064,7 +2065,7 @@ export default function Page() {
                                 <td colSpan={5} className="py-4 text-center text-gray-500">
                                   {searchQuery
                                     ? "Tidak ada siswa yang sesuai dengan pencarian"
-                                    : "Tidak ada data siswa"}
+                                    : "Tidak ada data kehadiran siswa"}
                                 </td>
                               </tr>
                             )}
@@ -2169,7 +2170,7 @@ export default function Page() {
                 {selectedStudent?.weekly_summary.map((week, index) => (
                   <div key={index} className="border border-gray-200 rounded-md p-3">
                     <h5 className="text-sm font-medium text-[#041765] mb-2">
-                      Minggu {week.week_number + 1} ({week.date_range})
+                      Minggu {week.week_number} ({week.date_range})
                     </h5>
                     <div className="grid grid-cols-4 gap-2 text-sm">
                       <div className="flex flex-col">
