@@ -2065,7 +2065,7 @@ export default function Page() {
                                 <td colSpan={5} className="py-4 text-center text-gray-500">
                                   {searchQuery
                                     ? "Tidak ada siswa yang sesuai dengan pencarian"
-                                    : "Tidak ada data siswa"}
+                                    : "Tidak ada data kehadiran siswa"}
                                 </td>
                               </tr>
                             )}
