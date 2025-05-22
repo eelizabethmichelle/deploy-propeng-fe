@@ -383,16 +383,13 @@ export default function TeacherEvaluationForm() {
               <CheckCircledIcon className="h-5 w-5 text-green-600" />
               <CardTitle>Evaluasi Sudah Terkirim</CardTitle>
             </div>
-            <CardDescription>
-              Anda sudah mengisi evaluasi untuk mata pelajaran ini
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {subjectData && (
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-700">{subjectData.teacher.name}</h2>
+                <h1 className="text-lg font-regular text-gray-700">Nama Guru : {subjectData.teacher.name}</h1>
                 <div className="flex flex-wrap gap-2 mt-2 text-sm text-gray-600">
-                  <span>{subjectData.nama}</span>
+                  <span>Mata Pelajaran : {subjectData.nama}</span>
                   <span className="mx-2 border-l border-gray-300"></span>
                   <span>Angkatan {subjectData.angkatan}</span>
                   <span className="mx-2 border-l border-gray-300"></span>
@@ -400,7 +397,7 @@ export default function TeacherEvaluationForm() {
                 </div>
               </div>
             )}
-            <p className="text-gray-600 mb-6">
+            <p className="font-italic text-gray-600 mb-6">
               Terima kasih atas partisipasi Anda dalam memberikan evaluasi untuk pengajar dan mata pelajaran ini.
               Masukan Anda sangat berharga untuk meningkatkan kualitas pembelajaran.
             </p>
@@ -424,9 +421,9 @@ export default function TeacherEvaluationForm() {
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Form Evaluasi Guru</h1>
           {subjectData && (
             <div className="mt-4">
-              <h2 className="text-lg font-semibold text-gray-700">{subjectData.teacher.name}</h2>
+              <h2 className="text-lg font-semibold text-gray-700">Nama Guru: {subjectData.teacher.name}</h2>
               <div className="flex flex-wrap gap-2 mt-2 text-sm text-gray-600">
-                <span>{subjectData.nama}</span>
+                <span>Nama Matapelajaran: {subjectData.nama}</span>
                 <span className="hidden sm:inline mx-2 border-l border-gray-300"></span>
                 <span>Angkatan {subjectData.angkatan}</span>
                 <span className="hidden sm:inline mx-2 border-l border-gray-300"></span>
@@ -442,7 +439,7 @@ export default function TeacherEvaluationForm() {
               <div className="text-lg font-semibold mb-2 pb-2 border-b border-gray-200">
                 {category}
               </div>
-              <div className="text-xs text-gray-500 mb-4">
+              <div className="text-s text-gray-500 mb-4">
                 Skala Penilaian (1 Sangat Tidak setuju, 5 Sangat Setuju)
               </div>
               
@@ -540,13 +537,13 @@ export default function TeacherEvaluationForm() {
           
           <div className="mt-8">
             <label htmlFor="feedback" className="block mb-2 text-sm font-medium text-gray-700">
-              Kritik dan Saran
+              Kritik dan Saran untuk Guru
             </label>
             <Textarea
               id="feedback"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Masukkan kritik dan saranmu di sini..."
+              placeholder="Masukkan kritik dan saranmu untuk guru di sini..."
               rows={5}
               className="w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />

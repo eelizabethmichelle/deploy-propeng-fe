@@ -131,44 +131,102 @@ const TeacherEvaluationPage: NextPage = () => {
   Object.values(indicatorsByVariable).forEach((indicators) => {
     maxIndicators = Math.max(maxIndicators, Object.keys(indicators).length);
   });
-
   return (
     <div className="container mx-auto p-4">      <Card className="mb-6">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">{evaluationData.nama_matapelajaran}</CardTitle>
-          <p className="text-sm text-muted-foreground">Tahun Ajaran {evaluationData.tahun_ajaran_mapel}</p>
-          
-          {/* Response percentage indicator */}
-          {evaluationData.total_siswa_diajar_di_matapelajaran > 0 && (
-            <div className="mt-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">Jumlah Responden:</span>
-                {(() => {
-                  const responsePercentage = (evaluationData.total_pengisi_evaluasi / evaluationData.total_siswa_diajar_di_matapelajaran) * 100;
-                  let colorClass = "text-red-500";
-                  
-                  if (responsePercentage === 100) {
-                    colorClass = "text-green-500";
-                  } else if (responsePercentage >= 50) {
-                    colorClass = "text-yellow-500";
-                  }
-                  
-                  return (
-                    <span className={`font-medium ${colorClass}`}>
-                      {evaluationData.total_pengisi_evaluasi} / {evaluationData.total_siswa_diajar_di_matapelajaran} 
-                      {" "}({responsePercentage.toFixed(0)}%)
-                    </span>
-                  );
-                })()}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+            <div>
+              <CardTitle className="text-xl">{evaluationData.nama_matapelajaran}</CardTitle>
+              <p className="text-sm text-muted-foreground">Tahun Ajaran {evaluationData.tahun_ajaran_mapel}/{Number(evaluationData.tahun_ajaran_mapel) + 1}</p>
+              
+              {/* Response percentage indicator */}
+              {evaluationData.total_siswa_diajar_di_matapelajaran > 0 && (
+                <div className="mt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Jumlah Responden:</span>
+                    {(() => {
+                      const responsePercentage = (evaluationData.total_pengisi_evaluasi / evaluationData.total_siswa_diajar_di_matapelajaran) * 100;
+                      let colorClass = "text-red-500";
+                      
+                      if (responsePercentage === 100) {
+                        colorClass = "text-green-500";
+                      } else if (responsePercentage >= 50) {
+                        colorClass = "text-yellow-500";
+                      }
+                      
+                      return (
+                        <span className={`font-medium ${colorClass}`}>
+                          {evaluationData.total_pengisi_evaluasi} / {evaluationData.total_siswa_diajar_di_matapelajaran} 
+                          {" "}({responsePercentage.toFixed(0)}%)
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-4 md:mt-0 md:text-right">
+              <div className="font-bold text-lg">
+                Skor Total: <span className={getRatingColor(evaluationData.skor_grand_total)}>{evaluationData.skor_grand_total}</span>
+              </div>
+              <div className="w-full flex justify-center md:justify-end">
+              <div className="flex flex-wrap gap-3 text-sm">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  <span>Baik (4.0 -- 5.0)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  <span>Cukup (2.0 -- 4.0)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                  <span>Kurang (0.0 -- 2.0)</span>
+                </div>
               </div>
             </div>
-          )}
+            </div>
+          </div>
         </CardHeader>
         
         <CardContent>
+          {/* Summary of Variable Scores */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Ringkasan Nilai Per Variabel</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">              {Object.entries(evaluationData.ringkasan_skor_rata_rata_per_variabel).map(([varId, score]) => {
+                const numericScore = parseFloat(score.split('/')[0].trim());
+                const percentage = (numericScore / 5) * 100;
+                let bgColor = "bg-red-500";
+                
+                if (numericScore >= 4) {
+                  bgColor = "bg-green-500";
+                } else if (numericScore >= 2) {
+                  bgColor = "bg-yellow-500";
+                }
+                
+                return (
+                  <div key={varId} className="border rounded-md p-4 bg-muted/10">
+                    <h4 className="text-sm font-medium mb-2">{variableLabels[varId]}</h4>
+                    <p className={`text-xl font-bold ${getRatingColor(score)}`}>
+                      {score}
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                      <div 
+                        className={`${bgColor} h-2.5 rounded-full`} 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Detailed Indicator Scores */}
+          <h3 className="text-lg font-semibold mb-3">Detail Nilai Per Indikator</h3>
           <div className="rounded-md border">
-            <Table>
-              <TableHeader>
+            <Table>              <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="w-[200px] font-semibold">Variabel Penilaian</TableHead>
                   {Array.from({ length: maxIndicators }, (_, idx) => (
@@ -176,12 +234,13 @@ const TeacherEvaluationPage: NextPage = () => {
                       Indikator {idx + 1}
                     </TableHead>
                   ))}
+                  <TableHead className="font-semibold text-center w-[150px] bg-gray-100">Rata-Rata</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {Object.entries(variableLabels).map(([varId, label]) => (
+              <TableBody>                {Object.entries(variableLabels).map(([varId, label]) => (
                   <TableRow key={varId} className={parseInt(varId) % 2 === 0 ? "bg-muted/20" : ""}>
-                    <TableCell className="font-medium">{label}</TableCell>                    {Array.from({ length: maxIndicators }, (_, idx) => {
+                    <TableCell className="font-medium">{label}</TableCell>
+                    {Array.from({ length: maxIndicators }, (_, idx) => {
                       const indicatorKey = `Indikator ${idx + 1}`;
                       const rating = indicatorsByVariable[parseInt(varId)]?.[indicatorKey];
                       
@@ -192,7 +251,13 @@ const TeacherEvaluationPage: NextPage = () => {
                           </span>
                         </TableCell>
                       );
+                      
                     })}
+                    <TableCell className="text-center bg-gray-50">
+                      <span className={`font-medium ${getRatingColor(evaluationData.ringkasan_skor_rata_rata_per_variabel[varId])}`}>
+                        {evaluationData.ringkasan_skor_rata_rata_per_variabel[varId] || "-"}
+                      </span>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -211,14 +276,8 @@ const TeacherEvaluationPage: NextPage = () => {
               ) : (
                 <p className="text-muted-foreground">Tidak ada kritik dan saran</p>
               )}
-            </div>
-          </div>
+            </div>          </div>
         </CardContent>
-          <CardFooter className="flex justify-center border-t pt-4">
-          <div className="font-bold text-lg">
-            Skor Total: <span className={getRatingColor(evaluationData.skor_grand_total)}>{evaluationData.skor_grand_total}</span>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

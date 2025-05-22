@@ -612,8 +612,23 @@ export default function EvaluationOverviewPage() {
       </div>
       
       <div className="mt-2 text-sm text-muted-foreground">
-        <p>* Tombol Detail hanya aktif untuk mata pelajaran yang sudah memiliki evaluasi.</p>
-        <p>* Klik pada header kolom untuk mengurutkan data.</p>
+        <p>Keterangan:</p>
+        <p>Tombol Detail hanya aktif untuk mata pelajaran yang sudah memiliki evaluasi.</p>
+        <p>Klik pada header kolom untuk mengurutkan data.</p>
+        <div className="flex flex-wrap gap-3 text-sm">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  <span>Baik (4.0 -- 5.0)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  <span>Cukup (2.0 -- 4.0)</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                  <span>Kurang (0.0 -- 2.0)</span>
+                </div>
+              </div>
       </div>
     </div>
   );
