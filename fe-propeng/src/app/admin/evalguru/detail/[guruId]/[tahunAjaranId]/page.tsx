@@ -159,9 +159,9 @@ const ParticipationChip: React.FC<ParticipationChipDisplayProps> = ({ pengisi, t
   const percentage = (pengisi / totalSiswa) * 100;
   const roundedPercentage = Math.round(percentage);
   let colorClasses = ""; let chipText = `${roundedPercentage}% Partisipasi`; let IconComponent: React.ElementType | null = null;
-  if (roundedPercentage < 50) { colorClasses = "bg-red-100 text-red-700 border-red-200 hover:bg-red-100/90 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700"; chipText = `${roundedPercentage}% Partisipasi Rendah`; IconComponent = ExclamationTriangleIcon;
+  if (roundedPercentage < 50) { colorClasses = "bg-red-100 text-red-700 border-red-200 hover:bg-red-100/90 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700"; chipText = `${roundedPercentage}% Partisipasi`; IconComponent = ExclamationTriangleIcon;
   } else if (roundedPercentage < 100) { colorClasses = "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100/90 dark:bg-yellow-700/30 dark:text-yellow-300 dark:border-yellow-600"; IconComponent = InfoCircledIcon;
-  } else { colorClasses = "bg-green-100 text-green-700 border-green-200 hover:bg-green-100/90 dark:bg-green-700/30 dark:text-green-300 dark:border-green-600"; chipText = `${roundedPercentage}% Partisipasi Lengkap`; IconComponent = CheckCircledIcon; }
+  } else { colorClasses = "bg-green-100 text-green-700 border-green-200 hover:bg-green-100/90 dark:bg-green-700/30 dark:text-green-300 dark:border-green-600"; chipText = `${roundedPercentage}% Partisipasi`; IconComponent = CheckCircledIcon; }
   return (<div className={cn("mt-1.5", className)}><Badge variant="outline" className={cn("text-xs px-2 py-0.5 font-medium", colorClasses)}>{IconComponent && <IconComponent className="mr-1 h-3 w-3" />}{chipText}</Badge></div>);
 };
 
@@ -290,11 +290,11 @@ export default function DetailEvaluasiGuruPage() {
                     });
                     currentY = (doc as any).lastAutoTable.finalY + smallLineHeight;
                 } else {
-                    doc.setFontSize(9); doc.setFont("helvetica", "italic");
+                    doc.setFontSize(9); doc.setFont("helvetica");
                     doc.text("Tidak ada indikator untuk variabel ini.", pageMargin + 5, currentY); currentY += smallLineHeight;
                 }
 
-                doc.setFontSize(9.5); doc.setFont("helvetica", "bolditalic");
+                doc.setFontSize(9.5); doc.setFont("helvetica", "bold");
                 doc.text(`Rata-Rata ${variableName}`, pageMargin, currentY);
                 doc.text(variableAverageScore, pageWidth - pageMargin, currentY, { align: 'right' });
                 currentY += lineHeight * 1.5;
@@ -398,11 +398,11 @@ export default function DetailEvaluasiGuruPage() {
                     {info_konteks && (
                         <div className="pt-4 text-sm">
                             <p className="pb-1"><strong>Nama Guru:</strong> {info_konteks.nama_guru || "N/A"}</p>
-                            <p className="pb-1 text-muted-foreground"><strong>NISP:</strong> {info_konteks.nisp || "N/A"}</p>
+                            <p className="pb-1"><strong>NISP:</strong> {info_konteks.nisp || "N/A"}</p>
                             {(info_konteks.daftar_matapelajaran_diajar?.length > 0 && !info_konteks.daftar_matapelajaran_diajar.includes("Tidak ada mata pelajaran dengan evaluasi untuk tahun ini.")) ? (
-                                <p className="pb-1 text-muted-foreground"><strong>Mapel Terevaluasi:</strong> {info_konteks.daftar_matapelajaran_diajar.join(', ')}</p>
-                            ) : (<p className="pb-1 text-muted-foreground">Tidak ada mapel terevaluasi.</p>)}
-                            <p className="pb-1 text-muted-foreground"><strong>T.A.:</strong> {tahunAjaranDisplay ?? 'N/A'} / {nextTADisplay}</p>
+                                <p className="pb-1"><strong>Mapel Terevaluasi:</strong> {info_konteks.daftar_matapelajaran_diajar.join(', ')}</p>
+                            ) : (<p className="pb-1">Tidak ada mapel terevaluasi.</p>)}
+                            <p className="pb-1"><strong>TA </strong> {tahunAjaranDisplay ?? 'N/A'} / {nextTADisplay}</p>
                         </div>
                     )}
                 </div>
@@ -458,10 +458,10 @@ export default function DetailEvaluasiGuruPage() {
                         <DashboardIcon className="mr-2 h-4 w-4 text-primary" /> Ringkasan Evaluasi
                     </TabsTrigger>
                     <TabsTrigger value="detailevaluasi" className={cn("flex items-center justify-center rounded-md border-2 border-muted p-3", "hover:bg-white hover:text-accent-foreground dark:hover:bg-slate-800", "data-[state=active]:border-primary data-[state=active]:text-accent-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-primary", "focus-visible:ring-0 focus-visible:ring-offset-0", "text-sm font-medium bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400")}>
-                        <BookDown className="mr-2 h-4 w-4 text-primary" /> Detail per Mapel
+                        <BookDown className="mr-2 h-4 w-4 text-primary" /> Detail Setiap Mata Pelajaran
                     </TabsTrigger>
                     <TabsTrigger value="kritikdansaran" className={cn("flex items-center justify-center rounded-md border-2 border-muted p-3", "hover:bg-white hover:text-accent-foreground dark:hover:bg-slate-800", "data-[state=active]:border-primary data-[state=active]:text-accent-foreground data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-primary", "focus-visible:ring-0 focus-visible:ring-offset-0", "text-sm font-medium bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400")}>
-                        <Mail className="mr-2 h-4 w-4 text-primary" /> Kritik dan Saran
+                        <Mail className="mr-2 h-4 w-4 text-primary" /> Kritik dan Saran dari Siswa
                     </TabsTrigger>
                 </TabsList>
 
@@ -522,7 +522,7 @@ function VariableTabsComponent({ variablesData, summaryData, context }: { variab
                                 <TableHeader>
                                     <TableRow className="bg-muted/30">
                                         <TableHead className="px-4 py-3 text-sm font-semibold text-muted-foreground">Indikator Penilaian</TableHead>
-                                        <TableHead className="text-right w-[120px] px-4 py-3 text-sm font-semibold text-muted-foreground">Skor</TableHead>
+                                        <TableHead className="text-right w-[120px] px-4 py-3 text-sm font-semibold text-muted-foreground">Rerata Skor Evaluasi dari Siswa</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

@@ -35,14 +35,14 @@ const ParticipationChip: React.FC<ParticipationChipDisplayProps> = ({ pengisi, t
 
   if (roundedPercentage < 50) {
     colorClasses = "bg-red-100 text-red-700 border-red-200 hover:bg-red-100/90 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700";
-    chipText = `${roundedPercentage}% Partisipasi Rendah`;
+    chipText = `${roundedPercentage}% Partisipasi`;
     IconComponent = ExclamationTriangleIcon;
   } else if (roundedPercentage < 100) {
     colorClasses = "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100/90 dark:bg-yellow-700/30 dark:text-yellow-300 dark:border-yellow-600";
     IconComponent = InfoCircledIcon;
   } else { // 100%
     colorClasses = "bg-green-100 text-green-700 border-green-200 hover:bg-green-100/90 dark:bg-green-700/30 dark:text-green-300 dark:border-green-600";
-    chipText = `${roundedPercentage}% Partisipasi Lengkap`;
+    chipText = `${roundedPercentage}% Partisipasi`;
     IconComponent = CheckCircledIcon;
   }
 
@@ -77,7 +77,7 @@ export const overviewTahunanColumns: ColumnDef<FlattenedEvaluasiGuruOverview>[] 
             const yearString = row.getValue("tahun_ajaran") as string;
             if (yearString && /^\d{4}$/.test(yearString)) {
                 const startYear = parseInt(yearString, 10);
-                return <div className="text-center whitespace-nowrap">{`T.A. ${startYear}/${startYear + 1}`}</div>;
+                return <div className="text-center whitespace-nowrap">{`TA ${startYear}/${startYear + 1}`}</div>;
             }
             return <div className="text-center">{yearString || "-"}</div>;
         },
