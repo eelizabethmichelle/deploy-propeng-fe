@@ -292,7 +292,7 @@ export default function Page() {
               <div className="flex gap-4">
                 <ThreeBarStatCard
                   titleColor="text-green-600"
-                  title={`${moreThan8A/(zeroA+between18A+moreThan8A)}%`}
+                  title={`${Math.round(moreThan8A/(zeroA+between18A+moreThan8A))}%`}
                   subtitle={`${moreThan8A} dari ${zeroA+between18A+moreThan8A}`}
                   description="Siswa dengan nilai A pada lebih dari delapan mata pelajaran"
                   columns={[
@@ -303,7 +303,7 @@ export default function Page() {
                 />
                 <ThreeBarStatCard
                   titleColor="text-yellow-600"
-                  title={`${moreThan5C/(zeroC+between15C+moreThan5C)}%`}
+                  title={`${Math.round(moreThan5C/(zeroC+between15C+moreThan5C))}%`}
                   subtitle={`${moreThan5C} dari ${zeroC+between15C+moreThan5C}`}
                   description="Siswa dengan nilai C pada lebih dari lima mata pelajaran"
                   columns={[
@@ -314,7 +314,7 @@ export default function Page() {
                 />
                 <ThreeBarStatCard
                   titleColor="text-red-600"
-                  title={`${moreThan3D/(zeroD+between13D+moreThan3D)}%`}
+                  title={`${Math.round(moreThan3D/(zeroD+between13D+moreThan3D))}%`}
                   subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
                   description="Siswa dengan nilai D pada lebih dari tiga mata pelajaran"
                   columns={[
@@ -329,7 +329,7 @@ export default function Page() {
               <div className="flex gap-4">
               <ThreeBarStatCard
                   titleColor="text-green-600"
-                  title={`${passedAll/(passedLessThanHalf+passedHalfToAll+passedAll)}%`}
+                  title={`${Math.round(passedAll/(passedLessThanHalf+passedHalfToAll+passedAll))}%`}
                   subtitle={`${passedAll} dari ${passedLessThanHalf+passedHalfToAll+passedAll}`}
                   description="Siswa lulus pada seluruh mata pelajaran"
                   columns={[
@@ -340,7 +340,7 @@ export default function Page() {
                 />
                 <ThreeBarStatCard
                   titleColor="text-yellow-600"
-                  title={`${belowClassAvg/(belowClassAvg+betweenAvgAndThreshold+aboveThreshold)}%`}
+                  title={`${Math.round(belowClassAvg/(belowClassAvg+betweenAvgAndThreshold+aboveThreshold))}%`}
                   subtitle={`${belowClassAvg} dari ${belowClassAvg+betweenAvgAndThreshold+aboveThreshold}`}
                   description={`Siswa dengan rerata nilai di bawah rata-rata nilai kelas (${classAverage})`}
                   columns={[
@@ -351,13 +351,13 @@ export default function Page() {
                 />
                 <ThreeBarStatCard
                   titleColor="text-red-600"
-                  title={`${moreThan3D/(zeroD+between13D+moreThan3D)}%`}
+                  title={`${Math.round(moreThan3D/(zeroD+between13D+moreThan3D))}%`}
                   subtitle={`${moreThan3D} dari ${zeroD+between13D+moreThan3D}`}
                   description="Siswa dengan rata-rata nilai di bawah KKM"
                   columns={[
-                    { label: "< 75", value: zeroD },
-                    { label: "< 84", value: between13D },
-                    { label: ">= 84", value: moreThan3D },
+                    { label: "< 75", value: avgBelow75 },
+                    { label: "< 84", value: avgBetween75And84 },
+                    { label: ">= 84", value: avg84OrMore },
                   ]}
                 />
               </div>
