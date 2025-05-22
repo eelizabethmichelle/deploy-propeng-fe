@@ -288,12 +288,19 @@ export default function EvaluationOverviewPage() {
         <DataTableColumnHeader column={column} title="Mata Pelajaran" />
       ),
       cell: ({ row }) => <div className="font-medium">{row.getValue("nama_matapelajaran")}</div>,
-    },
-    {
+    },    {
       accessorKey: "tahun_ajaran",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Tahun Ajaran" />
       ),
+      cell: ({ row }) => {
+        const year = parseInt(row.getValue("tahun_ajaran") as string);
+        return (
+          <div className="text-left">
+            T.A {year}/{year + 1}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "response_rate",

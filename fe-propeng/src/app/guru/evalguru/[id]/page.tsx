@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import type { NextPage } from "next";
+// Removed NextPage import since it's not needed in App Router
 import { 
   Card, 
   CardHeader, 
@@ -56,7 +56,8 @@ const getRatingColor = (ratingStr: string | undefined) => {
   return "";
 };
 
-const TeacherEvaluationPage: NextPage = () => {
+// Changed from NextPage type to standard function component
+export default function TeacherEvaluationPage() {
   const { id } = useParams();
   const [evaluationData, setEvaluationData] = useState<EvaluationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -262,9 +263,7 @@ const TeacherEvaluationPage: NextPage = () => {
                 ))}
               </TableBody>
             </Table>
-          </div>
-
-          <div className="mt-8 mb-2">
+          </div>          <div className="mt-8 mb-2">
             <h3 className="text-lg font-semibold mb-4">Kritik dan Saran dari Mahasiswa</h3>
             <div className="space-y-2">
               {evaluationData.daftar_kritik_saran.length > 0 ? (
@@ -281,5 +280,4 @@ const TeacherEvaluationPage: NextPage = () => {
       </Card>
     </div>
   );
-};
-export default TeacherEvaluationPage;
+}
