@@ -28,6 +28,11 @@ import {
 import { DataTablePagination } from "@/components/ui/dt-lihat-linimasa/pagination";
 import { DataTableToolbar } from "@/components/ui/dt-lihat-linimasa/filters";
 
+// Define the column meta type
+interface ColumnMeta {
+  position?: "right" | "left";
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -62,6 +67,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     enableRowSelection: true,
+    enableColumnPinning: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -74,28 +80,39 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  // Helper function to check if a column should be fixed to the right
+  const isFixedToRight = (columnDef: any) => {
+    return (columnDef.meta as ColumnMeta)?.position === "right";
+  };
+
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table as any} />
-      <div className="overflow-y-auto rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    className="px-4 py-2"
-                    key={header.id}
-                    colSpan={header.colSpan}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const isRight = isFixedToRight(header.column.columnDef);
+                  return (
+                    <TableHead
+                      className={`px-4 py-2 ${isRight ? 'sticky right-0 bg-white shadow-sm z-10' : ''}`}
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      style={{
+                        width: header.column.getSize(),
+                      }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -106,17 +123,23 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell 
-                      className={`px-4 py-2 ${cell.column.id === 'actions' ? 'min-w-[200px]' : ''}`} 
-                      key={cell.id}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const isRight = isFixedToRight(cell.column.columnDef);
+                    return (
+                      <TableCell 
+                        className={`px-4 py-2 ${isRight ? 'sticky right-0 bg-white shadow-sm z-10' : ''}`}
+                        key={cell.id}
+                        style={{
+                          width: cell.column.getSize(),
+                        }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (

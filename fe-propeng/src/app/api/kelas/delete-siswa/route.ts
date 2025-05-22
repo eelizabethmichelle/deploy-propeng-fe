@@ -29,7 +29,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/delete_siswa_from_kelas/${classId}/${studentId}/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/delete_siswa_from_kelas/${classId}/${studentId}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

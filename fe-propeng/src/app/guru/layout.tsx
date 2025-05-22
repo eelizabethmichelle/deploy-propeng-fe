@@ -56,7 +56,16 @@ export default function GuruLayout({
         { label: "Manajemen Kelas", href: "/guru/kelas" },
         { label: "Detail Kelas" },
       ];
-    } else {
+    } else if (pathname === "/guru/submisi-peminatan") {
+      return [
+        { label: "Pendaftar Mata Pelajaran Peminatan" },
+      ];
+    } else if (/^\/guru\/submisi-peminatan\/\d+\/detail\/\d+$/.test(pathname)) {
+      return [
+        { label: "Pendaftar Mata Pelajaran Peminatan", href: "/guru/submisi-peminatan" },
+        { label: "Formulir Persetujuan" },
+      ];}
+    else {
       return breadcrumbMap[pathname] || [];
     }
   };

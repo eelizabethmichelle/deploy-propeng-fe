@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest) {
     console.log("Update request data:", requestData);
     
     // Make API request to the backend
-    const response = await fetch(`http://${API_BASE_URL}/api/linimasa/ubah/`, {
+    const response = await fetch(`${API_BASE_URL}/api/linimasa/ubah/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

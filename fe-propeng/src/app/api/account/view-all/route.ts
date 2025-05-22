@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     // Fetch user data from Django backend
     try {
-        const res = await fetch(`http://${API_BASE_URL}/api/auth/list-user/`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/list-user/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

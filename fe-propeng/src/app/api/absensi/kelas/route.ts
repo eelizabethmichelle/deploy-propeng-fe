@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
     try {
         // Fetch user profile
-        const profileRes = await fetch(`http://${API_BASE_URL}/api/absen/kelas/${kelasId}`, {
+        const profileRes = await fetch(`${API_BASE_URL}/api/absen/kelas/${kelasId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

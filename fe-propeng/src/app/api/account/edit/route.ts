@@ -12,7 +12,7 @@ export async function PUT(request: Request) {
 
     try {
         // TODO : api_base_url ga recognize tapi yg bawah kedeclare..
-        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -35,7 +35,7 @@ export async function PUT(request: Request) {
         }
 
         // Lakukan request ke Django backend
-        const res = await fetch(`http://${API_BASE_URL}/api/auth/edit/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/edit/${id}/`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`,

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader.split(" ")[1];
     
     // Make API request to your backend using the kelas-saya endpoint
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/kelas-saya/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/kelas-saya/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

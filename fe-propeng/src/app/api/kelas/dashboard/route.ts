@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Class ID is required" }, { status: 400 });
     }
     
+    console.log("ini class id di pemanggilan dashboard")
+    console.log(classId);
+    console.log("ini api base url di pemanggilan dashboard")
+    console.log(API_BASE_URL)
     // Make API request to your backend using hardcoded URL
     const response = await fetch(`http://${API_BASE_URL}/api/kelas/${classId}/insight/`, {
       method: "GET",

@@ -14,8 +14,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../too
 
 // Opsi untuk filter status (tetap bisa digunakan untuk helper render)
 export const statusOptions = [
-    { value: 'Terisi Penuh', label: 'Terisi Penuh', icon: CheckCircle, iconColorClass: "text-primary" }, // Tambah warna ikon di sini
-    { value: 'Dalam Proses', label: 'Dalam Proses', icon: LoaderIcon, iconColorClass: "text-green-500" }, // Ganti Activity -> LoaderIcon jika mau, atau Activity
+    { value: 'Terisi Penuh', label: 'Terisi Penuh', icon: CheckCircle, iconColorClass: "text-green-600" }, // Tambah warna ikon di sini
+    { value: 'Dalam Proses', label: 'Dalam Proses', icon: LoaderIcon, iconColorClass: "text-primary" }, // Ganti Activity -> LoaderIcon jika mau, atau Activity
     { value: 'Belum Dimulai', label: 'Belum Dimulai', icon: XCircle, iconColorClass: "text-red-500" },
 ];
 
@@ -45,18 +45,18 @@ const renderStatusBadge = (status: SubjectStatusType | undefined | null, typeLab
 
 export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
     // Kolom No.
-    {
-        id: 'no',
-        header: () => <div className="text-center">No.</div>,
-        cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
-        enableSorting: false, enableHiding: false, size: 40,
-    },
+    // {
+    //     id: 'no',
+    //     header: () => <div className="text-center">No.</div>,
+    //     cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+    //     enableSorting: false, enableHiding: false, size: 40,
+    // },
     // Kolom Mata Pelajaran (Link ke input nilai)
     {
         accessorKey: "name",
         header: ({ column }) => <DataTableColumnHeader column={column} title="Mata Pelajaran" />,
         cell: ({ row }) => (
-            <Link href={`/guru/input-nilai/${row.original.id}`} className="hover:underline font-medium">
+            <Link href={`/guru/manajemennilai/inputnilai/${row.original.id}`} className="hover:underline font-medium">
                 {row.original.name}
             </Link>
         ),
@@ -66,7 +66,7 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
  // --- Kolom Tahun Ajaran (Format diubah di cell) ---
     {
         accessorKey: "academicYear", // Data asli tetap "2024" (contoh)
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Thn. Ajaran" />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Tahun Ajaran" />,
         cell: ({ row }) => {
             // Ambil nilai asli dari data (misal "2024" atau "N/A")
             const originalValue = row.getValue("academicYear") as string;
@@ -84,7 +84,7 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
             if (!isNaN(startYear)) {
                 const endYear = startYear + 1; // Hitung tahun akhir
                 const formattedYear = `${startYear}/${endYear}`; // Buat format YYYY/YYYY
-                return <div className="text-center text-sm">{formattedYear}</div>; // Tampilkan format baru
+                return <div className="text-center text-sm">TA {formattedYear}</div>; // Tampilkan format baru
             }
 
             // Jika gagal diubah ke angka (misal teks lain), tampilkan nilai asli
@@ -213,7 +213,7 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
                 return (
                     <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
                         <span className={cn("font-medium", labelColorClass)}>{label}:</span>
-                        <span className="text-muted-foreground italic">Belum Dibuat</span>
+                        <span className="text-muted-foreground">Belum Dibuat</span>
                     </div>
                 );
             }
@@ -289,33 +289,43 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
 
         // Kolom Status Pengisian (Agregat)
    {
-        // Ganti accessorKey ke id karena kita butuh akses ke beberapa field
         id: "detailedStatus",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian" />, // Ganti Judul
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian" />,
         cell: ({ row }) => {
-            // Ambil kedua status dari data baris
             const statusP = row.original.statusPengetahuan;
             const statusK = row.original.statusKeterampilan;
-
             return (
-                // Gunakan flex-col untuk menumpuk status
                 <div className="flex flex-col gap-y-1 items-start">
-                    {renderStatusBadge(statusP, 'Pengetahuan')} {/* Render status Pengetahuan */}
-                    {renderStatusBadge(statusK, 'Keterampilan')} {/* Render status Keterampilan */}
+                    {renderStatusBadge(statusP, 'Pengetahuan')}
+                    {renderStatusBadge(statusK, 'Keterampilan')}
                 </div>
             );
         },
-        enableSorting: false, // Sorting pada status gabungan ini mungkin tidak intuitif
-        // Filter function bisa disesuaikan jika diperlukan, mungkin filter berdasarkan salah satu status?
-        // Atau biarkan tanpa filter di kolom ini.
-        // filterFn: (row, id, value) => {
-        //     // Contoh: filter jika value ada di statusP ATAU statusK
-        //     const statusP = row.original.statusPengetahuan;
-        //     const statusK = row.original.statusKeterampilan;
-        //     return value.includes(statusP) || value.includes(statusK);
-        // },
-        size: 150, // Mungkin perlu sedikit lebih lebar
+        enableSorting: false, // Sorting tetap false
+
+        // --- TAMBAHKAN INI ---
+        enableColumnFilter: true, // Aktifkan kemampuan filter untuk kolom ini
+        filterFn: (row, columnId, filterValue) => {
+            // filterValue adalah array berisi status yang dipilih user (misal: ['Dalam Proses', 'Belum Dimulai'])
+            const statusValues = Array.isArray(filterValue) ? filterValue : [];
+
+            // Jika tidak ada filter yang dipilih, tampilkan semua baris
+            if (statusValues.length === 0) {
+                return true;
+            }
+
+            // Ambil status dari baris saat ini
+            const statusP = row.original.statusPengetahuan;
+            const statusK = row.original.statusKeterampilan;
+
+            // Kembalikan true jika SALAH SATU status (P atau K) ada di dalam array filterValues
+            return statusValues.includes(statusP) || statusValues.includes(statusK);
+        },
+        // --- AKHIR TAMBAHAN ---
+
+        size: 150,
     },
+
     // --- Akhir Kolom Status Pengisian ---
     // Kolom Aksi
     {

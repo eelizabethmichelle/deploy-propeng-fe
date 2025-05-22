@@ -26,6 +26,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import {
+     Dialog,
+     DialogTrigger,
+     DialogContent,
+     DialogHeader,
+     DialogTitle,
+     DialogDescription,
+     DialogFooter,
+     DialogClose,
+  } from "@/components/ui/dialog";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -54,6 +64,14 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
   };
 
   const handleDelete = async () => {
+    if ((data as any).submissions_count > 0) {
+      customToast.error(
+        "Linimasa ini tidak dapat dihapus karena sudah ada submisi pendaftaran mata pelajaran peminatan siswa",
+        ""
+      );
+      setDeleteDialogOpen(false);
+      return;
+    }
     setIsDeleting(true);
 
     try {
@@ -114,74 +132,80 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
 
   return (
     <>
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-[#041765] text-white hover:bg-[#041765]/90"
-          onClick={() => router.push(`/admin/linimasa/${data.id}`)}
-        >
-          <ClipboardList size={14} className="mr-1" />
-          Lihat Submisi
-        </Button>
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-              disabled={loading}
-            >
-              <DotsHorizontalIcon className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem 
-              onClick={() => { 
-                router.push(`/admin/linimasa/ubah/${data.id}`);
-                setDropdownOpen(false);
-              }}
-              disabled={loading}
-            >
-              <Pencil size={14} className="mr-2" />
-              Ubah
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => {
-                setDeleteDialogOpen(true);
-                setDropdownOpen(false);
-              }}
-              disabled={loading}
-              className="text-red-600"
-            >
-              <Trash2 size={14} className="mr-2" />
-              Hapus
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            disabled={loading}
+          >
+            <DotsHorizontalIcon className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem 
+            onClick={() => { 
+              router.push(`/admin/linimasa/${data.id}`);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+          >
+            <ClipboardList size={14} className="mr-2" />
+            Lihat Pendaftar
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => { 
+              router.push(`/admin/linimasa/ubah/${data.id}`);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+          >
+            <Pencil size={14} className="mr-2" />
+            Ubah
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => {
+              setDeleteDialogOpen(true);
+              setDropdownOpen(false);
+            }}
+            disabled={loading}
+            className="text-red-600"
+          >
+            <Trash2 size={14} className="mr-2" />
+            Hapus
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete} 
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Menghapus..." : "Ya, Hapus"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-} 
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle>Apakah Anda yakin menghapus linimasa ini?</DialogTitle>
+      <DialogDescription>
+        Linimasa yang sudah terhapus tidak dapat dikembalikan.
+      </DialogDescription>
+    </DialogHeader>
+
+    <DialogFooter className="sm:justify-end flex gap-4">
+      <DialogClose asChild>
+        <Button variant="neutral">
+          Batal
+        </Button>
+      </DialogClose>
+      <Button
+        variant="destructive"
+        onClick={handleDelete}
+      >
+        {isDeleting ? "Menghapus..." : "Ya, Hapus"}
+      </Button>
+
+      
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+  </>
+);}

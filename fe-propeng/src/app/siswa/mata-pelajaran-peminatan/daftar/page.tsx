@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { BookOpen, Plus } from "lucide-react";
 
 interface Matpel {
   id: number;
@@ -191,13 +192,17 @@ export default function PendaftaranPage() {
   return (
     <div className="min-h-screen flex justify-center items-center   p-6">
       <Card className="w-full max-w-xl shadow-xl p-6 rounded-2xl bg-white">
+        <CardHeader className="text-center">
+                  <CardTitle className="font-large text-xl">Formulir Pendaftaran Mata Pelajaran Peminatan</CardTitle>
+                  <CardDescription>Pilih 4 Mata Pelajaran Peminatan yang ingin Anda ambil.</CardDescription>
+                </CardHeader>
         <CardContent className="space-y-6">
-          <h1 className="text-2xl font-bold text-center text-gray-800">
+          {/* <h1 className="text-2xl font-bold text-center text-gray-800">
             Pendaftaran Peminatan
-          </h1>
+          </h1> */}
 
           {siswa && (
-            <div className="text-sm text-gray-700 bg-gray-100 p-4 rounded-lg space-y-1">
+            <div className="text-sm text-gray-700 bg-gray-100 p-6 rounded-lg space-y-1">
               <p><span className="font-semibold">Nama:</span> {siswa.name}</p>
               <p><span className="font-semibold">NISN:</span> {siswa.nisn}</p>
             </div>
@@ -210,7 +215,7 @@ export default function PendaftaranPage() {
                 const option2 = `${tier}_option2`;
                 return (
                   <div key={tier}>
-                    <p className="font-medium text-gray-700 mb-2">
+                    <p className="font-small text-gray-700 mb-2">
                       Mata Pelajaran Peminatan {idx + 1}
                     </p>
                     <RadioGroup
@@ -233,19 +238,20 @@ export default function PendaftaranPage() {
                 );
               })}
               <div className="flex justify-between items-center mt-6">
-  <Button 
-    variant="secondary" 
-    className="w-auto px-6" 
-    onClick={() => router.back()}
-  >
-    Batal
-  </Button>
-  <div className="flex-1 flex justify-end">
-    <Button className="w-2/3" onClick={handleSubmit}>
-      Daftar
-    </Button>
-  </div>
-</div>
+                <Button
+                  variant="secondary"
+                  className="w-auto px-6"
+                  onClick={() => router.back()}
+                >
+                  Kembali
+                </Button>
+                <div className="flex-1 flex justify-end">
+                  <Button variant="default" onClick={handleSubmit}>
+                    <BookOpen className="h-5 w-5 ml-2" />
+                    Daftar
+                  </Button>
+                </div>
+              </div>
 
 
             </>

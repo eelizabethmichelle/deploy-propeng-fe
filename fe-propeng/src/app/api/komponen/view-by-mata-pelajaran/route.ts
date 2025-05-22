@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const res = await fetch(`http://${API_BASE_URL}/api/komponen/by-matpel/${matpelId}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/komponen/by-matpel/${matpelId}/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

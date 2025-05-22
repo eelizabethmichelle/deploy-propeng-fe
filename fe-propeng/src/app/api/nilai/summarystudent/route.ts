@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // --- Pastikan PATH ini sudah benar ---
-    const backendUrl = `http://${API_BASE_URL}/api/nilai/student/my-grades/`;
+    const backendUrl = `${API_BASE_URL}/api/nilai/student/my-grades/`;
 
     try {
         const backendResponse = await fetch(backendUrl, {

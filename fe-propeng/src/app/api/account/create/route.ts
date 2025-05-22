@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
     try {
         // Verify authorization with Django backend
-        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         // Extract user data from request
         const { name, username, password, role, nomorInduk, angkatan } = await request.json();
 
-        const res = await fetch(`http://${API_BASE_URL}/api/auth/register/`, {
+        const res = await fetch(`${API_BASE_URL}/api/auth/register/`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,

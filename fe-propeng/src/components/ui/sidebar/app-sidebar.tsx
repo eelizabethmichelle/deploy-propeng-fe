@@ -25,6 +25,12 @@ import {
   SquareDivide,
   SquareTerminal,
   User,
+  School2Icon,
+  LucideFormInput,
+  StarsIcon,
+  TypeIcon,
+  BookMarked,
+  BookUser,
 } from "lucide-react"
 
 import { NavMain } from "@/components/ui/sidebar/nav-main"
@@ -32,6 +38,7 @@ import { NavProjects } from "@/components/ui/sidebar/nav-projects"
 import { NavUser } from "@/components/ui/sidebar/nav-user"
 import { TeamSwitcher } from "@/components/ui/sidebar/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
+import { StarFilledIcon } from "@radix-ui/react-icons";
 
 interface ProfileData {
   user_id: number;
@@ -128,7 +135,8 @@ const data = {
         ],
       },
       {
-        title: "Manajemen Linimasa",
+        // ganti ke ini lebih representatif, typography yg lain takes too much space
+        title: "Manajemen Peminatan",
         url: "#",
         icon: Newspaper,
         isActive: true,
@@ -144,6 +152,18 @@ const data = {
           }
         ],
       },
+      {
+        title: "Evaluasi Guru",
+        url: "#",
+        icon: BookUser,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "/admin/evalguru/overview-tahunan",
+          }
+        ],
+      },
     ],
     teacher: [
       {
@@ -153,12 +173,12 @@ const data = {
         isActive: true,
         items: [
           {
-            title: "Mengelola Absensi",
+            title: "Absensi Kelas Aktif",
             url: "/guru/kelas/absensi",
           },
           {
-            title: "Lihat Rekap Nilai",
-            url: "/guru/kelas/rekap-nilai",
+            title: "Lihat Semua",
+            url: "/guru/kelas/",
           }
         ],
       },
@@ -195,6 +215,18 @@ const data = {
           {
             title: "Lihat Semua",
             url: "/guru/submisi-peminatan/",
+          }
+        ],
+      },
+      {
+        title: "Evaluasi Guru",
+        url: "#",
+        icon: BookUser,
+        isActive: true,
+        items: [
+          {
+            title: "Lihat Semua",
+            url: "#",
           }
         ],
       },
@@ -272,22 +304,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isLoading } = useAuth();
 
   // Show loading state
-  if (isLoading) {
-    return (
-      <Sidebar collapsible="icon" {...props}>
-        <SidebarHeader>
-          <TeamSwitcher teams={data.teams} />
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="p-4 text-center">Loading sidebar...</div>
-        </SidebarContent>
-        <SidebarFooter>
-          <NavUser user={data.user} />
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Sidebar collapsible="icon" {...props}>
+  //       <SidebarHeader>
+  //         <TeamSwitcher teams={data.teams} />
+  //       </SidebarHeader>
+  //       <SidebarContent>
+  //         <div className="p-4 text-center">Loading sidebar...</div>
+  //       </SidebarContent>
+  //       <SidebarFooter>
+  //         <NavUser user={data.user} />
+  //       </SidebarFooter>
+  //       <SidebarRail />
+  //     </Sidebar>
+  //   );
+  // }
 
   // User not authenticated or no role
   if (!user) {

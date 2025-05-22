@@ -954,12 +954,13 @@ export default function ClassDetailPage() {
                                 </DialogHeader>
                                 <DialogFooter className="sm:justify-end">
                                     <div className="flex gap-4">
-                                        <Button type="button" onClick={onRemoveStudents} variant="secondary">
+                                        <DialogClose asChild>
+                                            <Button type="button" variant="neutral">Batal</Button>
+                                        </DialogClose>
+                                        <Button type="button" onClick={onRemoveStudents} variant="destructive">
                                             Ya, Hapus
                                         </Button>
-                                        <DialogClose asChild>
-                                            <Button type="button">Batal</Button>
-                                        </DialogClose>
+                                        
                                     </div>
                                 </DialogFooter>
                             </DialogContent>

@@ -6,6 +6,7 @@ import { DataTableColumnHeader } from "@/components/ui/dt-lihat-submisi-minat/so
 import { useRouter } from "next/navigation";
 import { Button } from "../button";
 import { useEffect, useState } from "react";
+import { Pencil } from "lucide-react";
 
 export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => {
   return [
@@ -25,7 +26,7 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
     {
       accessorKey: "submittedAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Waktu Pendaftaran" />
+        <DataTableColumnHeader column={column} title="Waktu Perubahan Terakhir" />
       ),
       cell: ({ row }) => (
         <div className="flex space-x-2">
@@ -41,7 +42,7 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
       cell: ({ row }) => {
         const value = row.getValue("status") as string;
         return (
-          <span className={value === "Sudah Diulas" ? "text-green-600" : "text-yellow-600"}>
+          <span className={value === "Sudah Ditinjau" ? "text-green-600" : "text-yellow-600"}>
             {value}
           </span>
         );
@@ -81,7 +82,8 @@ export const submisiMinatColumns = (linimasaId: string): ColumnDef<Schema>[] => 
 
         return (
           <Button variant="default" onClick={() => router.push(targetUrl)}>
-            Lakukan Persetujuan
+             <Pencil size={14} className="mr-2" />
+            Ubah Status
           </Button>
         );
       },

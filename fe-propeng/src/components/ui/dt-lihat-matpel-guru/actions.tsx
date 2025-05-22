@@ -46,6 +46,15 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
         >
           Lihat Detail
         </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={() => { 
+            router.push(`/guru/mata-pelajaran/rekapitulasi-nilai/${data.id}`);
+            setDropdownOpen(false);
+          }}
+          disabled={loading}
+        >
+          Lihat Rekapitulasi Nilai
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,4 +1,3 @@
-// components/ui/grade-details/grade-detail-data-table.tsx
 "use client"
 
 import React from "react"
@@ -49,8 +48,8 @@ export function GradeDetailDataTable({
             <TableRow>
               <TableHead className="text-center w-[80px]">No</TableHead>
               <TableHead>Komponen</TableHead>
-              <TableHead className="text-center">Bobot</TableHead>
-              <TableHead className="text-center">Nilai</TableHead>
+              <TableHead className="text-center w-[150px]">Bobot</TableHead>
+              <TableHead className="text-center w-[150px]">Nilai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,7 +68,6 @@ export function GradeDetailDataTable({
                 </TableCell>
               </TableRow>
             )}
-
             {/* Average Score Row */}
             {averageScore !== undefined && (
               <TableRow className="bg-slate-50 border-t">

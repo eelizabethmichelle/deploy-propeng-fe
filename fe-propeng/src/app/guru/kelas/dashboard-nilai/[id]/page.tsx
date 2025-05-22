@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import router from "next/router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { distribusiNilaiKomponenColumns } from "@/components/ui/dt-distribusi-ni
 import { DataTableDashboardSiswa } from "@/components/ui/dt-dashboard-siswa/data-table";
 import { dashboardSiswaColumns } from "@/components/ui/dt-dashboard-siswa/columns";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const chartColors = [
     "#0B0E66", "#3543A4", "#5C70D6", "#A4AEEB", "#F0B400",
@@ -68,34 +70,9 @@ type topAndRiskStudent = {
     nilaiKeterampilan: number;
   };
 
-const siswaTerbaik = [
-  { id: 1, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 2, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 3, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 4, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 5, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 6, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 7, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 8, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 9, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 10, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-];
-
-const siswaRisikoAkademik = [
-  { id: 1, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 2, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 3, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 4, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 5, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 6, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 7, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 8, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 9, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-  { id: 10, namaSiswa: "Ayam", rerataNilai: 75, nilaiPengetahuan: 80, nilaiKeterampilan: 70 },
-];
-
 export default function Page() {
-    const classId = 1;
+    const params = useParams();
+    const classId = params?.id;
     const [filterType, setFilterType] = useState("Pengetahuan");
     const [loading, setLoading] = useState(false);
 
@@ -445,12 +422,11 @@ export default function Page() {
               <h2 className="text-xl font-semibold text-blue-900">
                 Ringkasan Nilai Siswa
               </h2>
-              <Button
-                type="button"
-                onClick={() => router.push("/ke-page-dien")}
-              >
-              <ArrowRight className="h-5 w-5 ml-2" />
-                Lihat Rekapitulasi Nilai
+              <Button asChild>
+                <Link href={`/guru/kelas/rekapitulasi-nilai/${classId}`}>
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Lihat Rekapitulasi Nilai
+                </Link>
               </Button>
             </div>
     

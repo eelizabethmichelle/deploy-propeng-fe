@@ -180,7 +180,7 @@ export default function ProfilePageAdmin({ user_id }: { user_id: number }) {
 
   return (
     <div className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Profil Saya</h3>
+      <h3 className="text-lg font-semibold mb-4">Halaman Utama Admin</h3>
       <div className="flex justify-center">
         <Card className="w-full">
           {/* Blue Header Section */}

@@ -545,7 +545,7 @@ export function GradeEntryDataTable({
         return (
             <div className="flex flex-col items-center justify-center text-center p-8 border rounded-md min-h-[450px] bg-card text-card-foreground shadow-sm"> {/* Mungkin perlu menambah min-h */}
                 {/* === GANTI IKON DENGAN GAMBAR === */}
-                <div className="relative w-60 h-60 md:w-72 md:h-72 mb-6"> {/* Sesuaikan ukuran jika perlu */}
+                {/* <div className="relative w-60 h-60 md:w-72 md:h-72 mb-6">
                     <NextImage
                         src="/images/tambah-komponen.png"
                         alt="Ilustrasi belum ada komponen penilaian"
@@ -553,7 +553,7 @@ export function GradeEntryDataTable({
                         height={250} // Example fixed height
                         className="mb-6" // Keep margin if needed
                     />
-                </div>
+                </div> */}
                 <h2 className="text-xl font-semibold mb-2">Belum Ada Komponen Penilaian</h2>
                 <p className="text-muted-foreground mb-6 max-w-md">
                     Ibu/Bapak belum menambahkan komponen penilaian pada mata pelajaran ini. Buat komponen penilaian dulu lalu bisa lanjut masukkan nilai, ya!
@@ -583,11 +583,6 @@ export function GradeEntryDataTable({
             </div>
         );
     }
-    // ============================================================
-    // === JIKA ADA KOMPONEN, LANJUT RENDER TABEL ===
-    // ============================================================
-
-   // --- Render Tabel Utama (TANPA STICKY) ---
     return (
         <div className="space-y-4">
             {/* Toolbar Tabel */}
@@ -652,15 +647,12 @@ export function GradeEntryDataTable({
                                              // Tidak perlu kalkulasi sticky offset lagi
                                             return (
                                                 <TableCell key={cell.id}
-                                                    // --- 👇 HAPUS prop 'style' untuk sticky positioning ---
                                                     style={{
                                                         width: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : undefined,
                                                         minWidth: cell.column.getSize() !== 150 ? `${cell.column.getSize()}px` : '100px',
                                                     }}
-                                                    // --- 👇 HAPUS kelas background kondisional sticky ---
                                                     className={cn(
                                                         'px-2 py-1 h-11 align-middle text-xs',
-                                                        // Beri background di TableRow saja sudah cukup
                                                         cell.column.id === 'finalScore' && 'text-center font-medium',
                                                         cell.column.id === 'actions' && 'text-center'
                                                     )} >
@@ -684,7 +676,7 @@ export function GradeEntryDataTable({
                     {/* === TAMBAHKAN TABLE FOOTER (<tfoot>) === */}
                     {/* ========================================== */}
                     {statistics && ( // Hanya render footer jika statistik ada
-                        <tfoot className="bg-muted/30 font-medium text-xs border-t">
+                        <tfoot className="bg-muted/30 font-medium text-sm border-t">
                             {/* Kita definisikan 3 baris footer secara manual di sini */}
                             {/* Baris Rata-rata */}
                             <TableRow>
@@ -729,7 +721,7 @@ export function GradeEntryDataTable({
                                 </TableCell>
                                 {table.getColumn('class')?.getIsVisible() && <TableCell></TableCell>}
                                 {assessmentComponents.map(comp => (
-                                     <TableCell key={`max-foot-${comp.id}`} className="px-2 py-1.5 text-center">
+                                     <TableCell key={`max-foot-${comp.id}`} className="text-center">
                                          {formatNumberOrDash(statistics.max[comp.id], 2)}
                                      </TableCell>
                                 ))}

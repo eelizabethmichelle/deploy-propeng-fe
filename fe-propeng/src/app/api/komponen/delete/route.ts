@@ -11,7 +11,7 @@ export async function DELETE(request: Request) {
 
     try {
         // Verify authorization with Django backend
-        const authCheck = await fetch(`http://${API_BASE_URL}/api/auth/protected/`, {
+        const authCheck = await fetch(`${API_BASE_URL}/api/auth/protected/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -28,7 +28,7 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "User ID is required" }, { status: 400 });
         }
 
-        const res = await fetch(`http://${API_BASE_URL}/api/komponen/delete/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/komponen/delete/${id}/`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,

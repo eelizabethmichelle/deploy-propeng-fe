@@ -434,12 +434,11 @@ export default function CreateLinimasa() {
       });
 
       const responseData = await response.json();
-      console.log("Response data:", responseData);
+      console.log("Create response:", responseData);
 
-      if (response.ok && responseData.status === 200) {
+      if (response.ok && (responseData.status === 200 || responseData.status === 201)) {
         customToast.success("Berhasil Membuat Linimasa", "Linimasa berhasil dibuat");
         
-        // Dispatch event to refresh the list
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event(LINIMASA_UPDATED_EVENT));
         }
@@ -467,7 +466,7 @@ export default function CreateLinimasa() {
       <Toaster />
       <Card className="w-full max-w-3xl">
         <CardHeader className="text-center">
-          <CardTitle>Tambah Linimasa Pengajuan
+          <CardTitle>Tambah Linimasa Pendaftaran
           Mata Pelajaran Minat</CardTitle>
           <CardDescription>Buat linimasa baru untuk pemilihan mata pelajaran</CardDescription>
         </CardHeader>
@@ -513,7 +512,22 @@ export default function CreateLinimasa() {
                                   const localDate = new Date(date.setHours(12));
                                   const formattedDate = 
                                     `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
-                                  field.onChange(formattedDate);
+                                  
+                                  const currentEndDate = form.getValues("end_date");
+                                  
+                                  if (currentEndDate) {
+                                    // Check if new start date is after end date
+                                    const startDate = new Date(formattedDate);
+                                    const endDate = new Date(currentEndDate);
+                                    
+                                    if (startDate >= endDate) {
+                                      customToast.error("Validasi Tanggal", "Tanggal mulai tidak boleh sama atau setelah tanggal selesai");
+                                    } else {
+                                      field.onChange(formattedDate);
+                                    }
+                                  } else {
+                                    field.onChange(formattedDate);
+                                  }
                                 } else {
                                   field.onChange("");
                                 }
@@ -680,34 +694,31 @@ export default function CreateLinimasa() {
                   </div>
                 ) : (
                   <>
-                    {/* Display mata pelajaran options in pairs */}
-                    {Array.from({ length: 4 }).map((_, pairIndex) => (
-                      <div key={pairIndex} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-md">
-                        {/* First option in the pair */}
+                    {/* Display mata pelajaran options vertically */}
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="p-4 border rounded-md">
                         <div className="space-y-4">
-                          <h4 className="font-medium">Opsi 1</h4>
-                          <FormField
-                            control={form.control}
-                            name={`matpels.${pairIndex * 2}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mata Pelajaran {pairIndex * 2 + 1} *</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2, numValue);
-                                  }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Pilih mata pelajaran" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2))
-                                      .map((matpel) => (
+                          <h4 className="font-medium">Pilihan Pelajaran Peminatan {index + 1}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name={`matpels.${index * 2}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Mata Pelajaran Peminatan {index * 2 + 1} *</FormLabel>
+                                  <Select
+                                    onValueChange={(value) => {
+                                      handleMatpelChange(index * 2, parseInt(value));
+                                    }}
+                                    value={field.value.toString()}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Pilih mata pelajaran" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {getFilteredOptions(index * 2).map((matpel) => (
                                         <SelectItem
                                           key={matpel.id}
                                           value={matpel.id.toString()}
@@ -715,61 +726,65 @@ export default function CreateLinimasa() {
                                           {matpel.nama}
                                         </SelectItem>
                                       ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                          <FormField
-                            control={form.control}
-                            name={`capacity.${pairIndex * 2}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Kapasitas {pairIndex * 2 + 1} *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
-                                    onChange={(e) => {
-                                      const value = parseInt(e.target.value);
-                                      // Ensure value is at least 1
-                                      field.onChange(value < 1 ? 1 : value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        {/* Second option in the pair */}
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Opsi 2</h4>
-                          <FormField
-                            control={form.control}
-                            name={`matpels.${pairIndex * 2 + 1}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Mata Pelajaran {pairIndex * 2 + 2} *</FormLabel>
-                                <Select
-                                  onValueChange={(value) => {
-                                    const numValue = parseInt(value);
-                                    handleMatpelChange(pairIndex * 2 + 1, numValue);
-                                  }}
-                                  value={field.value > 0 ? field.value.toString() : ""}
-                                >
+                            <FormField
+                              control={form.control}
+                              name={`capacity.${index * 2}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 1} *</FormLabel>
                                   <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Pilih mata pelajaran" />
-                                    </SelectTrigger>
+                                    <Input 
+                                      type="number" 
+                                      {...field} 
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        // Ensure value is at least 1 and at most 50
+                                        if (value < 1) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas minimum adalah 1");
+                                          field.onChange(1);
+                                        } else if (value > 100) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas maksimum adalah 100");
+                                          field.onChange(100);
+                                        } else {
+                                          field.onChange(value);
+                                        }
+                                      }}
+                                    />
                                   </FormControl>
-                                  <SelectContent>
-                                    {matpelOptions
-                                      .filter(matpel => !isMatpelSelectedElsewhere(matpel.id, pairIndex * 2 + 1))
-                                      .map((matpel) => (
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          {/* Second subject for each peminatan */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <FormField
+                              control={form.control}
+                              name={`matpels.${index * 2 + 1}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Mata Pelajaran Peminatan {index * 2 + 2} *</FormLabel>
+                                  <Select
+                                    onValueChange={(value) => {
+                                      handleMatpelChange(index * 2 + 1, parseInt(value));
+                                    }}
+                                    value={field.value.toString()}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Pilih mata pelajaran" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {getFilteredOptions(index * 2 + 1).map((matpel) => (
                                         <SelectItem
                                           key={matpel.id}
                                           value={matpel.id.toString()}
@@ -777,34 +792,43 @@ export default function CreateLinimasa() {
                                           {matpel.nama}
                                         </SelectItem>
                                       ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                          <FormField
-                            control={form.control}
-                            name={`capacity.${pairIndex * 2 + 1}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Kapasitas {pairIndex * 2 + 2} *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    {...field} 
-                                    onChange={(e) => {
-                                      const value = parseInt(e.target.value);
-                                      // Ensure value is at least 1
-                                      field.onChange(value < 1 ? 1 : value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                            <FormField
+                              control={form.control}
+                              name={`capacity.${index * 2 + 1}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Kapasitas Mata Pelajaran Peminatan {index * 2 + 2} *</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      {...field} 
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        // Ensure value is at least 1 and at most 50
+                                        if (value < 1) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas minimum adalah 1");
+                                          field.onChange(1);
+                                        } else if (value > 100) {
+                                          customToast.error("Nilai Kapasitas", "Kapasitas maksimum adalah 100");
+                                          field.onChange(100);
+                                        } else {
+                                          field.onChange(value);
+                                        }
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -816,12 +840,10 @@ export default function CreateLinimasa() {
               <div className="flex justify-between items-center gap-2 pt-4">
                 {/* Tombol Kembali */}
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   type="button"
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2"
+                  onClick={() => router.back()} // Kembali ke halaman sebelumnya
                 >
-                  <ArrowLeft className="h-4 w-4" />
                   Kembali
                 </Button>
 
@@ -834,9 +856,7 @@ export default function CreateLinimasa() {
                   <Plus className="h-5 w-5 mr-2" />
                   {isSubmitting 
                     ? "Menyimpan..." 
-                    : !isFormValid 
-                      ? "Lengkapi Semua Data" 
-                      : "Buat Linimasa"
+                    : "Buat Linimasa"
                   }
                 </Button>
               </div>

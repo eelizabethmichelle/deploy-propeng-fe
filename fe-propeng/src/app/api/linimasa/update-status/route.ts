@@ -11,7 +11,7 @@ export async function PUT(req: Request) {
 
   const body = await req.json();
 
-  const res = await fetch(`http://${API_BASE_URL}/api/linimasa/pilihan-siswa/update-status/`, {
+  const res = await fetch(`${API_BASE_URL}/api/linimasa/pilihan-siswa/update-status/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

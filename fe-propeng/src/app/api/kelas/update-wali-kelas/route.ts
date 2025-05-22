@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
     }
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/update_wali_kelas/${classId}/`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/update_wali_kelas/${classId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

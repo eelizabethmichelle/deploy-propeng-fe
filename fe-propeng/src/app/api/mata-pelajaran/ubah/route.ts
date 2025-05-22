@@ -16,7 +16,7 @@ export async function PUT(req: Request) {
   if (teacher !== undefined) payload.teacher = teacher;
   if (siswa_terdaftar !== undefined) payload.siswa_terdaftar = siswa_terdaftar;
 
-  const res = await fetch(`http://${API_BASE_URL}/api/matpel/update/${id}/`, {
+  const res = await fetch(`${API_BASE_URL}/api/matpel/update/${id}/`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

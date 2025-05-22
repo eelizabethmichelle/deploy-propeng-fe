@@ -50,14 +50,14 @@ export default function AdminLayout({
       { label: "Mata Pelajaran", href: "/admin/mata-pelajaran" },
       { label: "Tambah Mata Pelajaran" },
     ],
-    "/admin/linimasa": [{ label: "Linimasa Pengajuan Mata Pelajaran Peminatan" }],
+    "/admin/linimasa": [{ label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan" }],
     "/admin/linimasa/tambah": [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
       { label: "Tambah Linimasa" },
     ],
     "/admin/linimasa/[linimasaId]": [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+      { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Pendaftar" },
     ],
   };
 
@@ -69,22 +69,40 @@ export default function AdminLayout({
     ];
   }
 
-  if (pathname.includes("/admin/linimasa")) {
+  if (pathname === "/admin/linimasa") {
     breadcrumbs = [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi" },
+      { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan" },
     ];
-  }
-
-  if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
+  } else if (pathname.includes("/admin/linimasa") && pathname.includes("detail")) {
     const parts = pathname.split("/");
     const eventId = parts[3];
     breadcrumbs = [
-      { label: "Linimasa Pengajuan Mata Pelajaran Peminatan", href: "/admin/linimasa" },
-      { label: "Submisi", href: `/admin/linimasa/${eventId}` },
+      { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Pendaftar", href: `/admin/linimasa/${eventId}` },
       { label: "Persetujuan" },
     ];
+  } else if (pathname.includes("/admin/linimasa")) {
+    breadcrumbs = [
+      { label: "Linimasa  Pendaftaran Mata Pelajaran Peminatan", href: "/admin/linimasa" },
+      { label: "Pendaftar" },
+    ];
   }
+  
+  if (pathname === "/admin/evalguru/overview-tahunan") {
+    breadcrumbs = [
+      { label: "Evaluasi Guru" },
+    ];
+  }
+  
+  if (pathname.includes("/admin/evalguru/detail") ) {
+    const parts = pathname.split("/");
+    const guruId = parts[3];
+    const tahunAjaranId = parts[4];
+    breadcrumbs = [
+      { label: "Evaluasi Guru", href: "/admin/evalguru/overview-tahunan" },
+      { label: "Detail Skor Evaluasi" },
+    ];
+  } 
 
   if (pathname.includes("/admin/akun/detil")) {
     breadcrumbs = [

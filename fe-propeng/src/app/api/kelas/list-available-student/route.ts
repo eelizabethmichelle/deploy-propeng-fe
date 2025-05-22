@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader.split(" ")[1];
     
     // Make API request to your backend using hardcoded URL
-    const response = await fetch(`http://${API_BASE_URL}/api/kelas/list_available_student/${angkatan}`, {
+    const response = await fetch(`${API_BASE_URL}/api/kelas/list_available_student/${angkatan}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
