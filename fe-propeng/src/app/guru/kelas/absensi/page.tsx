@@ -7,7 +7,7 @@ import { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse, Search } from "lucide-react"
+import { CalendarCheck, Check, CheckCircle, Clock, X, MousePointerClick, HeartPulse, Search, ChartBar } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
@@ -1345,30 +1345,30 @@ export default function Page() {
 
   if (!classData) {
     return (
-              <div className="mt-8 flex justify-center">
-                <Card className="border border-yellow-200 bg-yellow-50 max-w-xl w-full">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <CardTitle>Tidak Ada Kelas</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Anda belum memiliki kelas apapun saat ini.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">
-                      Silakan hubungi admin untuk mendapatkan akses ke kelas Anda.
-                    </p>
-                    <Button 
-                      onClick={() => window.location.reload()}
-                      className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
-                    >
-                      Muat Ulang
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+      <div className="mt-8 flex justify-center">
+        <Card className="border border-yellow-200 bg-yellow-50 max-w-xl w-full">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CardTitle>Tidak Ada Kelas</CardTitle>
+            </div>
+            <CardDescription>
+              Anda belum memiliki kelas apapun saat ini.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Silakan hubungi admin untuk mendapatkan akses ke kelas Anda.
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-white font-semibold rounded-md"
+            >
+              Muat Ulang
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
     )
   }
@@ -1379,9 +1379,18 @@ export default function Page() {
       <div className="flex flex-col">
         {/* Class Header - More Prominent */}
         <div className="mb-2">
-          <h2 className="text-2xl font-semibold text-[#041765] mb-1">{classData.namaKelas}</h2>
-          <p className="text-sm text-[#88888C]">TA {classData.tahunAjaran}</p>
+          <h2 className="text-2xl font-semibold text-[#041765] mb-1">
+            Kelas {classData.namaKelas}
+          </h2>
+          <div className="flex items-center text-sm text-[#88888C]">
+            <span>TA {classData.tahunAjaran}</span>
+            <span className="mx-2">|</span>
+            <span>Wali Kelas: {classData.waliKelas}</span>
+            <span className="mx-2">|</span>
+            <span>Jumlah Siswa: {classData.totalSiswa}</span>
+          </div>
         </div>
+
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="todo" className="w-full">
@@ -1714,7 +1723,7 @@ export default function Page() {
                       {/* Filters for Overview */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                          <p className="text-base font-semibold text-[#041765]">Overview Kehadiran Siswa per Minggu:</p>
+                          <p className="text-base font-semibold text-[#041765]">Overview Kehadiran Siswa per Minggu</p>
                         </div>
                         <div className="flex gap-2">
                           <Select value={selectedMonthOverview} onValueChange={handleMonthChangeOverview}>
@@ -1779,11 +1788,20 @@ export default function Page() {
                             </div>
                           </div>
 
+                          <div className="flex items-center gap-4 mb-2">
+                            <p className="text-base font-semibold text-[#041765]">Distribusi Kehadiran Siswa per Hari</p>
+                          </div>
+
                           {/* Persentase Kehadiran Terbanyak */}
                           <div className="mb-8">
-                            <h4 className="text-base font-medium text-gray-800 mb-4">
-                              Persentase Kehadiran Terbanyak - {getHighestAttendanceDay()}
-                            </h4>
+                            <Card className="w-full mb-4">
+                              <CardContent className="flex items-center gap-2 p-4 bg-blue-50 rounded-lg">
+                                <ChartBar className="w-6 h-6 text-blue-500" />
+                                <h4 className="text-base font-medium text-blue-800 m-0">
+                                  Persentase Kehadiran Terbanyak – {getHighestAttendanceDay()}
+                                </h4>
+                              </CardContent>
+                            </Card>
                             <div className="-mx-6" style={{ height: "320px" }}>
                               <ChartContainer
                                 className="w-full"
@@ -1905,25 +1923,25 @@ export default function Page() {
                               <table className="w-full min-w-[min(70%,800px)] text-sm">
                                 <thead className="bg-white">
                                   <tr className="border-b border-gray-200">
-                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                    <th className="py-4 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Alfa</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {monthlyAnalysis.top_students.map((student: any) => (
                                     <tr key={student.id} className="border-b border-gray-100">
-                                      <td className="py-2 px-1">{student.name}</td>
-                                      <td className="py-2 px-1 text-center font-medium text-green-600">
+                                      <td className="py-4 px-1">{student.name}</td>
+                                      <td className="py-4 px-1 text-center font-medium text-green-600">
                                         {student.percentage}%
                                       </td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Alfa}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -1944,25 +1962,25 @@ export default function Page() {
                               <table className="w-full min-w-[min(70%,800px)] text-sm">
                                 <thead className="bg-white">
                                   <tr className="border-b border-gray-200">
-                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
-                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                    <th className="py-4 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Alfa</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {monthlyAnalysis.bottom_students.map((student: any) => (
                                     <tr key={student.id} className="border-b border-gray-100">
-                                      <td className="py-2 px-1">{student.name}</td>
-                                      <td className="py-2 px-1 text-center font-medium text-red-600">
+                                      <td className="py-4 px-1">{student.name}</td>
+                                      <td className="py-4 px-1 text-center font-medium text-red-600">
                                         {student.percentage}%
                                       </td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
-                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-4 px-2 text-center">{student.counts.Alfa}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -2042,14 +2060,7 @@ export default function Page() {
                                   <td className="py-2 px-2">{student.name}</td>
                                   <td className="py-2 px-2">{student.nisn}</td>
                                   <td className="py-2 px-2 text-center">
-                                    <span
-                                      className={`font-medium ${student.monthly_percentage >= 80
-                                          ? "text-green-600"
-                                          : student.monthly_percentage >= 60
-                                            ? "text-yellow-600"
-                                            : "text-red-600"
-                                        }`}
-                                    >
+                                    <span className="font-medium text-blue">
                                       {student.monthly_percentage}%
                                     </span>
                                   </td>
