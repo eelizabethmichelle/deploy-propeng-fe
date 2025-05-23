@@ -261,6 +261,7 @@ export default function Page() {
               title="Distribusi Pendaftaran Mata Pelajaran"
               data={subjectData}
               notes={notes}
+              tahunAjaran={tahunAjaran}
             />
           </div>
     
@@ -445,8 +446,7 @@ export default function Page() {
                     </h2>
                   </div>
 
-                  {/* Right side: Contextual Info (e.g., percentage or filter) */}
-                  <div className="text-sm font-medium text-white bg-white px-3 py-1 rounded">
+                  <div className="invisible text-sm font-medium text-white bg-white px-3 py-1 rounded">
                     biar rata aja #pusing
                   </div>
                 </div>
