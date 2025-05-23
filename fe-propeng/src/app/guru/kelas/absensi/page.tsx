@@ -1923,25 +1923,26 @@ export default function Page() {
                               <table className="w-full min-w-[min(70%,800px)] text-sm">
                                 <thead className="bg-white">
                                   <tr className="border-b border-gray-200">
-                                    <th className="py-4 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Izin</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {monthlyAnalysis.top_students.map((student: any) => (
                                     <tr key={student.id} className="border-b border-gray-100">
-                                      <td className="py-4 px-1">{student.name}</td>
-                                      <td className="py-4 px-1 text-center font-medium text-green-600">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-green-600">
                                         {student.percentage}%
                                       </td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Hadir}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Sakit}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Izin}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Alfa}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2
+                                       px-2 text-center">{student.counts.Alfa}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -1962,25 +1963,25 @@ export default function Page() {
                               <table className="w-full min-w-[min(70%,800px)] text-sm">
                                 <thead className="bg-white">
                                   <tr className="border-b border-gray-200">
-                                    <th className="py-4 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Persentase</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Hadir</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Sakit</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Izin</th>
-                                    <th className="py-4 px-2 text-center font-medium text-gray-600">Alfa</th>
+                                    <th className="py-2 px-1 text-left font-medium text-gray-600">Nama Siswa</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Persentase</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Hadir</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Sakit</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Izin</th>
+                                    <th className="py-2 px-2 text-center font-medium text-gray-600">Alfa</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {monthlyAnalysis.bottom_students.map((student: any) => (
                                     <tr key={student.id} className="border-b border-gray-100">
-                                      <td className="py-4 px-1">{student.name}</td>
-                                      <td className="py-4 px-1 text-center font-medium text-red-600">
+                                      <td className="py-2 px-1">{student.name}</td>
+                                      <td className="py-2 px-1 text-center font-medium text-red-600">
                                         {student.percentage}%
                                       </td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Hadir}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Sakit}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Izin}</td>
-                                      <td className="py-4 px-2 text-center">{student.counts.Alfa}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Hadir}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Sakit}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Izin}</td>
+                                      <td className="py-2 px-2 text-center">{student.counts.Alfa}</td>
                                     </tr>
                                   ))}
                                 </tbody>
