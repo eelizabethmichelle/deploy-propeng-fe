@@ -200,13 +200,17 @@ export default function Page() {
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: () => <div className="text-center">Status</div>,
         cell: ({ getValue }) => {
           const value = getValue<string>()
-          return value === "Di atas KKM" ? (
-            <Badge variant="secondary">{value}</Badge>
-          ) : (
-            <Badge className="bg-red-100 text-red-800">{value}</Badge>
+          return (
+            <div className="flex justify-center">
+              {value === "Di atas KKM" ? (
+                <Badge className="bg-green-100 text-green-800 w-[120px] text-center flex items-center justify-center">Di atas KKM</Badge>
+              ) : (
+                <Badge className="bg-red-100 text-red-800 w-[120px] text-center flex items-center justify-center">Di bawah KKM</Badge>
+              )}
+            </div>
           )
         },        
       },
@@ -377,21 +381,21 @@ export default function Page() {
       ) : (
         <>
          {/* <h2 className="text-lg font-semibold mb-1">Grafik Persebaran Nilai</h2>   */}
-         <div className="flex gap-10 items-start w-full max-w-7xl">
-            {/* Chart */}
-            <Card className="flex-1">
-              <CardContent className="pt-6">
+         <div className="flex gap-10 items-start w-full">
+            {/* Chart Card */}
+            <Card className="flex-[1] shadow-md h-[600px]">
+              <CardContent className="p-6 h-full">
                 {(!gradeData?.students || gradeData.students.length === 0) ? (
-                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                  <div className="flex items-center justify-center h-full text-gray-500">
                     <p className="text-lg">Belum ada data siswa</p>
                   </div>
                 ) : Object.keys(gradeData.initialGrades).length === 0 ? (
-                  <div className="flex items-center justify-center h-[400px] text-gray-500">
+                  <div className="flex items-center justify-center h-full text-gray-500">
                     <p className="text-lg">Belum ada data nilai</p>
                   </div>
                 ) : (
-                  <Tabs defaultValue="pengetahuan" className="w-full" onValueChange={setActiveTab}>
-                    <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-[700px] h-[40px] mb-4">
+                  <Tabs defaultValue="pengetahuan" className="w-full h-full" onValueChange={setActiveTab}>
+                    <TabsList className="bg-white border border-gray-200 rounded-lg p-1 w-full h-[40px] mb-4">
                       <TabsTrigger
                         value="pengetahuan"
                         className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
@@ -408,15 +412,15 @@ export default function Page() {
                         value="rata-rata"
                         className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium text-[#041765] transition-all data-[state=active]:bg-[#EEF1FB] data-[state=active]:text-[#041765] data-[state=active]:shadow-sm"
                       >
-                        Rata-rata
+                        Rata-rata Pengetahuan dan Keterampilan
                       </TabsTrigger>
                     </TabsList>
 
-                    <ChartContainer config={chartConfig}>
+                    <ChartContainer config={chartConfig} className="h-[calc(100%-60px)]">
                       <BarChart
                         data={getGradeDistribution(rows, activeTab)}
-                        margin={{ top: 10, right: 30, bottom: 20, left: 20 }}
-                        barSize={40}
+                        margin={{ top: 10, right: 20, bottom: 20, left: 10 }}
+                        barSize={70}
                       >
                         <CartesianGrid 
                           horizontal={true} 
@@ -428,7 +432,9 @@ export default function Page() {
                           dataKey="range" 
                           tickLine={{ stroke: '#000' }}
                           axisLine={{ stroke: '#000' }}
-                          tickMargin={10}
+                          tickMargin={20}
+                          interval={0}
+                          width={100}
                         />
                         <YAxis 
                           allowDecimals={false}
@@ -477,62 +483,92 @@ export default function Page() {
               </CardContent>
             </Card>
 
-            {/* Scorecards */}
-            <div className="flex flex-col gap-6 w-80">
-              {rows.length > 0 && (
-                needsGuidanceCount === 0 ? (
-                  <TooltipProvider>
-                    <UITooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="bg-green-50 shadow-md rounded-lg">
-                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-                            <Star className="w-10 h-10 text-green-500" />
-                            <div>
-                              <p className="text-xl font-bold text-green-700">Performa siswa sudah memuaskan!</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[300px]">
-                        <p>Semua siswa telah mencapai target dengan nilai rerata pengetahuan dan keterampilan di atas 75</p>
-                      </TooltipContent>
-                    </UITooltip>
-                  </TooltipProvider>
-                ) : (
-                  <TooltipProvider>
-                    <UITooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="bg-red-50 shadow-md rounded-lg">
-                          <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-                            <ArrowRight className="w-10 h-10 text-red-500" />
-                            <div>
-                              <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
-                              <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[300px]">
-                        <p>Siswa yang membutuhkan bimbingan adalah siswa dengan nilai rerata pengetahuan &lt; 75 dan rerata keterampilan &lt; 75</p>
-                      </TooltipContent>
-                    </UITooltip>
-                  </TooltipProvider>
-                )
-              )}
-              <Card className="bg-blue-50 shadow-md rounded-lg">
-                <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
-                  <Users className="w-10 h-10 text-blue-500" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-700">Total Siswa</p>
-                    <p className="text-3xl font-bold">{rows.length} Siswa</p>
+            {/* Scorecards Card */}
+            <Card className="w-[1000px] shadow-md h-[600px]">
+              <CardContent className="p-6 h-full">
+                {rows.length > 0 && (
+                  <div className="flex flex-col gap-6 h-full">
+                    <Card className="bg-blue-50 shadow-md rounded-lg">
+                      <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                        <Users className="w-10 h-10 text-blue-500" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-700">Total Siswa</p>
+                          <p className="text-3xl font-bold">{rows.length} Siswa</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {needsGuidanceCount === 0 ? (
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <Card className="bg-green-50 shadow-md rounded-lg">
+                              <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                                <Star className="w-10 h-10 text-green-500" />
+                                <div>
+                                  <p className="text-xl font-bold text-green-700">Performa siswa sudah memuaskan!</p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px]">
+                            <p>Semua siswa telah mencapai target dengan nilai rerata pengetahuan dan keterampilan di atas 75</p>
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <Card className="bg-red-50 shadow-md rounded-lg">
+                              <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                                <ArrowRight className="w-10 h-10 text-red-500" />
+                                <div>
+                                  <p className="text-sm font-medium text-red-700">Siswa Butuh Bimbingan</p>
+                                  <p className="text-3xl font-bold">{needsGuidanceCount} Siswa</p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px]">
+                            <p>Siswa yang membutuhkan bimbingan adalah siswa dengan nilai rerata pengetahuan &lt; 75 dan rerata keterampilan &lt; 75</p>
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    )}
+
+                    <Card className="bg-purple-50 shadow-md rounded-lg">
+                      <CardContent className="flex items-center justify-start gap-6 px-8 py-6">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                          <span className="text-xl font-bold text-purple-600">KKM</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-purple-700">Kriteria Ketuntasan Minimal</p>
+                          <p className="text-3xl font-bold text-purple-600">75</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="space-y-2 mt-auto">
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          Siswa yang membutuhkan bimbingan adalah siswa dengan nilai rerata pengetahuan &lt; 75 dan rerata keterampilan &lt; 75
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          Semua siswa telah mencapai target dengan nilai rerata pengetahuan dan keterampilan di atas 75
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
   
           {/* Table */}
-          <div className="mt-6">
+          <div className="mt-1">
             <DataTable columns={columns} data={rows} />
           </div>
         </>
