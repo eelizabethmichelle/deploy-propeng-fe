@@ -166,16 +166,28 @@ export default function AddAccountForm() {
           <FormField
             control={form.control}
             name="name"
-            rules={{ 
-                required: "Nama wajib diisi"
-            }}
+            rules={{ required: "Nama wajib diisi" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nama Lengkap *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Contoh: Ujang Jajaki" {...field} />
+                  <Input
+                    placeholder="Contoh: Ujang Jajaki"
+                    {...field}
+                    onChange={(e) => {
+                      const input = e.target.value;
+                      const formatted = input
+                        .toLowerCase()
+                        .split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ");
+                      field.onChange(formatted);
+                    }}
+                  />
                 </FormControl>
-                <FormDescription>*Nama wajib diisi dengan nama lengkap pengguna</FormDescription>
+                <FormDescription>
+                  *Nama wajib diisi dengan nama lengkap pengguna
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

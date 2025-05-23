@@ -20,6 +20,7 @@ type DonutChartProps = {
   title?: string;
   data: SubjectData[];
   notes?: string[];
+  tahunAjaran: string;
 };
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -42,60 +43,67 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export default function DonutChart({ title, data, notes = [] }: DonutChartProps) {
+export default function DonutChart({ title, data, notes = [], tahunAjaran }: DonutChartProps) {
+    const isEmpty = data.length === 0;
+  
     return (
       <Card className="w-full h-full min-w-[400px] mx-auto p-4 flex flex-col gap-y-4">
-        {title && (
-          <h2 className="font-semibold text-blue-900">{title}</h2>
-        )}
+        {title && <h2 className="font-semibold text-blue-900">{title}</h2>}
   
-        {/* Horizontal Stack: Chart (40%) | Legend (10%) | Notes (50%) */}
-        <div className="flex flex-row gap-x-2 flex-1">
-          {/* Chart */}
-          <div className="w-[30%] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={400}>
-              <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={150}
-                paddingAngle={2}
-                dataKey="value"
-              >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+        {isEmpty ? (
+          <div className="text-center text-sm text-gray-600 py-8">
+            Belum ada Mata Pelajaran di Tahun Ajaran
+            <span className="font-semibold">{` ${tahunAjaran}/${Number(tahunAjaran)+1} `}</span>
+            yang didaftarkan oleh Siswa
+          </div>
+        ) : (
+          <div className="flex flex-row gap-x-2 flex-1">
+            {/* Chart */}
+            <div className="w-[30%] flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={400}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={150}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+  
+            {/* Legend */}
+            <div className="w-[15%] flex flex-col justify-center space-y-2 pr-2">
+              {data.map((d, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-md"
+                    style={{ backgroundColor: d.color }}
+                  />
+                  <span className="text-xs text-blue-900">{d.name}</span>
+                </div>
               ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-            </ResponsiveContainer>
-          </div>
+            </div>
   
-          {/* Legend */}
-          <div className="w-[15%] flex flex-col justify-center space-y-2 pr-2">
-            {data.map((d, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-md"
-                  style={{ backgroundColor: d.color }}
-                />
-                <span className="text-xs text-blue-900">{d.name}</span>
-              </div>
-            ))}
+            {/* Notes */}
+            <div className="w-[55%] pl-4 border-l border-gray-300 flex flex-col gap-2 text-sm text-blue-900 justify-center">
+              {notes.map((note, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  <span>{note}</span>
+                </div>
+              ))}
+            </div>
           </div>
-  
-          {/* Separator + Notes */}
-          <div className="w-[55%] pl-4 border-l border-gray-300 flex flex-col gap-2 text-sm text-blue-900 justify-center">
-            {notes.map((note, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <Info className="w-4 h-4" />
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </Card>
     );
-  }   
+  }

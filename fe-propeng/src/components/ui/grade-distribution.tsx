@@ -21,10 +21,13 @@ export function GradeDistributionChart({ a, b, c, d }: GradeDistributionChartPro
   const calculatePercentage = (count: number) =>
     total === 0 ? 0 : (count / total) * 100;
 
+  const calculateWidth = (count: number) =>
+    total === 0 ? 25 : (count / total) * 100;
+
   const segments = segmentsMeta.map((seg) => {
     const count = { A: a, B: b, C: c, D: d }[seg.label as "A" | "B" | "C" | "D"];
     const percent =
-      total === 0 ? 100 / segmentsMeta.length : (count / total) * 100;
+      total === 0 ? 25 : (count / total) * 100;
     return { ...seg, count, percent };
   });
 
@@ -37,7 +40,7 @@ export function GradeDistributionChart({ a, b, c, d }: GradeDistributionChartPro
             <HoverCardTrigger asChild>
               <div
                 className={`${seg.color} ${seg.text} flex flex-col items-center justify-center cursor-default`}
-                style={{ width: `${percent}%`, minWidth: "20px" }}
+                style={{ width: `${calculateWidth(seg.count)}%`, minWidth: "20px" }}
               >
                 <span className="font-bold">{seg.label}</span>
                 <span className="text-xs font-normal">{Math.round(percent)}%</span>

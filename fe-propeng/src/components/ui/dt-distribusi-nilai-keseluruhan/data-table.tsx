@@ -104,7 +104,7 @@ export function DataTableDistribusiNilai<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center text-lg text-gray-500"
                 >
-                  Belum ada Nilai yang terdaftar.
+                  Belum ada Nilai yang terdaftar
                 </TableCell>
               </TableRow>
             )}

@@ -49,7 +49,7 @@ export default function GuruLayout({
       ];
     } else if (pathname.startsWith("/guru/mata-pelajaran/detil/")) {
       return [
-        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+        { label: "Manajemen Mata Pelajaran", href: "/guru/mata-pelajaran" },
         { label: "Atur Komponen Penilaian dan Bobot" },
       ];
     } else if (pathname.includes("/guru/kelas/detail")) {
@@ -83,7 +83,7 @@ export default function GuruLayout({
       ];
     } else if (pathname.startsWith("/guru/mata-pelajaran/rekapitulasi-nilai/")) {
       return [
-        { label: "Manajemen Nilai", href: "/guru/manajemennilai/matapelajaran" },
+        { label: "Manajemen Mata Pelajaran", href: "/guru/mata-pelajaran" },
         { label: "Rekapitulasi Nilai" },
       ];
     } else if (pathname.startsWith("/guru/evalguru/")) {
