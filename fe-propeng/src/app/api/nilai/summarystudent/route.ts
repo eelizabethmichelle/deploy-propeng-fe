@@ -1,3 +1,4 @@
+// src/app/api/nilai/student/route.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/api"; // Pastikan import benar

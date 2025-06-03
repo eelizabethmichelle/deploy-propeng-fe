@@ -15,8 +15,10 @@ import { StaticTableRowActions } from './student-grades-row-actions'; // Adjust 
 
 interface SubjectGradesTableProps {
   title: string;
+
   // --- Update prop type ---
   subjects: SubjectGradeFromApi[];
+  kelasId: string;
 }
 
 // Keep formatScore helper
@@ -28,7 +30,7 @@ const formatScore = (score: number | null | undefined): string => {
     return '-';
 };
 
-export function SubjectGradesTable({ title, subjects }: SubjectGradesTableProps) {
+export function SubjectGradesTable({ title, subjects, kelasId }: SubjectGradesTableProps) {
   if (!subjects || subjects.length === 0) { return null; }
 
   return (
@@ -60,7 +62,7 @@ export function SubjectGradesTable({ title, subjects }: SubjectGradesTableProps)
                             </TableCell>
                             {/* --- --- --- --- --- --- --- --- --- --- --- */}
                             <TableCell className="text-center px-2">
-                                <StaticTableRowActions subjectId={subject.id} />
+                                <StaticTableRowActions subjectId={subject.id} kelasId={kelasId} />
                             </TableCell>
                         </TableRow>
                     ))}

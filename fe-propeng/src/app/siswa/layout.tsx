@@ -23,36 +23,75 @@ export default function SiswaLayout({
   const hideSidebar = false
 
   // Breadcrumb maps for student routes
-  const breadcrumbMap: { [key: string]: { label: string; href?: string }[] } = {
-    "/siswa/laporannilaiabsen": [{ label: "Laporan Nilai dan Kehadiran Siswa" }],
-    "/siswa/mata-pelajaran-peminatan": [{ label: "Pendaftaran Mata Pelajaran Peminatan" }],
-    "/siswa/mata-pelajaran-peminatan/daftar": [
-      { label: "Pendaftaran Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
-      { label: "Daftar" },
-    ],
-    "/guru/kelas": [{ label: "Manajemen Kelas" }],
-    "/guru/kelas/absensi": [
-      { label: "Manajemen Kelas", href: "/guru/kelas" },
-      { label: "Absensi" },
-    ],
-    "/guru/mata-pelajaran": [{ label: "Mata Pelajaran" }],
-    "/guru/manajemennilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/nilai/matapelajaran": [{ label: "Manajemen Nilai" }],
-    "/guru/raport": [{ label: "Raport Siswa" }],
-  }
+  const breadcrumbPatterns: { pattern: RegExp; get: (match: RegExpMatchArray) => { label: string, href?: string }[] }[] = [
+    {
+      pattern: /^\/siswa\/laporannilaiabsen$/,
+      get: () => [{ label: "Daftar Kelas Siswa" }]
+    },
+    {
+      pattern: /^\/siswa\/detaillaporannilaiabsen\/([^/]+)$/,
+      get: (m) => [
+        { label: "Daftar Kelas Siswa", href: "/siswa/laporannilaiabsen" },
+        { label: "Laporan Nilai dan Kehadiran Siswa" }
+      ]
+    },
+    {
+      pattern: /^\/siswa\/laporannilai\/([^/]+)\/([^/]+)$/,
+      get: (m) => [
+        { label: "Daftar Kelas Siswa", href: "/siswa/laporannilaiabsen" },
+        { label: "Laporan Nilai dan Kehadiran Siswa", href: `/siswa/detaillaporannilaiabsen/${m[1]}` },
+        { label: "Detail Nilai Siswa" }
+      ]
+    },
+    {
+      pattern: /^\/siswa\/mata-pelajaran-peminatan$/,
+      get: () => [{ label: "Pendaftaran Mata Pelajaran Peminatan" }],
+    },
+    {
+      pattern: /^\/siswa\/mata-pelajaran-peminatan\/daftar$/,
+      get: () => [
+        { label: "Pendaftaran Mata Pelajaran Peminatan", href: "/siswa/mata-pelajaran-peminatan" },
+        { label: "Daftar" },
+      ],
+    },
+    {
+      pattern: /^\/guru\/kelas$/,
+      get: () => [{ label: "Manajemen Kelas" }],
+    },
+    {
+      pattern: /^\/guru\/kelas\/absensi$/,
+      get: (match) => [
+        { label: "Manajemen Kelas", href: "/guru/kelas" },
+        { label: "Absensi" },
+      ],
+    },
+    {
+      pattern: /^\/guru\/mata-pelajaran$/,
+      get: () => [{ label: "Mata Pelajaran" }],
+    },
+    {
+      pattern: /^\/guru\/manajemennilai\/matapelajaran$/,
+      get: () => [{ label: "Manajemen Nilai" }],
+    },
+    {
+      pattern: /^\/guru\/nilai\/matapelajaran$/,
+      get: () => [{ label: "Manajemen Nilai" }],
+    },
+    {
+      pattern: /^\/guru\/raport$/,
+      get: () => [{ label: "Raport Siswa" }],
+    },
+  ];
 
   // Generate breadcrumbs based on current pathname
   const generateBreadcrumbs = (pathname: string): { label: string; href?: string }[] => {
-    // Handle dynamic routes
-    if (pathname.match(/^\/siswa\/laporannilai\/[^/]+$/)) {
-      return [
-        { label: "Laporan Nilai dan Kehadiran Siswa", href: "/siswa/laporannilaiabsen" },
-        { label: "Detail Nilai Siswa" },
-      ]
-    } else {
-      return breadcrumbMap[pathname] || []
+    for (const { pattern, get } of breadcrumbPatterns) {
+      const match = pathname.match(pattern);
+      if (match) return get(match);
     }
-  }
+    return [];
+  };
+
 
   const handleBreadcrumbClick = (href: string | undefined, e: React.MouseEvent) => {
     if (!href) return

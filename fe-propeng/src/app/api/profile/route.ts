@@ -30,7 +30,7 @@ export async function GET(request: Request) {
                 "Authorization": `Bearer ${token}`,
             },
         });
-        console.log(profileRes);
+        console.log("API_BASE_URL:", API_BASE_URL);
         if (!profileRes.ok) {
             return NextResponse.json({ message: "Failed to fetch user profile" }, { status: profileRes.status });
         }
