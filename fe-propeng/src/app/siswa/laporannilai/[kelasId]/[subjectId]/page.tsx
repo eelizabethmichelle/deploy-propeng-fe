@@ -1,4 +1,4 @@
-// src/app/siswa/laporannilai/[subjectId]/page.tsx
+// src/app/siswa/laporannilai/[kelasId]/[subjectId]/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -42,6 +42,7 @@ const formatScore = (score: number | null | undefined): string => {
 export default function SubjectDetailPage() {
   const params = useParams()
   const subjectId = Array.isArray(params.subjectId) ? params.subjectId[0] : params.subjectId
+  const { kelasId } = useParams() as { kelasId: string };
 
   const [subjectData, setSubjectData] = useState<SubjectGradeFromApi | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -67,10 +68,14 @@ export default function SubjectDetailPage() {
       }
 
       try {
-        const response = await fetch(`/api/nilai/summarystudent`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          cache: "no-store",
-        })
+        const response = await fetch(`/api/nilai/student`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken} Id ${kelasId}`,
+          },
+        });
+
 
         const allGradesData: StudentGradesDataFromApi = await response.json()
 

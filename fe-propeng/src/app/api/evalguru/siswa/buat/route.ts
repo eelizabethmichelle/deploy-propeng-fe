@@ -34,6 +34,7 @@ export async function POST(request: Request) {
             },
             body: JSON.stringify({isian, kritik_saran, matapelajaran_id }),
         });
+        console.log("Fetching data from backend:", res);
 
         const data = await res.json();
         console.log("data");

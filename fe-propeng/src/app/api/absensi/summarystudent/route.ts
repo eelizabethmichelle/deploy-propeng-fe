@@ -1,4 +1,4 @@
-// Lokasi file: app/api/absensi/summarystudent/route.ts (REVISED - No Params)
+//app/api/absensi/summarystudent/route.ts (REVISED - No Params)
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";

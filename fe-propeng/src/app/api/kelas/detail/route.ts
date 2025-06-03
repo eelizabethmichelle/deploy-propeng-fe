@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const parts = authHeader.split(" ");
     const token = parts[1];
     const classId = parts[3]; // Get ID from header instead of searchParams
+    console.log("Class Id:", classId);
     
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

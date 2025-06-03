@@ -14,13 +14,14 @@ import { Eye } from "lucide-react";
 
 interface StaticTableRowActionsProps {
   subjectId: string;
+  kelasId: string; // Tambahkan kelasId jika diperlukan
 }
 
-export function StaticTableRowActions({ subjectId }: StaticTableRowActionsProps) {
+export function StaticTableRowActions({ subjectId, kelasId }: StaticTableRowActionsProps) {
   const canViewDetail = !!subjectId;
   // Sesuaikan path ini jika halaman detail Anda berbeda
   // Misalnya: /siswa/nilai/[subjectId] atau /siswa/detail-nilai/[subjectId]
-  const detailUrl = canViewDetail ? `/siswa/laporannilai/${subjectId}` : '#';
+  const detailUrl = `/siswa/laporannilai/${kelasId}/${subjectId}`;
   const isiEvalGuruUrl = canViewDetail ? `/siswa/evalguru/${subjectId}/buat` : '#';
 
   return (
