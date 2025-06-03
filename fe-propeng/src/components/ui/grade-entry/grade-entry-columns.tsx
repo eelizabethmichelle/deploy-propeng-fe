@@ -9,6 +9,8 @@ import { AssessmentComponent, GradeTableRowData, GradesState, GradeTableMeta } f
 import { DataTableColumnHeader } from "./sort"; 
 import { toast } from "sonner";
 import { cn } from "@/lib/utils"; 
+import { useState } from "react";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../dialog";
 
 const formatNumberOrDash = (value: number | null | undefined, decimals: number = 0): string => {
     if (typeof value === 'number' && !isNaN(value)) {
@@ -32,6 +34,18 @@ const GradeCell = ({ row, column, table }: CellContext<GradeTableRowData, unknow
         meta.handleGradeChange(studentId, componentId, value);
     };
 
+    const nilaiColor = (() => {
+        if (Number(displayValueReadonly) > 70) {
+            return "text-green-500"
+        }
+        else if (Number(displayValueReadonly) > 70) {
+            return "text-yellow-500"
+        }
+        else {
+            return "text-red-500"
+        }
+    })();
+
     return (
         <div className="text-center min-w-[70px]">
             {isEditable ? (
@@ -45,7 +59,7 @@ const GradeCell = ({ row, column, table }: CellContext<GradeTableRowData, unknow
                     aria-label={`Nilai ${column.id} untuk ${row.original.name}`}
                 />
             ) : (
-                <span className="text-sm px-2">{displayValueReadonly}</span>
+                <span className={`text-sm px-2 ${nilaiColor}`}>{displayValueReadonly}</span>
             )}
         </div>
     );
@@ -177,7 +191,18 @@ export function generateGradeColumns(
             cell: ({ row }) => {
                 const finalScore = row.getValue('finalScore') as number | null | undefined;
                 const displayScore = formatNumberOrDash(finalScore, 2);
-                return <div className="text-center font-semibold text-sm">{displayScore}</div>; 
+                const displayScoreNum = Number(displayScore);
+                const colorScore = (() => {
+                    if (displayScoreNum > 70) {
+                        return "text-green-500";
+                    }
+                    else if (displayScoreNum > 40) {
+                        return "text-yellow-500";
+                    } else {
+                        return "red";
+                    }
+                })();
+                return <div className={`text-center font-semibold text-sm ${colorScore}`}>{displayScore}</div>;
             },
             enableSorting: true,
             enableColumnFilter: true,
@@ -196,7 +221,7 @@ export function generateGradeColumns(
                     <div className="text-center w-[60px]">
                         {isEditingThisRow ? (
                             <div className='flex justify-center gap-0'>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600 hover:bg-green-100" onClick={() => meta.handleSaveRow(row.original.id)} disabled={isSavingThisRow} aria-label="Simpan baris">
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600 hover:bg-green-100" onClick={() => {meta.handleSaveRow(row.original.id)}} disabled={isSavingThisRow} aria-label="Simpan baris">
                                     {isSavingThisRow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                                 </Button>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:bg-secondary" onClick={() => meta.handleCancelRow(row.original.id)} disabled={isSavingThisRow} aria-label="Batal edit baris">
@@ -204,13 +229,35 @@ export function generateGradeColumns(
                                 </Button>
                             </div>
                         ) : (
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-secondary"
-                                disabled={meta.isEditingAll || (!!meta.editingRowId && meta.editingRowId !== row.original.id) || row.getIsSelected()}
-                                onClick={() => meta.handleEditRowTrigger(row.original.id)}
-                                aria-label={`Edit nilai ${row.original.name}`}
-                            >
-                                <LucideEdit className="h-4 w-4" />
-                            </Button>
+                            <Dialog>
+                                    <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:bg-secondary"
+                                        disabled={meta.isEditingAll || (!!meta.editingRowId && meta.editingRowId !== row.original.id) || row.getIsSelected()}
+                                        aria-label={`Edit nilai ${row.original.name}`}
+                                    >
+                                        <LucideEdit className="h-4 w-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Hapus Siswa</DialogTitle>
+                                        <DialogDescription>
+                                            Apakah Anda yakin ingin mengedit?
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter className="sm:justify-end">
+                                        <div className="flex gap-4">
+                                            <DialogClose asChild>
+                                                <Button type="button" variant="destructive">Batal</Button>
+                                            </DialogClose>
+                                            <Button type="button" onClick={() => meta.handleEditRowTrigger(row.original.id)} variant="neutral">
+                                                Ya, Edit
+                                            </Button>
+                                        </div>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                                
                         )}
                     </div>
                 );

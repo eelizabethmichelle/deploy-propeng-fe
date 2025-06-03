@@ -126,8 +126,8 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
         size: 130,
     },
     {
-        accessorKey: "components",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Komponen Penilaian" />,
+        accessorKey: "knowledgeComponents",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Komponen Penilaian Pengetahuan" />,
         cell: ({ row }) => {
         const components: ComponentSummary[] | undefined = row.original.components;
 
@@ -136,10 +136,8 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
         }
 
         const knowledgeComponents = components.filter(c => c.type === 'Pengetahuan');
-        const skillComponents = components.filter(c => c.type === 'Keterampilan');
 
         const knowledgeNames = knowledgeComponents.map(c => c.name).join(", ") || "-";
-        const skillNames = skillComponents.map(c => c.name).join(", ") || "-";
         
         const renderComponentGroup = (
             label: string,
@@ -199,6 +197,81 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
                     knowledgeNames,
                     'text-foreground'
                 )}
+            </div>
+        );
+    },
+    enableSorting: false,
+        filterFn: (row, id, value: string[]) => {
+            const components = row.original.components;
+            if (!components || value.length === 0) return true;
+            return components.some(comp => value.includes(comp.name));
+        },
+    },
+    {
+        accessorKey: "skillComponents",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Komponen Penilaian Keterampilan" />,
+        cell: ({ row }) => {
+        const components: ComponentSummary[] | undefined = row.original.components;
+
+        if (!components || !Array.isArray(components) || components.length === 0) {
+            return <span className="text-xs text-muted-foreground">Belum Diatur</span>;
+        }
+
+        const skillComponents = components.filter(c => c.type === 'Keterampilan');
+        const skillNames = skillComponents.map(c => c.name).join(", ") || "-";
+        
+        const renderComponentGroup = (
+            label: string,
+            componentList: ComponentSummary[],
+            allNamesTooltip: string,
+            labelColorClass: string
+        ) => {
+            if (componentList.length === 0) {
+                return (
+                    <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
+                        <span className={cn("font-medium", labelColorClass)}>{label}:</span>
+                        <span className="text-muted-foreground">Belum Dibuat</span>
+                    </div>
+                );
+            }
+            const firstComponentName = componentList[0]?.name ?? 'N/A';
+            const remainingCount = componentList.length - 1;
+
+            return (
+                <div className="text-xs mb-1 last:mb-0 flex items-center flex-wrap gap-x-1">
+                    <span className={cn("font-medium", labelColorClass)}>{label}:</span>
+                    
+                    <Badge
+                                variant="outline" 
+                                className="bg-white h-5 px-1.5 font-normal text-xs whitespace-nowrap"
+                            >
+                                {firstComponentName}
+                            </Badge>
+
+                            {remainingCount > 0 && (
+                                <TooltipProvider delayDuration={100}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Badge
+                                                variant="outline" 
+                                                className="bg-white h-5 px-1.5 text-xs whitespace-nowrap cursor-default"
+                                            >
+                                                +{remainingCount}
+                                            </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="text-xs">{allNamesTooltip}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            
+                    )}
+                </div>
+            );
+        };
+
+        return (
+            <div className="flex flex-col gap-y-1">
                 {renderComponentGroup(
                     'Keterampilan',
                     skillComponents,
@@ -215,15 +288,41 @@ export const subjectListColumns: ColumnDef<SubjectSummary>[] = [
             return components.some(comp => value.includes(comp.name));
         },
     },
-{
+    {
         id: "detailedStatus",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian" />,
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian Pengetahuan" />,
         cell: ({ row }) => {
             const statusP = row.original.statusPengetahuan;
             const statusK = row.original.statusKeterampilan;
             return (
                 <div className="flex flex-col gap-y-1 items-start">
                     {renderStatusBadge(statusP, 'Pengetahuan')}
+                </div>
+            );
+        },
+        enableSorting: false, 
+        enableColumnFilter: true,
+        filterFn: (row, columnId, filterValue) => {
+            const statusValues = Array.isArray(filterValue) ? filterValue : [];
+
+            if (statusValues.length === 0) {
+                return true;
+            }
+            const statusP = row.original.statusPengetahuan;
+            const statusK = row.original.statusKeterampilan;
+
+            return statusValues.includes(statusP) || statusValues.includes(statusK);
+        },
+        size: 150,
+    },
+    {
+        id: "detailedStatus2",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Status Pengisian Keterampilan" />,
+        cell: ({ row }) => {
+            const statusP = row.original.statusPengetahuan;
+            const statusK = row.original.statusKeterampilan;
+            return (
+                <div className="flex flex-col gap-y-1 items-start">
                     {renderStatusBadge(statusK, 'Keterampilan')}
                 </div>
             );

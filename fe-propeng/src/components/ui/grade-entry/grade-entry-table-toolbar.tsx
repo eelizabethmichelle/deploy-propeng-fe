@@ -18,6 +18,7 @@ import {
     DialogTrigger,
     DialogClose
 } from "@/components/ui/dialog";
+import { useState } from 'react';
 
 interface GradeDataTableToolbarProps {
     table: Table<GradeTableRowData>;
@@ -68,6 +69,8 @@ export function GradeDataTableToolbar({
     const resetAllFilters = () => {
         table.resetColumnFilters();
     }
+
+    const [isEditAllRow, setIsEditAllRow] = useState(false)
 
     return (
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -169,16 +172,42 @@ export function GradeDataTableToolbar({
                             </DialogContent>
                         </Dialog>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8"
-                            onClick={onEditAll}
-                            disabled={isRowEditing || selectedRowCount > 0 || isSavingAll || isResetting}
-                            aria-label="Edit Semua Nilai"
-                        >
-                            <Edit className="mr-2 h-4 w-4" /> Edit Semua Nilai
-                        </Button>
+                            
+                            
+                            <Dialog>
+                                    <DialogTrigger asChild>
+                                    
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8"
+                                        disabled={isRowEditing || selectedRowCount > 0 || isSavingAll || isResetting}
+                                        aria-label="Edit Semua Nilai"
+                                    >
+                                        <Edit className="mr-2 h-4 w-4" /> Edit Semua Nilai
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Hapus Siswa</DialogTitle>
+                                        <DialogDescription>
+                                            Apakah Anda yakin ingin mengedit?
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter className="sm:justify-end">
+                                        <div className="flex gap-4">
+                                            <DialogClose asChild>
+                                                <Button type="button" variant="destructive">Batal</Button>
+                                            </DialogClose>
+                                            <Button type="button" variant="neutral"
+                                        onClick={onEditAll}>
+                                                Ya, Edit
+                                            </Button>
+                                        </div>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            
                     </>
                 )}
             </div>

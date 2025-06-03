@@ -26,9 +26,11 @@ export function SubjectListToolbar({
   const isFiltered = table.getState().columnFilters.length > 0;
 
   const nameColumn = table.getColumn('name');
-  const componentsColumn = table.getColumn('components');
+  const knowledgeComponentsColumn = table.getColumn('knowledgeComponents');
+  const skillComponentsColumn = table.getColumn('skillComponents');
   const academicYearColumn = table.getColumn('academicYear');
   const detailedStatus = table.getColumn('detailedStatus');
+  const detailedStatus2 = table.getColumn('detailedStatus2');
 
 
   return (
@@ -52,22 +54,38 @@ export function SubjectListToolbar({
             />
         )}
 
-        {componentsColumn && uniqueComponentOptions.length > 0 && (
+        {knowledgeComponentsColumn && uniqueComponentOptions.length > 0 && (
             <DataTableFacetedFilter
-                column={componentsColumn}
-                title="Komponen Penilaian"
+                column={knowledgeComponentsColumn}
+                title="Komponen Penilaian Pengetahuan"
                 options={uniqueComponentOptions}
             />
         )}
 
+        {skillComponentsColumn && uniqueComponentOptions.length > 0 && (
+            <DataTableFacetedFilter
+                column={skillComponentsColumn}
+                title="Komponen Penilaian Keterampilan"
+                options={uniqueComponentOptions}
+            />
+        )}
 
         {detailedStatus && (
           <DataTableFacetedFilter
             column={detailedStatus} 
-            title="Status Pengisian" 
+            title="Status Pengisian Pengetahuan" 
             options={statusOptions} 
           />
         )}
+
+        {detailedStatus2 && (
+          <DataTableFacetedFilter
+            column={detailedStatus2} 
+            title="Status Pengisian Keterampilan" 
+            options={statusOptions} 
+          />
+        )}
+
 
 
         {isFiltered && (
