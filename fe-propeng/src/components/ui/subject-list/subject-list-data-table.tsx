@@ -1,5 +1,3 @@
-// Contoh file: @/components/ui/subject-list/subject-list-data-table.tsx
-
 import * as React from 'react';
 import {
   ColumnDef,
@@ -7,7 +5,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getFilteredRowModel, // Pastikan filter model diimpor
+  getFilteredRowModel,
   useReactTable,
   SortingState,
   ColumnFiltersState,
@@ -23,28 +21,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-// Impor schema untuk tipe data dan FilterOption
 import { SubjectSummary } from "./schema";
-import { subjectListColumns } from "./subject-list-columns"; // Impor definisi kolom
+import { subjectListColumns } from "./subject-list-columns"; 
 import { SubjectListToolbar } from './subject-list-table-toolbar';
 import { DataTablePagination } from './pagination';
 
-// Tipe FilterOption (bisa diimpor dari schema atau didefinisikan di sini/atas)
 interface FilterOption { label: string; value: string; icon?: React.ComponentType<{ className?: string }>; }
 
-// ---- 👇 INTERFACE PROPS YANG PERLU DIUPDATE 👇 ----
 interface SubjectListDataTableProps {
   data: SubjectSummary[];
-  // Tambahkan dua properti ini agar komponen bisa menerimanya:
   uniqueComponentOptions: FilterOption[];
   uniqueAcademicYearOptions: FilterOption[];
 }
 
 export function SubjectListDataTable({
   data,
-  uniqueComponentOptions,      // <-- Terima prop di sini
-  uniqueAcademicYearOptions, // <-- Terima prop di sini
-}: SubjectListDataTableProps) { // Gunakan interface yang sudah diupdate
+  uniqueComponentOptions,    
+  uniqueAcademicYearOptions, 
+}: SubjectListDataTableProps) { 
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -53,13 +47,13 @@ export function SubjectListDataTable({
 
   const table = useReactTable({
     data,
-    columns: subjectListColumns, // Gunakan kolom yang sudah didefinisikan
+    columns: subjectListColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(), // Aktifkan model filter
+    getFilteredRowModel: getFilteredRowModel(), 
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -72,13 +66,12 @@ export function SubjectListDataTable({
 
   return (
     <div className="space-y-4">
-      {/* ---- 👇 TERUSKAN PROPS KE TOOLBAR 👇 ---- */}
       <SubjectListToolbar
         table={table}
-        uniqueComponentOptions={uniqueComponentOptions}      // <-- Teruskan ke Toolbar
-        uniqueAcademicYearOptions={uniqueAcademicYearOptions} // <-- Teruskan ke Toolbar
+        uniqueComponentOptions={uniqueComponentOptions} 
+        uniqueAcademicYearOptions={uniqueAcademicYearOptions} 
       />
-      <div className="rounded-md border bg-white"> {/* Tambah bg-white jika perlu */}
+      <div className="rounded-md border bg-white">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -122,26 +115,7 @@ export function SubjectListDataTable({
           </TableBody>
         </Table>
       </div>
-      {/* Pagination Controls (jika ada) */}
-      {/* <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div> */}
-                  <DataTablePagination table={table} />
+        <DataTablePagination table={table} />
     </div>
   );
 }

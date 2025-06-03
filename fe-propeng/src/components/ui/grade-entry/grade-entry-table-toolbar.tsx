@@ -1,16 +1,13 @@
-// app/components/grade-data-table-toolbar.tsx
 'use client';
 
 import * as React from 'react';
 import { Table } from '@tanstack/react-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { XCircle, Ban, Loader2, Save, Edit, RotateCcw, AlertTriangle } from 'lucide-react'; // Impor AlertTriangle
-// import { DataTableViewOptions } from './actions-menu'; // Pastikan path ini benar
+import { XCircle, Ban, Loader2, Save, Edit, RotateCcw, AlertTriangle } from 'lucide-react'; 
 import { GradeTableRowData, FilterOption } from './schema';
-import { toast } from 'sonner'; // Masih bisa digunakan untuk notifikasi lain
+import { toast } from 'sonner'; 
 import { DataTableFacetedFilter } from './filters-clear';
-// Impor komponen Dialog dari shadcn/ui (sesuaikan path jika perlu)
 import {
     Dialog,
     DialogContent,
@@ -19,12 +16,12 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogClose // Impor DialogClose untuk tombol batal
+    DialogClose
 } from "@/components/ui/dialog";
 
 interface GradeDataTableToolbarProps {
     table: Table<GradeTableRowData>;
-    onResetSelected: () => void; // Handler untuk menjalankan aksi reset sebenarnya
+    onResetSelected: () => void;
     isEditingAll: boolean;
     isSavingAll: boolean;
     onEditAll: () => void;
@@ -34,12 +31,12 @@ interface GradeDataTableToolbarProps {
     nameFilterOptions: FilterOption[];
     classFilterOptions: FilterOption[];
     finalScoreFilterOptions: FilterOption[];
-    isResetting: boolean; // State loading dari parent
+    isResetting: boolean; 
 }
 
 export function GradeDataTableToolbar({
     table,
-    onResetSelected, // Fungsi ini dipanggil setelah konfirmasi dialog
+    onResetSelected, 
     isEditingAll,
     isSavingAll,
     onEditAll,
@@ -49,9 +46,8 @@ export function GradeDataTableToolbar({
     nameFilterOptions,
     classFilterOptions,
     finalScoreFilterOptions,
-    isResetting, // Terima prop loading
+    isResetting, 
 }: GradeDataTableToolbarProps) {
-    // State untuk mengontrol visibilitas dialog konfirmasi
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
 
     const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -63,32 +59,29 @@ export function GradeDataTableToolbar({
     const classColumn = table.getColumn('class');
     const finalScoreColumn = table.getColumn('finalScore');
 
-    // Handler untuk tombol KONFIRMASI di dalam dialog
     const handleConfirmReset = () => {
         console.log("Tombol Konfirmasi Reset diklik. Memanggil onResetSelected...");
-        onResetSelected(); // Jalankan fungsi reset dari parent
-        setIsConfirmDialogOpen(false); // Tutup dialog setelah konfirmasi
+        onResetSelected(); 
+        setIsConfirmDialogOpen(false); 
     };
 
-    // Fungsi untuk mereset semua filter
     const resetAllFilters = () => {
         table.resetColumnFilters();
     }
 
     return (
         <div className="flex items-center justify-between flex-wrap gap-2">
-            {/* --- Sisi Kiri (Filter) --- */}
             <div className="flex flex-1 items-center space-x-2 flex-wrap min-w-[200px]">
-                 {nameColumn && (
-                     <Input
+                {nameColumn && (
+                    <Input
                         placeholder="Cari nama..."
                         value={(typeof nameColumn.getFilterValue() === 'string' ? nameColumn.getFilterValue() : '') as string}
                         onChange={(event) => nameColumn.setFilterValue(event.target.value)}
                         className="h-8 w-[150px] lg:w-[180px]"
                         aria-label="Filter nama siswa (teks)"
                         disabled={isEditingAll || isRowEditing || isResetting}
-                     />
-                 )}
+                    />
+                )}
                 {nameColumn && (
                     <DataTableFacetedFilter
                         column={nameColumn}
@@ -120,11 +113,9 @@ export function GradeDataTableToolbar({
                 )}
             </div>
 
-            {/* --- Sisi Kanan (Aksi Edit/Simpan & View) --- */}
             <div className="flex items-center space-x-2 flex-shrink-0">
                 {isEditingAll ? (
                     <>
-                        {/* Tombol saat mode Edit Semua */}
                         <span className='text-sm text-muted-foreground hidden md:inline italic'>Anda sedang mengedit nilai siswa...</span>
                         <Button variant="outline" size="sm" className="h-8" onClick={onCancelAll} disabled={isSavingAll || isResetting}>
                             <Ban className="mr-2 h-4 w-4" /> Batal Semua
@@ -135,16 +126,10 @@ export function GradeDataTableToolbar({
                     </>
                 ) : (
                     <>
-                        {/* Tombol Reset Nilai (sekarang memicu Dialog) */}
                         <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
                             <DialogTrigger asChild>
-                                {/* Tombol yang membuka dialog */}
                                 <Button
                                     variant="destructive"
-                                    // size="sm"
-                                    // className="h-8 border-destructive text-destructive hover:bg-destructive/10"
-                                    // Tombol ini di-disable jika tidak ada baris dipilih,
-                                    // atau jika sedang edit baris lain, atau sedang menyimpan semua, atau sedang mereset
                                     disabled={selectedRowCount === 0 || isRowEditing || isSavingAll || isResetting}
                                     aria-label={`Reset Nilai ${selectedRowCount} Siswa`}
                                 >
@@ -157,7 +142,7 @@ export function GradeDataTableToolbar({
                                 <DialogHeader>
                                     <DialogTitle>
                                         <div className="flex items-center gap-2">
-                                             <AlertTriangle className="h-5 w-5 text-destructive" /> {/* Ikon Peringatan */}
+                                            <AlertTriangle className="h-5 w-5 text-destructive" /> 
                                             Konfirmasi Reset Nilai
                                         </div>
                                     </DialogTitle>
@@ -169,17 +154,14 @@ export function GradeDataTableToolbar({
                                     </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
-                                    {/* Tombol Batal (menggunakan DialogClose) */}
                                     <DialogClose asChild>
                                         <Button variant="secondary">Batal</Button>
                                     </DialogClose>
-                                    {/* Tombol Konfirmasi */}
                                     <Button
                                         variant="default"
-                                        onClick={handleConfirmReset} // Panggil handler konfirmasi
-                                        disabled={isResetting} // Disable juga tombol ini saat proses reset berjalan
+                                        onClick={handleConfirmReset}
+                                        disabled={isResetting}
                                     >
-                                        {/* Tampilkan loader di tombol konfirmasi jika sedang proses */}
                                         {isResetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                         Ya, Reset Nilai
                                     </Button>
@@ -187,7 +169,6 @@ export function GradeDataTableToolbar({
                             </DialogContent>
                         </Dialog>
 
-                        {/* Tombol Edit Semua */}
                         <Button
                             variant="outline"
                             size="sm"
@@ -200,8 +181,6 @@ export function GradeDataTableToolbar({
                         </Button>
                     </>
                 )}
-                {/* Tombol View Options */}
-                {/* <DataTableViewOptions table={table} /> */}
             </div>
         </div>
     );

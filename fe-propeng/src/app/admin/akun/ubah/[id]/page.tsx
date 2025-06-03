@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { custom } from "zod";
+import { notEqual } from "assert";
 
 const roles = [
   { id: "teacher", label: "Guru" },
@@ -73,7 +74,7 @@ export default function EditAccountForm() {
     }
   });
 
-  const { watch, control, handleSubmit, reset } = form;
+  const { watch, control, handleSubmit, reset, getValues } = form;
   const role = watch("role");
   const isStudent = role === "student";
   const isTeacher = role === "teacher";
@@ -316,6 +317,20 @@ export default function EditAccountForm() {
                 value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
                 message: "Password harus memiliki huruf besar, huruf kecil, angka, dan simbol",
               },
+               validate: {
+                notSameAsUsername: (value) => {
+                  // 'value' adalah isi dari field 'password' (password baru)
+                  // Dapatkan nilai username saat ini
+                  const usernameValue = getValues("username");
+                  // Validasi hanya jika password diisi dan username ada
+                  if (value && usernameValue && value === usernameValue) {
+                    return "Password tidak boleh sama dengan username.";
+                  }
+                  return true; // Validasi lolos
+                }
+                // Anda bisa menambahkan validasi kustom lainnya di sini, misal:
+                // notSameAsOldPassword: (value) => { ... } (jika Anda punya cara aman mendapatkan password lama)
+              }
             }}
             render={({ field }) => (
               <FormItem>

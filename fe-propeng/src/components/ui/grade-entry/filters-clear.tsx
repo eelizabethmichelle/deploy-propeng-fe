@@ -1,4 +1,3 @@
-// app/components/filters-clear.tsx
 'use client';
 
 import * as React from 'react';
@@ -23,7 +22,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { FilterOption } from './schema'; // Impor dari schema.ts
+import { FilterOption } from './schema';
 
 interface DataTableFacetedFilterProps<TData, TValue> {
     column?: Column<TData, TValue>;
@@ -64,12 +63,10 @@ export function DataTableFacetedFilter<TData, TValue>({
         if (newSelectedValues.size > 0) {
             column?.setFilterValue(Array.from(newSelectedValues));
         } else {
-            column?.setFilterValue(undefined); // Kunci inklusivitas!
+            column?.setFilterValue(undefined); 
         }
-        // Biarkan popover terbuka untuk multi-pilih
     };
 
-    // Pastikan options adalah array sebelum mapping
     const validOptions = Array.isArray(options) ? options : [];
 
     return (
@@ -101,7 +98,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                                         {selectedValues.size} dipilih
                                     </Badge>
                                 ) : (
-                                    validOptions // Gunakan validOptions
+                                    validOptions 
                                         .filter((option) => selectedValues.has(option.value))
                                         .map((option) => (
                                             <Badge
@@ -124,7 +121,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     <CommandList>
                         <CommandEmpty>Tidak ada hasil.</CommandEmpty>
                         <CommandGroup>
-                            {validOptions.map((option) => { // Gunakan validOptions
+                            {validOptions.map((option) => {
                                 const isSelected = selectedValues.has(option.value);
                                 return (
                                     <CommandItem
