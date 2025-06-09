@@ -46,7 +46,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
   const uniqueRole = [...new Set(allRows.map((row) => row.original.role))].map((role) => ({
     value: role,
-    label: role.charAt(0).toUpperCase() + role.slice(1),
+    label: role === "teacher" ? "Guru" : role === "student" ? "Murid" : role.charAt(0).toUpperCase() + role.slice(1),
   }));
 
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -107,6 +107,8 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
       setLoading(false);
       setProgress(0);
     }
+
+    table.resetRowSelection();
   };
 
   return (
@@ -137,9 +139,9 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
         {selectedRowsCount > 0 && (
           <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="destructive">
                 <TrashIcon className="mr-2 size-4" aria-hidden="true" />
-                Delete ({selectedRowsCount})
+                Hapus ({selectedRowsCount})
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -154,12 +156,13 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
 
               <DialogFooter className="sm:justify-end">
                 <div className="flex gap-4">
-                  <Button type="button" onClick={handleDeleteConfirm} variant="secondary" disabled={loading}>
+                  <DialogClose asChild>
+                    <Button type="button" disabled={loading}  variant = "neutral">Batal</Button>
+                  </DialogClose>
+                  <Button type="button" onClick={handleDeleteConfirm} variant="destructive" disabled={loading}>
                     {loading ? "Menghapus..." : "Ya, Hapus"}
                   </Button>
-                  <DialogClose asChild>
-                    <Button type="button" disabled={loading}>Batal</Button>
-                  </DialogClose>
+                  
                 </div>
               </DialogFooter>
             </DialogContent>

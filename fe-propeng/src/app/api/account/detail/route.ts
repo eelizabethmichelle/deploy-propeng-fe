@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
 
 export async function GET(request: Request) {    
     
@@ -16,11 +17,7 @@ export async function GET(request: Request) {
     }
     
     try {
-        // return NextResponse.json({ message: {url: url, pathSegments: pathSegments, userId: userId, fetchUrl: `http://203.194.113.127/api/auth/profile/${userId}`} }, { status: 401 });
-        
-        
-        // Fetch user profile
-        const profileRes = await fetch(`http://203.194.113.127/api/auth/profile/${userId}`, {
+        const profileRes = await fetch(`${API_BASE_URL}/api/auth/profile/${userId}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/api";
+
 export async function GET(request: Request) {
     // Extract the JWT token from the Authorization header
     const authHeader = request.headers.get("Authorization");
@@ -10,7 +12,7 @@ export async function GET(request: Request) {
 
     // Fetch user data from Django backend
     try {
-        const res = await fetch("http://203.194.113.127/api/auth/list-user/", {
+        const res = await fetch(`${API_BASE_URL}/api/auth/list-user/`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,

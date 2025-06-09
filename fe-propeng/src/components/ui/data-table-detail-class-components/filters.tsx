@@ -85,7 +85,7 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
         {selectedRowsCount > 0 && (
           <Dialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="destructive">
                 <TrashIcon className="mr-2 size-4" aria-hidden="true" />
                 Delete ({selectedRowsCount})
               </Button>
@@ -99,12 +99,13 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
               </DialogHeader>
               <DialogFooter className="sm:justify-end">
                 <div className="flex gap-4">
-                  <Button type="button" onClick={handleDeleteConfirm} variant="secondary">
+                  <DialogClose asChild>
+                    <Button type="button" variant = "neutral">Batal</Button>
+                  </DialogClose>
+                  <Button type="button" onClick={handleDeleteConfirm} variant="destructive">
                     Ya, Hapus
                   </Button>
-                  <DialogClose asChild>
-                    <Button type="button">Batal</Button>
-                  </DialogClose>
+
                 </div>
               </DialogFooter>
             </DialogContent>

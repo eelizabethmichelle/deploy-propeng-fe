@@ -37,7 +37,7 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
           disabled={loading}
         >
           <DotsHorizontalIcon className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
+          <span className="sr-only">Buka menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">

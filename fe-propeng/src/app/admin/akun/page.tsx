@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/dt-lihat-akun/data-table";
 import { columns } from "@/components/ui/dt-lihat-akun/columns";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 async function fetchAccount(token: string | null) {
   if (!token) return null;
@@ -31,9 +32,11 @@ async function fetchAccount(token: string | null) {
 
 export default function Page() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setLoading(true);
     const token = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
 
     if (!token) {
@@ -42,20 +45,26 @@ export default function Page() {
     }
 
     fetchAccount(token).then(setData);
+    setLoading(false);
   }, [router]);
 
   return (
     <div className="h-full flex-1 flex-col space-y-2 p-8 md:flex">
-      <div className="flex flex-col items-start justify-between">
-        <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-          Daftar Akun Pengguna
-        </h2>
-        <p className="text-muted-foreground">Guru dan Siswa SMAK Anglo</p>
-        <Button 
-          onClick={() => router.push("/admin/akun/tambah")} 
-          className="mt-3 mb-3"
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-semibold tracking-tight">
+            Daftar Akun Pengguna
+          </h2>
+          <p className="text-muted-foreground">
+            Guru dan Siswa SMAK Anglo
+          </p>
+        </div>
+        <Button
+          variant="default"
+          onClick={() => router.push("/admin/akun/tambah")}
         >
-          + Tambah Akun
+          <Plus className="h-5 w-5 ml-2" />
+          Tambah Akun
         </Button>
       </div>
 

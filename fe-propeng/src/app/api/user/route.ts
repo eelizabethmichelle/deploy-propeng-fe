@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
+=======
+import { API_BASE_URL } from "@/lib/api";
+
+>>>>>>> 7bb8bb9d499226a1f21ddbc575db66677328f213
 export async function GET(request: Request) {
     // Extract the JWT token from the Authorization header
     const authHeader = request.headers.get("Authorization");

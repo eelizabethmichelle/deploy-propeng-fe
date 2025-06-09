@@ -23,11 +23,30 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 const roles = [
   { id: "teacher", label: "Guru" },
   { id: "student", label: "Siswa" },
 ];
+
+const customToast = {
+  success: (title: string, description: string) => {
+    toast.success(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  error: (title: string, description: string) => {
+    toast.error(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  },
+  warning: (title: string, description: string) => {
+    toast.warning(title, {
+      description: <span style={{ color: "white", fontWeight: "500" }}>{description}</span>
+    });
+  }
+};
 
 export default function AddAccountForm() {
     const router = useRouter();
@@ -71,13 +90,17 @@ export default function AddAccountForm() {
           throw new Error(responseData.message || "Gagal menambahkan akun.");
         }
 
-        toast.success("Akun " + responseData.user_name + " berhasil dibuat");
+        customToast.success(
+          "Berhasil Ditambahkan!", 
+          `Akun ${responseData.user_name} berhasil ditambahkan`
+        );
+        
         router.push("/admin/akun");
       } catch (error) {
         console.error("Error creating user:", error);
 
         const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat membuat akun.";
-        toast.error(errorMessage);
+        customToast.error("Gagal Menambahkan Akun", errorMessage);
       }
     }; 
 
@@ -143,16 +166,28 @@ export default function AddAccountForm() {
           <FormField
             control={form.control}
             name="name"
-            rules={{ 
-                required: "Nama wajib diisi"
-            }}
+            rules={{ required: "Nama wajib diisi" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nama Lengkap *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Contoh: Ujang Jajaki" {...field} />
+                  <Input
+                    placeholder="Contoh: Ujang Jajaki"
+                    {...field}
+                    onChange={(e) => {
+                      const input = e.target.value;
+                      const formatted = input
+                        .toLowerCase()
+                        .split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ");
+                      field.onChange(formatted);
+                    }}
+                  />
                 </FormControl>
-                <FormDescription>*Nama wajib diisi dengan nama lengkap pengguna</FormDescription>
+                <FormDescription>
+                  *Nama wajib diisi dengan nama lengkap pengguna
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -212,7 +247,16 @@ export default function AddAccountForm() {
             <FormField
               control={form.control}
               name="angkatan"
-              rules={{ required: "Angkatan wajib diisi" }}
+              rules={{
+                required: isStudent? "Angkatan wajib diisi" : "Tahun Masuk wajib diisi",
+                validate: (value) => {
+                  const angkatan = Number(value);
+                  if (isNaN(angkatan)) return "Angkatan harus berupa angka";
+                  if (angkatan < 2000) return isStudent ? "Angkatan tidak boleh kurang dari 2000" : "Tahun Masuk tidak boleh kurang dari 2000";
+                  if (angkatan > 2100) return isStudent ? "Angkatan tidak boleh lebih dari 2100" : "Tahun Masuk tidak boleh lebih dari 2100";
+                  return true;
+                },
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{isTeacher ? "Tahun Masuk *" : isStudent ? "Angkatan *" : "Angkatan *"}</FormLabel>
@@ -231,10 +275,11 @@ export default function AddAccountForm() {
 
           {/* Buttons */}
           <div className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/admin/akun")}>
+            <Button variant="secondary" type="button" onClick={() => router.push("/admin/akun")}>
               Kembali
             </Button>
             <Button type="submit" disabled={!isFormValid}>
+              <Plus className="h-5 w-5 ml-2" />
               Tambah Akun
             </Button>
           </div>

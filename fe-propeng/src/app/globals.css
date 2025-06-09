@@ -5,7 +5,7 @@
 
 
 @layer base {
-  :root  {
+  :root {
     font-family: "Trebuchet MS", sans-serif !important;
     /*  Custom Primary Colors */
     --custom-primary-light: 240 100% 99.8%;
@@ -18,8 +18,8 @@
     --custom-secondary-darker: hsl(42, 97%, 36%);
 
     /* Custom Neutral Colors */
-    --custom-neutral-light: 0 0% 89.8%;
-    --custom-neutral: 225 1% 59%;
+    --custom-neutral-light: 0% 89.8%;
+    --custom-neutral: 240, 100%, 100%;
     --custom-neutral-darker: hsl(225, 2%, 44%);
 
     /* Custom Accent Colors */
@@ -50,11 +50,10 @@
 
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 96.1%;
+    --secondary: 240 4% 79%;
+    --secondary-foreground: 0 0% 100%;
 
-    --secondary-foreground: 0 0% 9%;
-
-    --muted: 0 0% 96.1%;
+    --muted: 227 63% 95%;
 
     --muted-foreground: 0 0% 45.1%;
 
@@ -66,11 +65,15 @@
 
     --destructive-foreground: 0 0% 98%;
 
-    --border: var(--custom-neutral-light);
+    --warning: 48, 100%, 85%;
 
-    --input: var(--custom-neutral-light);
+    --warning-foreground: 0 0% 0%;
 
-    --ring: var(--custom-neutral-light);
+    --border: 240 4% 79%;
+
+    --input: 240 4% 79%;
+
+    --ring: 240 4% 79%;
 
     --chart-1: 12 76% 61%;
 
@@ -82,24 +85,36 @@
 
     --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem
-  ;
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Background utama sidebar - biru sangat muda, hampir putih */
+    --sidebar-background: 225 40% 98%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Teks utama sidebar - biru tua */
+    --sidebar-foreground: oklch(225 60% 98%; );
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Warna dasar primer sidebar (putih) */
+    --sidebar-primary: oklch(100% 0 0);
+    /* Putih */
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Warna teks di atas elemen primer (biru muda) */
+    --sidebar-primary-foreground: oklch(225 60% 98%; );
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Warna aksen sidebar (gelap keabu-abuan) */
+    --sidebar-accent: oklch(225 60% 98%; );
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Warna teks di atas aksen (biru tua terang) */
+    --sidebar-accent-foreground: oklch(225 60% 98%; );
+    /* sedikit lebih terang dari foreground */
 
-    --sidebar-border: 220 13% 91%;
+    /* Border warna sidebar (sama dengan accent untuk kesan solid) */
+    --sidebar-border: oklch(225 60% 98%; );
 
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    /* Ring highlight atau fokus, biru terang menyala */
+    --sidebar-ring: oklch(225 60% 98%; );
+    /* Highlight/fokus */
+  }
+
   .dark {
 
     --background: 0 0% 3.9%;
@@ -134,6 +149,9 @@
 
     --destructive-foreground: 0 0% 98%;
 
+    --warning: 48, 100%, 85%;
+
+    --warning-foreground: 0 0% 0%;
     --border: 0 0% 14.9%;
 
     --input: 0 0% 14.9%;
@@ -148,10 +166,9 @@
 
     --chart-4: 280 65% 60%;
 
-    --chart-5: 340 75% 55%
-  ;
+    --chart-5: 340 75% 55%;
 
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 229, 94%, 21%;
 
     --sidebar-foreground: 240 4.8% 95.9%;
 
@@ -165,15 +182,17 @@
 
     --sidebar-border: 240 3.7% 15.9%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
 }
 
 
 
 @layer base {
-  * {
+  /* * {
     @apply border-border;
-  }
+  } */
+
   body {
     @apply bg-background text-foreground;
   }

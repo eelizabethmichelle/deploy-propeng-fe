@@ -72,7 +72,7 @@ export const columns: ColumnDef<Schema>[] = [
       return (
         <div className="flex space-x-2">
           <span className="max-w-[500px] truncate font-medium capitalize">
-            {row.getValue("role")}
+            {row.getValue("role") === "teacher" ? "Guru" : row.getValue("role") === "student" ? "Siswa" : row.getValue("role")}
           </span>
         </div>
       );
@@ -86,22 +86,22 @@ export const columns: ColumnDef<Schema>[] = [
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") === true;
       return (
-        <div className="flex items-center space-x-2">
+        <div className="flex w-[100px] items-center gap-2">
           {isActive ? (
             <>
-              <CheckCircle size={20} className="text-green-500" />
+              <CheckCircle size={20} className="text-green-600" />
+              <span className="font-medium">Aktif</span>
             </>
           ) : (
             <>
               <X size={20} className="text-red-500" />
+              <span className="font-medium">Tidak Aktif</span>
             </>
           )}
         </div>
       );
     },    
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },    
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },  
   {
     id: "actions",
