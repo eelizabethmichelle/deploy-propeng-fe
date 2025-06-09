@@ -81,9 +81,8 @@ export function DataTableToolbar({ table }: DataTableToolbarProps) {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ id: row.original.id }),
+            Authorization: `Bearer ${accessToken} id ${row.original.id}`,
+          }
         });
 
         if (!response.ok) {
